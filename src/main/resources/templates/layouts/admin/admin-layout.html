@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE"></title>
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+          rel="stylesheet"/>
+</head>
+<body class="bg-background-light text-slate-900 antialiased overflow-hidden">
+
+<div class="flex h-screen w-full overflow-hidden">
+    <aside th:replace="~{fragments/admin/sidebar :: sidebar}"></aside>
+    <main class="flex-1 flex flex-col h-full overflow-y-auto relative">
+        <div layout:fragment="content"></div>
+    </main>
+</div>
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

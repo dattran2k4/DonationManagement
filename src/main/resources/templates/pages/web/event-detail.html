@@ -1,0 +1,318 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/web/main-layout}"
+>
+<head>
+    <title>Sự kiện chi tiết</title>
+</head>
+<body>
+<div layout:fragment="content" class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12" th:if="${event != null}">
+    <div class="lg:col-span-2 space-y-12">
+        <div class="lg:hidden bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Ngày bắt đầu</p>
+                    <p class="font-semibold text-slate-900 dark:text-white"
+                       th:text="${#temporals.format(event.startDate, 'dd/MM/yyyy')}">June 15, 2024</p>
+                </div>
+                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Ngày kết thúc</p>
+                    <p class="font-semibold text-slate-900 dark:text-white"
+                       th:text="${#temporals.format(event.endDate, 'dd/MM/yyyy')}">Aug 20, 2024</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700">
+            <div class="prose prose-slate dark:prose-invert max-w-none">
+                <h2 class="text-2xl font-bold mb-6 text-slate-900 dark:text-white" th:text="${event.name}">
+                    About the Event
+                </h2>
+
+                <div class="text-slate-600 dark:text-slate-300 leading-relaxed mb-6" th:utext="${event.content}">
+                    Nội dung chi tiết sự kiện sẽ hiển thị ở đây...
+                </div>
+            </div>
+
+            <div class="hidden lg:flex items-center justify-between mt-10 pt-8 border-t border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">calendar_today</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Thời gian</p>
+                        <p class="text-slate-900 dark:text-white font-medium">
+                            <span th:text="${#temporals.format(event.startDate, 'dd/MM')}"></span> -
+                            <span th:text="${#temporals.format(event.endDate, 'dd/MM/yyyy')}"></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">location_on</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Địa điểm</p>
+                        <p class="text-slate-900 dark:text-white font-medium" th:text="${event.location}">
+                            Downtown Community Center
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4" th:if="${event.category != null}">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">category</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Danh mục</p>
+                        <p class="text-slate-900 dark:text-white font-medium" th:text="${event.category.name}">
+                            Category</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-1 space-y-8">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-slate-100 dark:border-slate-700 sticky top-24">
+            <div class="mb-6">
+                <div class="flex justify-between items-baseline mb-2">
+                    <h3 class="text-3xl font-bold text-slate-900 dark:text-white"
+                        th:text="${#numbers.formatCurrency(event.currentAmount)}">
+                        $15,420
+                    </h3>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+                        mục tiêu <span th:text="${#numbers.formatCurrency(event.targetAmount)}">$20,000</span>
+                    </span>
+                </div>
+
+                <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-4 mb-2 overflow-hidden">
+                    <div class="bg-primary h-4 rounded-full transition-all duration-1000 ease-out relative"
+                         th:with="percent=${(event.currentAmount / event.targetAmount) * 100}"
+                         th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
+                        <div class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_infinite]"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between text-xs font-medium mt-2">
+                    <span class="text-primary"
+                          th:text="${#numbers.formatDecimal((event.currentAmount / event.targetAmount) * 100, 0, 1)} + '% đã đạt được'">77% Raised</span>
+                    <span class="text-slate-500 dark:text-slate-400"
+                          th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 Donors</span>
+                </div>
+            </div>
+
+            <!-- Form Donation -->
+            <form id="donationForm" class="space-y-5">
+                <input type="hidden" name="eventId" th:value="${event.id}"/>
+
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-bold text-slate-800 dark:text-white">Ủng hộ ngay</h4>
+                </div>
+
+                <!-- INDIVIDUAL OR ORGANIZATION -->
+                <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+                    <!-- INDIVIDUAL -->
+                    <div class="flex-1">
+                        <input checked="" class="hidden" id="donor_personal" name="donor_type" type="radio"
+                               value="INDIVIDUAL"/>
+                        <label class="block w-full text-center py-2 px-3 text-sm font-medium rounded-md cursor-pointer bg-white transition-all shadow-sm"
+                               for="donor_personal">Cá nhân</label>
+                    </div>
+                    <!-- ORGANIZATION -->
+                    <div class="flex-1">
+                        <input class="hidden" id="donor_org" name="donor_type" type="radio" value="ORGANIZATION"/>
+                        <label class="block w-full text-center py-2 px-3 text-sm font-medium rounded-md cursor-pointer transition-all border border-transparent"
+                               for="donor_org">Tổ chức</label>
+                    </div>
+                </div>
+
+                <!-- AMOUNT -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-medium text-slate-500 uppercase">Số tiền ủng hộ</label>
+                    <div class="relative">
+                        <input name="amount" id="donationAmount"
+                               class="block w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-lg font-bold text-primary shadow-sm transition-all"
+                               placeholder="Nhập số tiền..." type="number" required/>
+                        <span class="absolute inset-y-0 right-4 flex items-center text-slate-500 font-bold">VND</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" id="needReceipt" name="needReceipt" class="rounded text-primary">
+                        <label for="needReceipt" class="text-sm text-slate-600">Tôi muốn nhận biên lai xác nhận qua
+                            Email</label>
+                    </div>
+
+                    <div id="receipt-fields" class="hidden space-y-3 p-4 bg-slate-50 rounded-lg">
+                        <input type="text" name="receiptName" placeholder="Tên trên biên lai"
+                               class="p-2 w-full text-sm">
+                        <input type="email" name="receiptEmail" id="receiptEmail" placeholder="Email nhận biên lai"
+                               class="p-2 w-full text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Phương thức thanh toán</label>
+                        <select name="paymentMethod"
+                                class="w-full border-slate-300 rounded-md mt-2 bg-amber-100 p-2">
+                            <option value="BANK_TRANSFER_ONLINE">Chuyển khoản ngân hàng (QR)</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="space-y-4 pt-2">
+                    <!-- INDIVIDUAL INPUT -->
+                    <div id="individual-section" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Họ và tên
+                                *</label>
+                            <input type="text" name="fullName"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="Nguyễn Văn A" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên hiển
+                                thị trên Website *</label>
+                            <input type="text" name="displayName"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="Anh A / Ẩn danh">
+                        </div>
+                    </div>
+                    <!-- ORGANIZATION INPUT -->
+                    <div id="organization-section" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên tổ
+                                chức *</label>
+                            <input type="text" name="name"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="Công ty TNHH Hy Vọng">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Mã số
+                                thuế *</label>
+                            <input type="text" name="taxCode"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="0101234567">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Người đại
+                                diện *</label>
+                            <input type="text" name="representative"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="Ông Nguyễn Văn B">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Địa chỉ
+                                xuất hóa đơn</label>
+                            <input type="text" name="billingAddress"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="Số 1, Đường ABC, TP. HCM">
+                        </div>
+                    </div>
+                    <!-- COMMON INPUT -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Số điện
+                                thoại *</label>
+                            <input type="tel" name="phone"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="0912..." required>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email
+                                *</label>
+                            <input id="email" type="email" name="email"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   placeholder="email@gmail.com" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Lời
+                            nhắn</label>
+                        <textarea name="note" rows="2"
+                                  class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                  placeholder="Lời chúc gửi đến các em..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Bạn biết đến
+                            chúng tôi từ đâu?</label>
+                        <select name="referralSource"
+                                class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary">
+                            <option value="Facebook">Facebook</option>
+                            <option value="Website">Website</option>
+                            <option value="Friends">Bạn bè giới thiệu</option>
+                            <option value="Other">Khác</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="submitDonation"
+                        class="w-full py-3.5 px-4 mt-2 rounded-lg bg-primary hover:bg-blue-700 text-white font-bold shadow-lg flex items-center justify-center gap-2">
+                    <span class="material-icons">volunteer_activism</span>
+                    Quyên góp ngay
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script>
+        document.querySelectorAll('input[name="donor_type"]').forEach((radio) => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                const labels = document.querySelectorAll('label[for^="donor_"]');
+
+                // 1. Cập nhật UI cho Tab (Code cũ của bạn đã tối ưu)
+                labels.forEach((label) => {
+                    if (label.getAttribute('for') === e.target.id) {
+                        label.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'border-slate-200');
+                        console.log(e.target.id)
+                        console.log(val)
+                        console.log(label.getAttribute('for'))
+                    } else {
+                        label.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'border-slate-200');
+                    }
+                });
+
+                // 2. Ẩn/Hiện các Section form
+                const individualSection = document.getElementById('individual-section');
+                const organizationSection = document.getElementById('organization-section');
+
+                if (val === 'INDIVIDUAL') {
+                    individualSection.classList.remove('hidden');
+                    organizationSection.classList.add('hidden');
+                    // Bật/Tắt thuộc tính required để không lỗi submit
+                    toggleRequired(individualSection, true);
+                    toggleRequired(organizationSection, false);
+                } else {
+                    individualSection.classList.add('hidden');
+                    organizationSection.classList.remove('hidden');
+                    toggleRequired(individualSection, false);
+                    toggleRequired(organizationSection, true);
+                }
+            });
+        });
+
+        // Hàm hỗ trợ bật/tắt required cho các input trong section đang ẩn/hiện
+        function toggleRequired(section, isRequired) {
+            const inputs = section.querySelectorAll('input[required], input[data-required]');
+            inputs.forEach(input => {
+                if (isRequired) {
+                    if (input.dataset.required === "true") input.required = true;
+                } else {
+                    if (input.required) {
+                        input.dataset.required = "true"; // Đánh dấu để biết nó vốn là trường bắt buộc
+                        input.required = false;
+                    }
+                }
+            });
+        }
+    </script>
+
+    <script type="module" th:src="@{/js/modules/donation-form.js}"></script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content" class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Quản lý Sự kiện</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Theo dõi và quản lý các hoạt động gây quỹ</p>
+        </div>
+        <a th:href="@{/admin/events/form}"
+           class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-content font-semibold text-sm px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Thêm Sự kiện mới
+        </a>
+    </div>
+    <!--  Numbers  -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center gap-4">
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
+                <span class="material-symbols-outlined">event</span>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Tổng sự kiện</p>
+                <p class="text-xl font-bold text-slate-900 dark:text-white" th:text="${totalEvents}">0</p>
+            </div>
+        </div>
+        <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center gap-4">
+            <div class="p-3 bg-primary/10 rounded-lg text-primary-content dark:text-primary">
+                <span class="material-symbols-outlined">play_circle</span>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Đang diễn ra</p>
+                <p class="text-xl font-bold text-slate-900 dark:text-white" th:text="${totalOngoingEvents}">8</p>
+            </div>
+        </div>
+        <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center gap-4">
+            <div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-400">
+                <span class="material-symbols-outlined">pending</span>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Sắp diễn ra</p>
+                <p class="text-xl font-bold text-slate-900 dark:text-white" th:text="${totalUpcomingEvents}">3</p>
+            </div>
+        </div>
+    </div>
+    <!--  Filter + Search  -->
+    <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark space-y-4">
+        <div class="flex flex-col lg:flex-row gap-4">
+            <div class="flex-1 relative group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-slate-400">search</span>
+                </div>
+                <input class="block w-full pl-10 pr-3 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/20 transition-all text-sm"
+                       placeholder="Tìm kiếm theo tên sự kiện, mã dự án..." type="text"/>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <div class="relative min-w-[160px]">
+                    <select id="statusFilter" name="status"
+                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                        <option value="">Tất cả trạng thái</option>
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status.value}">
+                        </option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                    </div>
+                </div>
+                <div class="relative min-w-[160px]">
+                    <select class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                        <option>Mới nhất</option>
+                        <option>Cũ nhất</option>
+                        <option>Gây quỹ cao nhất</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px]">sort</span>
+                    </div>
+                </div>
+                <button class="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                        title="Export">
+                    <span class="material-symbols-outlined">download</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!--  Event list  -->
+    <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="bg-slate-50/50 dark:bg-white/5 border-b border-border-light dark:border-border-dark text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
+                    <th class="px-6 py-4 w-16">Ảnh</th>
+                    <th class="px-6 py-4 min-w-[200px]">Tên sự kiện</th>
+                    <th class="px-6 py-4 w-48">Trạng thái</th>
+                    <th class="px-6 py-4 min-w-[200px]">Tiến độ gây quỹ</th>
+                    <th class="px-6 py-4 min-w-[200px]">Thời gian</th>
+                    <th class="px-6 py-4 w-32 text-right">Thao tác</th>
+                </tr>
+                </thead>
+                <!-- Event Data -->
+                <tbody id="eventTableBody" class="divide-y divide-border-light dark:divide-border-dark text-sm">
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">Đang tải dữ liệu...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination -->
+        <div id="paginationContainer"></div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/admin/eventList.js}"></script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Event Form</title>
+</head>
+<body>
+<div layout:fragment="content" class="flex-grow container mx-auto px-4 py-8 max-w-[1200px]">
+    <!-- Header Section -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-1">
+                <span>Events</span>
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                <span class="text-primary-dark dark:text-primary font-medium"
+                      th:text="${event?.id != null} ? 'Chỉnh sửa chiến dịch' : 'Thêm mới chiến dịch'"></span>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+                th:text="${event?.id != null} ? 'Chỉnh sửa chiến dịch' : 'Thêm mới chiến dịch'"></h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Điền thông tin chi tiết về sự kiện gây quỹ mới hoặc cập
+                nhật sự kiện hiện có.</p>
+        </div>
+        <div class="flex gap-3">
+            <a th:href="@{/admin/events}"
+               class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                Hủy
+            </a>
+            <button id="saveBtn"
+                    class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-slate-900 font-bold shadow-sm shadow-primary/30 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">save</span>
+                Lưu sự kiện
+            </button>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- General Info Card -->
+            <section
+                    class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-dark dark:text-primary">edit_document</span>
+                    Thông tin cơ bản
+                </h3>
+                <div class="space-y-5">
+                    <input type="hidden" id="eventId" th:value="${event?.id}">
+                    <!-- Event Name -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Tên sự kiện <span class="text-red-500">*</span>
+                        </label>
+                        <input class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm"
+                               placeholder="Ví dụ: Gây quỹ xây trường học vùng cao"
+                               id="eventName"
+                               th:value="${event?.name}"
+                               type="text"/>
+                    </div>
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Danh mục
+                        </label>
+                        <div class="relative">
+                            <select id="eventCategory"
+                                    class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm appearance-none py-2.5 pl-3 pr-10">
+                                <option value="">-- Chọn danh mục --</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}"
+                                        th:selected="${event?.categoryId != null and event.categoryId == cat.id}">
+                                </option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Short Description -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                            Mô tả ngắn
+                        </label>
+                        <textarea
+                                id="eventShortDescription"
+                                th:text="${event?.shortDescription}"
+                                class="w-full p-2 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm min-h-[100px]"
+                                placeholder="Nhập tóm tắt ngắn gọn về sự kiện để hiển thị trên thẻ bài viết..."></textarea>
+                        <div class="flex justify-end mt-1">
+                            <span class="text-xs text-slate-400">0/300 ký tự</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Detailed Content (Rich Text) -->
+            <section
+                    class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 flex flex-col h-[500px]">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-dark dark:text-primary">article</span>
+                    Nội dung chi tiết
+                </h3>
+                <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden flex flex-col bg-white dark:bg-slate-800">
+                    <!-- Toolbar Simulation -->
+                    <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-2 flex flex-wrap gap-1">
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">format_bold</span>
+                        </button>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">format_italic</span>
+                        </button>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">format_underlined</span>
+                        </button>
+                        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1 self-center"></div>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+                        </button>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">format_list_numbered</span>
+                        </button>
+                        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1 self-center"></div>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">link</span>
+                        </button>
+                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            <span class="material-symbols-outlined text-[20px]">image</span>
+                        </button>
+                    </div>
+                    <!-- Content Area -->
+                    <div class="p-4 flex-1 overflow-y-auto text-slate-800 dark:text-slate-200 prose prose-sm max-w-none">
+                        <p>Hãy cùng chung tay giúp đỡ các em nhỏ vùng cao có một ngôi trường mới khang trang hơn. Mỗi
+                            đóng góp của bạn đều vô cùng quý giá.</p>
+                        <br/>
+                        <p><strong>Mục tiêu của dự án:</strong></p>
+                        <ul>
+                            <li>Xây dựng 5 phòng học mới.</li>
+                            <li>Cung cấp bàn ghế và trang thiết bị học tập.</li>
+                            <li>Xây dựng khu vệ sinh sạch sẽ.</li>
+                        </ul>
+                        <p th:utext="${event?.content ?: ''}"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Right Column: Settings & Media -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Status Card -->
+            <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Trạng thái</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">Tình trạng hiện tại:</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                            Draft
+                    </span>
+                </div>
+                <select id="eventStatus"
+                        class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm mb-4">
+                    <option th:each="status : ${statuses}"
+                            th:value="${status}"
+                            th:text="${status.value}"
+                            th:selected="${status == event?.status}">
+                    </option>
+                </select>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Chuyển sang "Đang diễn ra" để công khai sự kiện này trên trang chủ.
+                </p>
+            </div>
+            <!-- Thumbnail Upload Card -->
+            <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Ảnh đại diện</h3>
+
+                <div onclick="document.getElementById('thumbnailInput').click()"
+                     class="w-full aspect-video rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-all group overflow-hidden relative">
+
+                    <div id="thumbnailPreview"
+                         th:classappend="${event?.thumbnailUrl != null} ? '' : 'hidden'"
+                         class="absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40"
+                         th:style="${event?.thumbnailUrl != null} ? 'background-image: url(' + ${event.thumbnailUrl} + ')' : ''">
+                    </div>
+
+                    <div id="uploadInstruction"
+                         th:classappend="${event?.thumbnailUrl != null} ? 'opacity-0 group-hover:opacity-100' : ''"
+                         class="z-10 flex flex-col items-center text-center p-4 transition-opacity">
+                        <span class="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary mb-2">add_photo_alternate</span>
+                        <span class="text-sm font-medium text-slate-600 dark:text-slate-300">Tải ảnh lên</span>
+                        <span class="text-xs text-slate-400 mt-1">PNG, JPG, GIF tối đa 5MB</span>
+                    </div>
+
+                    <input id="thumbnailInput" class="hidden" type="file" accept="image/*"
+                           onchange="previewThumbnail(this)"/>
+                </div>
+            </div>
+            <!-- Date Range Card -->
+            <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Thời gian</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                            Ngày bắt đầu
+                        </label>
+                        <div class="relative">
+                            <input id="eventStartDate"
+                                   th:value="${event?.startDate}"
+                                   class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
+                                   type="date"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                            Ngày kết thúc
+                        </label>
+                        <div class="relative">
+                            <input id="eventEndDate"
+                                   th:value="${event?.endDate}"
+                                   class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
+                                   type="date"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fundraising Goals Card -->
+            <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Mục tiêu gây quỹ</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Mục tiêu số tiền
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <input th:value="${event?.targetAmount}"
+                                   id="eventTargetAmount"
+                                   class="block w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-3 pr-12 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-primary sm:text-sm font-semibold"
+                                   placeholder="0" type="text"/>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                <span class="text-slate-500 sm:text-sm">VND</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Số tiền hiện tại
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <input th:value="${event?.currentAmount}"
+                                   id="eventCurrentAmount"
+                                   class="block w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 pl-3 pr-12 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-primary sm:text-sm"
+                                   placeholder="0" type="text" value="0"/>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                <span class="text-slate-500 sm:text-sm">VND</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Progress Bar Preview -->
+                    <div class="pt-2"
+                         th:with="target=${event?.targetAmount ?: 0}, current=${event?.currentAmount ?: 0}, percent=${target > 0 ? (current * 100 / target) : 0}">
+                        <div class="flex justify-between text-xs mb-1 text-slate-500">
+                            <span>Tiến độ</span>
+                            <span th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
+                            <div class="bg-primary h-2.5 rounded-full transition-all duration-500"
+                                 th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script type="module">
+        import {eventApi} from "/js/api/eventApi.js";
+
+        function previewThumbnail(input) {
+            const preview = document.getElementById('thumbnailPreview');
+            const instruction = document.getElementById('uploadInstruction');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Thiết lập ảnh preview từ file vừa chọn
+                    preview.style.backgroundImage = `url('${e.target.result}')`;
+
+                    // Hiển thị div preview và điều chỉnh độ mờ chỉ dẫn
+                    preview.classList.remove('hidden');
+                    instruction.classList.add('opacity-0');
+                    // Giữ lại class group-hover để hiện text khi di chuột vào
+                    instruction.classList.add('group-hover:opacity-100');
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.getElementById("saveBtn")
+            .addEventListener("click", handleSaveEvent);
+
+        async function handleSaveEvent() {
+            // 1. Thu thập dữ liệu từ các trường input
+            const eventData = {
+                // Nếu là update thì event.id sẽ có giá trị, nếu create thì là null
+                id: document.getElementById('eventId')?.value || null,
+                name: document.getElementById('eventName').value,
+                status: document.getElementById('eventStatus').value,
+                categoryId: document.getElementById('eventCategory').value,
+                shortDescription: document.getElementById('eventShortDescription').value,
+                // Lấy nội dung từ div contenteditable (Rich Text)
+                content: document.querySelector('.prose').innerHTML,
+                startDate: document.getElementById('eventStartDate').value,
+                endDate: document.getElementById('eventEndDate').value,
+                targetAmount: parseFloat(document.getElementById('eventTargetAmount').value) || 0,
+                currentAmount: parseFloat(document.getElementById('eventCurrentAmount').value) || 0,
+                thumbnailUrl: document.getElementById('thumbnailPreview').style.backgroundImage.slice(5, -2) // Lấy URL từ style
+            };
+
+            console.log("Payload:", eventData);
+            console.log("Value lấy được:", document.getElementById('eventCategory').value);
+            console.log("Element lấy được:", document.getElementById('eventCategory'));
+
+            // 2. Kiểm tra dữ liệu sơ bộ (Validation)
+            if (!eventData.name) {
+                alert("Vui lòng nhập tên sự kiện!");
+                return;
+            }
+
+            try {
+                // 3. Gọi API thông qua eventApi
+                const response = await eventApi.saveEvent(eventData);
+
+                if (response.status === 200) {
+                    alert("Lưu thành công!");
+                    // Chuyển hướng về danh sách hoặc load lại trang
+                    window.location.href = '/admin/events';
+                } else {
+                    alert("Có lỗi xảy ra: " + response.message);
+                }
+            } catch (error) {
+                console.error("Save Error:", error);
+                alert(error || "Không thể kết nối tới máy chủ!");
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>

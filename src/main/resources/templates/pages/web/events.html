@@ -1,0 +1,254 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/web/main-layout}"
+>
+<head>
+    <title>Sự kiện chi tiết</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-10">
+            <h1
+                    class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4"
+            >
+                Explore Our Events
+            </h1>
+            <p class="text-lg text-slate-600 dark:text-slate-400 max-w-3xl">
+                Join us in our upcoming fundraising activities and see the impact of
+                our completed campaigns. Every event is a step towards a better
+                future.
+            </p>
+        </div>
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!--  Filter Event  -->
+            <aside class="w-full lg:w-64 flex-shrink-0">
+                <div class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
+                    <div class="mb-6">
+                        <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+                            <span class="material-icons text-primary mr-2">filter_list</span>
+                            Filters
+                        </h3>
+
+                        <div class="relative mb-6">
+                            <input id="search-event"
+                                   class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary text-sm"
+                                   placeholder="Search events..."
+                                   type="text"/>
+                            <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                        </div>
+                        <!-- Status Filter -->
+                        <div class="space-y-1">
+                            <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">Status</label>
+                            <div id="status-group" class="flex flex-col space-y-2">
+                                <label class="inline-flex items-center cursor-pointer group"
+                                       th:each="status : ${statuses}">
+                                    <input th:value="${status}" class="form-radio text-primary" name="status"
+                                           type="radio" th:name="status"/>
+                                    <span class="ml-2 text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors"
+                                          th:text="${status.value}"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 block">Categories</label>
+                        <div id="category-group" class="space-y-2">
+                            <label th:each="category : ${categories}"
+                                   class="flex items-center space-x-2 cursor-pointer">
+                                <input class="category-checkbox form-checkbox rounded text-primary" type="checkbox"
+                                       name="category"
+                                       th:value="${category.id}"/>
+                                <span class="text-sm text-slate-600 dark:text-slate-400"
+                                      th:text="${category.name}"></span>
+                            </label>
+
+
+                        </div>
+
+                        <button onclick="resetFilters()"
+                                class="mt-6 w-full py-2 text-xs font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">
+                            Clear All Filters
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            <!--  Event List  -->
+            <div class="flex-1">
+                <div id="event-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div id="loading-events" class="col-span-full text-center py-20 text-slate-500">
+                        <span class="animate-pulse">Loading events...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script type="module">
+        import {buildQuery} from "/js/utils/queryUtils.js";
+
+        const eventContainer = document.getElementById("event-container");
+        const loadingEvents = document.getElementById("loading-events");
+        const searchInput = document.getElementById("search-event");
+        const statusGroup = document.getElementById("status-group");
+        const categoryGroup = document.getElementById("category-group");
+
+        let searchTimeout;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadEventsFromServer();
+
+            document.getElementById("search-event").addEventListener("input", handleFilterChange);
+
+            document.getElementById("status-group").addEventListener("change", handleFilterChange);
+
+            document.getElementById("category-group").addEventListener("change", handleFilterChange);
+        });
+
+        function handleFilterChange() {
+            // Xóa timeout cũ nếu người dùng đang gõ nhanh
+            clearTimeout(searchTimeout);
+
+            // Đợi 500ms sau khi ngừng gõ mới gọi API (tránh spam server)
+            searchTimeout = setTimeout(() => {
+                loadEventsFromServer();
+            }, 500);
+        }
+
+        async function loadEventsFromServer() {
+
+            loadingEvents.style.display = "none";
+            eventContainer.style.opacity = "1";
+
+            const query = searchInput.value;
+            const selectedStatus = statusGroup.querySelector(
+                'input[name="status"]:checked'
+            );
+            const status = selectedStatus ? selectedStatus.value : "";
+            const selectedCats = Array.from(categoryGroup.querySelectorAll('input:checked'))
+                .map(cb => cb.value)
+                .join(','); // Chuyển mảng [1,2] thành chuỗi "1,2"
+
+            const params = {
+                search: query,
+                status: status ? status : "",
+                categoryIds: selectedCats,
+                page: 0,
+                size: 20 // Hoặc số lượng bạn muốn
+            };
+
+            try {
+                const response = await fetch(`/api/events?${buildQuery(params)}`);
+                const result = await response.json();
+
+                // Tùy theo cấu trúc Page của Spring: result.content hoặc result.data
+                const data = result.data.data || [];
+
+                renderEvents(data);
+
+                if (data.length === 0) {
+                    eventContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Không tìm thấy sự hiệu nào khớp với bộ lọc.</div>';
+                }
+
+            } catch (error) {
+                console.error("Lỗi khi tải sự kiện:", error);
+                loadingEvents.innerHTML = `<p class="text-red-500">Không thể kết nối máy chủ.</p>`;
+            } finally {
+                loadingEvents.style.display = "none";
+                eventContainer.style.opacity = "1";
+            }
+        }
+
+        function renderEvents(events) {
+            eventContainer.innerHTML = ''; // Xóa trắng trước khi render
+
+            events.forEach(event => {
+                const isCompleted = event.status === 'COMPLETED';
+                const progress = Math.min((event.currentAmount / event.targetAmount) * 100, 100).toFixed(2);
+
+                const col = document.createElement('div');
+                col.className = 'event-item'; // Để phục vụ filter sau này
+                col.dataset.status = event.status;
+                col.dataset.categoryId = event.category.id;
+
+                const dataRange = new Date(event.startDate).toDateString()
+
+                col.innerHTML = `
+                <article class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200 dark:border-slate-800 group flex flex-col h-full ${isCompleted ? 'opacity-90' : ''}">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${event.thumbnailUrl || '/images/default-event.jpg'}"
+                             alt="${event.name}"
+                             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ${isCompleted ? 'grayscale-[50%] group-hover:grayscale-0' : ''}">
+
+                        <div class="absolute top-4 left-4 ${isCompleted ? 'bg-slate-600/90' : 'bg-emerald-500/90'} backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
+                            ${isCompleted ?
+                    `<span class="material-icons text-[10px]">check_circle</span> ${event.status}` :
+                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status}`}
+                        </div>
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-xs font-semibold text-primary bg-primary-light/50 px-2 py-1 rounded">
+                                ${event.category.name}
+                            </div>
+                            <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                                <span class="material-icons text-sm mr-1">event</span>
+                                ${dataRange}
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 line-clamp-2 hover:text-primary transition-colors">
+                            <a href="/events/${event.slug}">${event.name}</a>
+                        </h3>
+
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2 flex-grow">
+                            ${event.shortDescription}
+                        </p>
+
+                        <div class="mt-auto">
+                            <div class="flex justify-between text-sm mb-1.5 font-medium">
+                                <span class="text-slate-900 dark:text-white">${formatCurrency(event.currentAmount)}</span>
+                                <span class="text-slate-500">of ${formatCurrency(event.targetAmount)}</span>
+                            </div>
+
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center mt-4">
+                                <span class="text-xs font-bold text-primary">${Math.round(progress)}% Funded</span>
+                                <a href="/events/${event.slug}" class="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center transition-colors">
+                                    ${isCompleted ? 'Report' : 'Details'}
+                                    <span class="material-icons text-sm ml-1">${isCompleted ? 'description' : 'arrow_forward'}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+                eventContainer.appendChild(col);
+            });
+        }
+
+        function resetFilters() {
+            searchInput.value = "";
+            statusGroup.querySelector('input[value="ALL"]').checked = true;
+            categoryGroup.querySelectorAll('input').forEach(cb => cb.checked = false);
+            loadEventsFromServer();
+        }
+
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'})
+                .format(value)
+                .replace('₫', 'VND'); // Hoặc để ₫ tùy ý bạn
+        }
+    </script>
+</th:block>
+</body>
+</html>

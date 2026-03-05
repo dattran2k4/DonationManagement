@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin/admin-layout}">
+<body>
+<!-- Sidebar -->
+<aside th:fragment="sidebar" class="w-64 flex-shrink-0 flex flex-col bg-surface border-r border-slate-100 h-full">
+    <div class="p-6 pb-2">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary">
+                <span class="material-symbols-outlined">volunteer_activism</span>
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-slate-900 text-lg font-bold leading-none">Charity Admin</h1>
+                <p class="text-slate-400 text-xs font-medium mt-1">Quản lý từ thiện</p>
+            </div>
+        </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/dashboard}">
+            <span class="material-symbols-outlined fill-1">dashboard</span>
+            <span>Tổng quan</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/events}">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>Sự kiện</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/activities}">
+            <span class="material-symbols-outlined">monitoring</span>
+            <span>Hoạt động</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/donors}">
+            <span class="material-symbols-outlined">groups</span>
+            <span>Nhà hảo tâm</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/donations}">
+            <span class="material-symbols-outlined">attach_money</span>
+            <span>Quyên góp</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+           th:href="@{/admin/transactions}">
+            <span class="material-symbols-outlined text-[24px] text-emerald-700 dark:text-emerald-400">payments</span>
+            <p class="text-sm font-medium leading-normal">Transactions</p>
+        </a>
+        <div class="mt-auto pt-4 border-t border-slate-100">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors group"
+               th:href="@{/admin/settings}">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Cài đặt</span>
+            </a>
+        </div>
+    </nav>
+    <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+            <img alt="Admin Avatar" class="w-8 h-8 rounded-full object-cover ring-2 ring-white"
+                 data-alt="Portrait of a smiling man with glasses"
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoNo2YVQ2IcbLLDuoqgakI6B4M56BFnm-gk6_HgQZmm1RY9vVybNB8a73gsNunFzHpoTkE4G5XzrTa5DCPk13Dr1BI1Yg6ny-2CJP8JchmB66niybkMPtnU_R8OI_uiqIbTAZ2DeUARWpNobttEPuYOf3q8Q_Smil9ZseM_xCXwtzWPeVlct8nXQCjeSOIPML0pkTz-sPfJ61c6QBfvBtZDg78OlGHVepA8PiHag23TRmuSdOkT0XNW2KGHWVNtLkjah9hiKfkbEk"/>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 truncate">Nguyễn Văn A</p>
+                <p class="text-xs text-slate-500 truncate">admin@charity.org</p>
+            </div>
+            <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
+        </div>
+    </div>
+</aside>
+</body>
+</html>
