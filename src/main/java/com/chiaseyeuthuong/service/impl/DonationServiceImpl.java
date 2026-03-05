@@ -4,6 +4,7 @@ import com.chiaseyeuthuong.common.*;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
+import com.chiaseyeuthuong.exception.InvalidDataException;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.model.*;
 import com.chiaseyeuthuong.repository.*;
@@ -47,7 +48,7 @@ public class DonationServiceImpl implements DonationService {
         log.info("Processing create donation for donorId {}", request.getDonorId());
 
         //TODO VALIDATE EVENT OR ACTIVITY STATUS + CURRENT AMOUNT
-        
+
         Donation donation = new Donation();
 
         saveDonation(donation, request);
@@ -101,11 +102,13 @@ public class DonationServiceImpl implements DonationService {
         donation.setDonor(donor);
 
         if (request.getActivityId() != null) {
+            log.info("Processing activity {}", request.getActivityId());
             Activity activity = activityRepository.findById(request.getActivityId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hoạt động từ thiện"));
 
             donation.setActivity(activity);
             donation.setTarget(EDonationTarget.ACTIVITY);
         } else if (request.getEventId() != null) {
+            log.info("Processing event {}", request.getEventId());
             Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sự kiện từ thiện"));
             donation.setEvent(event);
             donation.setTarget(EDonationTarget.EVENT);

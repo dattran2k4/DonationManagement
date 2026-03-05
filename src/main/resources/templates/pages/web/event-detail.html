@@ -75,6 +75,38 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700 mt-8">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Planned Activities</h2>
+                <span class="px-3 py-1 bg-primary-light text-primary dark:bg-primary/20 dark:text-primary-light rounded-full text-sm font-bold"
+                      th:text="${#lists.size(event.activities)} + ' Total Sessions'">123 Total Sessions</span>
+            </div>
+            <!-- Activities List -->
+            <!-- Nếu không có activities -->
+            <div th:if="${#lists.isEmpty(event.activities)}"
+                 class="text-slate-500 dark:text-slate-400 italic">
+                Chưa có hoạt động nào.
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" th:if="${!#lists.isEmpty(event.activities)}">
+                <div th:each="act: ${event.activities}"
+                     class="flex flex-col p-5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-primary/30 hover:shadow-md transition-all group">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors"
+                        th:text="${act.name}">
+                        Interactive STEM Workshop</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 flex-grow"
+                       th:text="${act.shortDescription}">
+                        Hands-on experiments covering basic physics and chemistry principles designed specifically for
+                        middle school students.
+                    </p>
+                    <a class="inline-flex items-center text-sm font-semibold text-primary hover:text-blue-700 transition-colors mt-auto"
+                       th:href="@{/activities/{slug}(slug=${act.slug})}">
+                        View Details
+                        <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="lg:col-span-1 space-y-8">
@@ -100,10 +132,13 @@
 
                 <div class="flex justify-between text-xs font-medium mt-2">
                     <span class="text-primary"
-                          th:text="${#numbers.formatDecimal((event.currentAmount / event.targetAmount) * 100, 0, 1)} + '% đã đạt được'">77% Raised</span>
+                          th:with="percent=${(event.currentAmount / event.targetAmount) * 100}"
+                          th:text="${percent + '%'}">77% Raised</span>
                     <span class="text-slate-500 dark:text-slate-400"
                           th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 Donors</span>
                 </div>
+
+
             </div>
 
             <!-- Form Donation -->
@@ -157,7 +192,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Phương thức thanh toán</label>
                         <select name="paymentMethod"
-                                class="w-full border-slate-300 rounded-md mt-2 bg-amber-100 p-2">
+                                class="w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-primary/10 p-3 font-semibold focus:ring-primary focus:border-primary">
                             <option value="BANK_TRANSFER_ONLINE">Chuyển khoản ngân hàng (QR)</option>
                         </select>
                     </div>

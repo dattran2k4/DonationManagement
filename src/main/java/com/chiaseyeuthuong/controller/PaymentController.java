@@ -25,4 +25,9 @@ public class PaymentController {
 
         return "pages/web/payment-success";
     }
+
+    @GetMapping("/thanh-toan/that-bai")
+    public String showHomePage() {
+        return "pages/web/index";
+    }
 }

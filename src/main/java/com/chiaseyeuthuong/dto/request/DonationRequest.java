@@ -2,8 +2,6 @@ package com.chiaseyeuthuong.dto.request;
 
 import com.chiaseyeuthuong.common.*;
 import com.chiaseyeuthuong.dto.validator.EnumValue;
-import com.chiaseyeuthuong.model.User;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 

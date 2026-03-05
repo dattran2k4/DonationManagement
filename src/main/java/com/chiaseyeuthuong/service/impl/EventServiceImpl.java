@@ -3,6 +3,7 @@ package com.chiaseyeuthuong.service.impl;
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.common.EEventStatus;
 import com.chiaseyeuthuong.dto.request.EventRequest;
+import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.dto.response.CategoryResponse;
 import com.chiaseyeuthuong.dto.response.EventResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
@@ -128,7 +129,7 @@ public class EventServiceImpl implements EventService {
         BigDecimal newCurrentAmount = event.getCurrentAmount().add(amount);
         event.setCurrentAmount(newCurrentAmount);
         eventRepository.save(event);
-        
+
         log.info("Updated current amount event {} to: {} ", event.getId(), newCurrentAmount);
     }
 
@@ -141,6 +142,18 @@ public class EventServiceImpl implements EventService {
         CategoryResponse categoryResponse = new CategoryResponse();
         BeanUtils.copyProperties(event.getCategory(), categoryResponse);
         eventResponse.setCategory(categoryResponse);
+
+        List<ActivityResponse> activities = event.getActivities()
+                .stream()
+                .map(activity -> {
+                    ActivityResponse ar = new ActivityResponse();
+                    BeanUtils.copyProperties(activity, ar);
+                    return ar;
+                })
+                .toList();
+
+        eventResponse.setActivities(activities);
+
         return eventResponse;
     }
 }

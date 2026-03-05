@@ -60,8 +60,11 @@ const DonationFormHandler = {
                     receiptEmail: rawData.receiptEmail,
                     paymentMethod: rawData.paymentMethod,
                     eventId: rawData.eventId,
+                    activityId: rawData.activityId,
                     donorId: donorRes.data
                 };
+
+                console.log(donationRequest)
 
                 const donationRes = await donationApi.createWebDonation(donationRequest);
 

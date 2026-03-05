@@ -1,15 +1,14 @@
 package com.chiaseyeuthuong.dto.response;
 
 import com.chiaseyeuthuong.common.EEventStatus;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -52,4 +51,6 @@ public class EventResponse {
     private LocalDateTime completedAt;
 
     private CategoryResponse category;
+
+    private List<ActivityResponse> activities = new ArrayList<>();
 }

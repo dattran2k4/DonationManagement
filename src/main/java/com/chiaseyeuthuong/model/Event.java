@@ -81,6 +81,9 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private List<Donation> donations = new ArrayList<>();
 
+    @OneToMany(mappedBy = "event")
+    private List<Activity> activities = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;

@@ -1,7 +1,6 @@
 package com.chiaseyeuthuong.dto.response;
 
-import com.chiaseyeuthuong.common.EEventStatus;
-import com.chiaseyeuthuong.model.Event;
+import com.chiaseyeuthuong.common.EActivityStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,7 +39,7 @@ public class ActivityResponse {
 
     private long numberOfDonors;
 
-    private EEventStatus status;
+    private EActivityStatus status;
 
     private LocalDateTime createdAt;
 

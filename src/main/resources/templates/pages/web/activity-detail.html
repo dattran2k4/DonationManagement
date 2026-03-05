@@ -1,0 +1,369 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/web/main-layout}"
+>
+<head>
+    <title>Hoạt động kêu gọi</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!--  Breadcrumb  -->
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
+        <a th:hrer="@{/}" class="hover:text-primary flex items-center gap-1" href="#">
+            <span class="material-symbols-outlined text-base">home</span> Trang chủ
+        </a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <a class="hover:text-primary" th:href="@{/events/{slug}(slug=${activity.event.slug})}">Xây trường cho em</a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-primary font-medium">Hoạt động xây dựng điểm trường Nậm Pồ</span>
+    </nav>
+    <!--  Content  -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <!-- Main Content Area -->
+        <div class="lg:col-span-2 space-y-12">
+            <!-- Activity Header & Status -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-primary/20 text-primary text-xs font-bold uppercase rounded-full"
+                          th:text="${activity.status.value}">Đang diễn ra</span>
+                    <span class="flex items-center gap-1 text-slate-500 text-sm">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                        Huyện Nậm Pồ, Tỉnh Điện Biên
+                    </span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight"
+                    th:text="${activity.name}">
+                    Xây dựng điểm trường Nậm Pồ: Nâng bước tương lai vùng cao
+                </h1>
+                <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Cùng chung tay xây dựng 3 phòng học kiên cố và khu bán trú cho hơn 120 học sinh dân tộc thiểu số tại
+                    xã Nậm Pồ, giúp các em có môi trường học tập an toàn.
+                </p>
+            </div>
+            <!-- Featured Image -->
+            <div class="relative group rounded-2xl overflow-hidden shadow-2xl">
+                <img alt="Featured Activity Image" class="w-full aspect-[16/9] object-cover"
+                     data-alt="Children playing in front of a rural school building"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBvbuwEPe3kBtHUWQjjHsT2iYM4JROVnA8R2OhM8X0f97A8lGcjLBRJhTHkVofLPDcJGyXsMPq2T0xlUcjJ3QUNV5G48rHXdvNtHVBL_gT2z1Hmi24inM7Cm7yN9t4diyi38pCAcZK1W58ZnY4yDH-J0qk8vk6aa3wWyR7D3mWJmwY4WYsvy-feqabXON4QipfpmO6Kc0VV_6T5qdIxLRzEbtCFRf-xIJKHSirkyh9-a_WH_flxmFHuLxdAFvHG8YVk_pwYEckVn0"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            </div>
+            <!-- Funding Progress Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
+                    <div class="space-y-1">
+                        <p class="text-slate-500 text-sm font-medium">Số tiền đã quyên góp</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-3xl font-black text-primary" th:text="${activity.currentAmount}">450.000.000</span>
+                            <span class="text-lg font-bold text-slate-400">VND</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-slate-500 text-sm font-medium">Mục tiêu chiến dịch</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-slate-800 dark:text-slate-200"
+                                  th:text="${activity.targetAmount}">600.000.000</span>
+                            <span class="text-sm font-bold text-slate-400">VND</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="relative w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
+                    <div class="absolute top-0 left-0 h-full bg-primary progress-bar-glow rounded-full transition-all duration-1000"
+                         th:with="percent=${(activity.currentAmount / activity.targetAmount) * 100}"
+                         th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="space-y-1">
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Tiến độ</p>
+                        <p class="text-xl font-bold"
+                           th:with="percent=${(activity.currentAmount / activity.targetAmount) * 100}"
+                           th:text="${percent + '%'}">75%</p>
+                    </div>
+                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Nhà hảo tâm</p>
+                        <p class="text-xl font-bold">1,248</p>
+                    </div>
+                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày bắt đầu</p>
+                        <p class="text-xl font-bold" th:text="${activity.startDate}">15/03/2024</p>
+                    </div>
+                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày kết thúc</p>
+                        <p class="text-xl font-bold" th:text="${activity.endDate}">15/06/2024</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Detailed Content -->
+            <article class="prose prose-slate dark:prose-invert max-w-none">
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Về hoạt động này</h3>
+                <div class="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed" th:text="${activity.content}">
+                    <p>
+                        Điểm trường Nậm Pồ hiện đang là nơi học tập của 120 em học sinh mầm non và tiểu học. Tuy nhiên,
+                        cơ sở vật chất hiện tại đã xuống cấp trầm trọng với những mảng tường nứt nẻ, mái tôn dột nát mỗi
+                        khi mùa mưa về. Các em phải học tập trong điều kiện thiếu thốn cả về ánh sáng lẫn trang thiết bị
+                        giáo dục tối thiểu.
+                    </p>
+                    <p>
+                        Dự án "Xây trường cho em - Nậm Pồ" đặt mục tiêu xóa bỏ những phòng học tạm bợ, thay thế bằng các
+                        phòng học đạt chuẩn, xây dựng khu vệ sinh khép kín và trang bị đầy đủ bàn ghế, bảng viết mới.
+                        Chúng tôi tin rằng, một ngôi trường vững chãi không chỉ che nắng che mưa mà còn là nơi thắp sáng
+                        những ước mơ bay xa của các em nhỏ vùng cao.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+                        <img alt="Construction progress" class="rounded-xl shadow-md w-full h-64 object-cover"
+                             data-alt="Construction site of a small building in mountains"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHczkqOhgtIUeCVpMctqzETV4F3P0wVHo3fLLtCVD-DBgXjDaz18Ln8QKOeteYYeNM6qsQsUt2_Y_NChw7l9_t8PvNgNtKjRr4B8AsshDfiPDGJx37EKqaZxLSxL7rh5XwF034TssfjHT9LWtsaRo-J9Ae0-tiIz1heZKhYaZ2plB7_Sw66gHX-QPrHoPS7LkFhquDO7aeVz04q6SbH1aP9OqMCAcE3ab4Lto0TAFl-5QenLmEUA7taafdzdtdDw4xgVXhv71tsfo"/>
+                        <img alt="Kids in school" class="rounded-xl shadow-md w-full h-64 object-cover"
+                             data-alt="Children in classroom laughing"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuD78woWZsAExOsoHFLpXHj3wWhdSkAdawUEwx7N9WFU6TaaE7wocTfsbl7hfl9fmK_UwiKsW4iXpD5q0iZ6OEQg3nRcq3FiVJVPOda_mXgdgRH-k3vzxiiBgLzcBiXf7Kwml8SdL4-l6IT5vdsx8lGR7m5x3g48c7ODl8G5vMIVEJRWDWiRgCr9Hgn49kCqoejMSzYZirTSZOMfBEaycNwaJBXb-MwrgZTDHVtng63py7MV4tElSeJXO3OPHp894uYqnDxQmduFi00"/>
+                    </div>
+                    <h4 class="text-xl font-bold">Kế hoạch triển khai:</h4>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Tháng 3-4/2024: Giai đoạn gây quỹ và hoàn thiện thủ tục cấp phép.</li>
+                        <li>Tháng 5/2024: Khởi công xây dựng phần móng và tường.</li>
+                        <li>Tháng 6/2024: Hoàn thiện nội thất, trang thiết bị và khánh thành.</li>
+                    </ul>
+                </div>
+            </article>
+        </div>
+        <!-- Sidebar with Donation Form -->
+        <aside class="lg:col-span-1 space-y-8">
+            <div class="sticky top-24 space-y-6">
+                <!-- Donation Form Card -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl border border-primary/20">
+                    <form id="donationForm" class="space-y-5">
+                        <input type="hidden" name="activityId" th:value="${activity.id}"/>
+
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-slate-800 dark:text-white">Ủng hộ ngay</h4>
+                        </div>
+
+                        <!-- INDIVIDUAL OR ORGANIZATION -->
+                        <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+                            <!-- INDIVIDUAL -->
+                            <div class="flex-1">
+                                <input checked="" class="hidden" id="donor_personal" name="donor_type" type="radio"
+                                       value="INDIVIDUAL"/>
+                                <label class="block w-full text-center py-2 px-3 text-sm font-medium rounded-md cursor-pointer bg-white transition-all shadow-sm"
+                                       for="donor_personal">Cá nhân</label>
+                            </div>
+                            <!-- ORGANIZATION -->
+                            <div class="flex-1">
+                                <input class="hidden" id="donor_org" name="donor_type" type="radio"
+                                       value="ORGANIZATION"/>
+                                <label class="block w-full text-center py-2 px-3 text-sm font-medium rounded-md cursor-pointer transition-all border border-transparent"
+                                       for="donor_org">Tổ chức</label>
+                            </div>
+                        </div>
+
+                        <!-- AMOUNT -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-medium text-slate-500 uppercase">Số tiền ủng hộ</label>
+                            <div class="relative">
+                                <input name="amount" id="donationAmount"
+                                       class="block w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-lg font-bold text-primary shadow-sm transition-all"
+                                       placeholder="Nhập số tiền..." type="number" required/>
+                                <span class="absolute inset-y-0 right-4 flex items-center text-slate-500 font-bold">VND</span>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="needReceipt" name="needReceipt" class="rounded text-primary">
+                                <label for="needReceipt" class="text-sm text-slate-600">Tôi muốn nhận biên lai xác nhận
+                                    qua
+                                    Email</label>
+                            </div>
+
+                            <div id="receipt-fields" class="hidden space-y-3 p-4 bg-slate-50 rounded-lg">
+                                <input type="text" name="receiptName" placeholder="Tên trên biên lai"
+                                       class="p-2 w-full text-sm">
+                                <input type="email" name="receiptEmail" id="receiptEmail"
+                                       placeholder="Email nhận biên lai"
+                                       class="p-2 w-full text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Phương thức thanh toán</label>
+                                <select name="paymentMethod"
+                                        class="w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-primary/10 p-3 font-semibold focus:ring-primary focus:border-primary">
+                                    <option value="BANK_TRANSFER_ONLINE">Chuyển khoản ngân hàng (QR)</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="space-y-4 pt-2">
+                            <!-- INDIVIDUAL INPUT -->
+                            <div id="individual-section" class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Họ
+                                        và tên
+                                        *</label>
+                                    <input type="text" name="fullName"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="Nguyễn Văn A" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên
+                                        hiển
+                                        thị trên Website *</label>
+                                    <input type="text" name="displayName"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="Anh A / Ẩn danh">
+                                </div>
+                            </div>
+                            <!-- ORGANIZATION INPUT -->
+                            <div id="organization-section" class="hidden space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên
+                                        tổ
+                                        chức *</label>
+                                    <input type="text" name="name"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="Công ty TNHH Hy Vọng">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Mã
+                                        số
+                                        thuế *</label>
+                                    <input type="text" name="taxCode"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="0101234567">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Người
+                                        đại
+                                        diện *</label>
+                                    <input type="text" name="representative"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="Ông Nguyễn Văn B">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Địa
+                                        chỉ
+                                        xuất hóa đơn</label>
+                                    <input type="text" name="billingAddress"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="Số 1, Đường ABC, TP. HCM">
+                                </div>
+                            </div>
+                            <!-- COMMON INPUT -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Số
+                                        điện
+                                        thoại *</label>
+                                    <input type="tel" name="phone"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="0912..." required>
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email
+                                        *</label>
+                                    <input id="email" type="email" name="email"
+                                           class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                           placeholder="email@gmail.com" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Lời
+                                    nhắn</label>
+                                <textarea name="note" rows="2"
+                                          class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                          placeholder="Lời chúc gửi đến các em..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Bạn
+                                    biết đến
+                                    chúng tôi từ đâu?</label>
+                                <select name="referralSource"
+                                        class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary">
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Website">Website</option>
+                                    <option value="Friends">Bạn bè giới thiệu</option>
+                                    <option value="Other">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="submitDonation"
+                                class="w-full py-3.5 px-4 mt-2 rounded-lg bg-primary hover:bg-blue-700 text-white font-bold shadow-lg flex items-center justify-center gap-2">
+                            <span class="material-icons">volunteer_activism</span>
+                            Quyên góp ngay
+                        </button>
+                    </form>
+                </div>
+                <!-- Trust Badge -->
+                <div class="bg-primary/5 rounded-2xl p-4 border border-primary/10 flex items-center gap-4">
+                    <div class="bg-primary/20 p-2 rounded-full">
+                        <span class="material-symbols-outlined text-primary">verified_user</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800 dark:text-white leading-none mb-1">Minh bạch 100%</p>
+                        <p class="text-xs text-slate-500">Mọi đóng góp đều được sao kê công khai trên ứng dụng.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script>
+        document.querySelectorAll('input[name="donor_type"]').forEach((radio) => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                const labels = document.querySelectorAll('label[for^="donor_"]');
+
+                // 1. Cập nhật UI cho Tab (Code cũ của bạn đã tối ưu)
+                labels.forEach((label) => {
+                    if (label.getAttribute('for') === e.target.id) {
+                        label.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'border-slate-200');
+                        console.log(e.target.id)
+                        console.log(val)
+                        console.log(label.getAttribute('for'))
+                    } else {
+                        label.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'border-slate-200');
+                    }
+                });
+
+                // 2. Ẩn/Hiện các Section form
+                const individualSection = document.getElementById('individual-section');
+                const organizationSection = document.getElementById('organization-section');
+
+                if (val === 'INDIVIDUAL') {
+                    individualSection.classList.remove('hidden');
+                    organizationSection.classList.add('hidden');
+                    // Bật/Tắt thuộc tính required để không lỗi submit
+                    toggleRequired(individualSection, true);
+                    toggleRequired(organizationSection, false);
+                } else {
+                    individualSection.classList.add('hidden');
+                    organizationSection.classList.remove('hidden');
+                    toggleRequired(individualSection, false);
+                    toggleRequired(organizationSection, true);
+                }
+            });
+        });
+
+        // Hàm hỗ trợ bật/tắt required cho các input trong section đang ẩn/hiện
+        function toggleRequired(section, isRequired) {
+            const inputs = section.querySelectorAll('input[required], input[data-required]');
+            inputs.forEach(input => {
+                if (isRequired) {
+                    if (input.dataset.required === "true") input.required = true;
+                } else {
+                    if (input.required) {
+                        input.dataset.required = "true"; // Đánh dấu để biết nó vốn là trường bắt buộc
+                        input.required = false;
+                    }
+                }
+            });
+        }
+    </script>
+
+    <script type="module" th:src="@{/js/modules/donation-form.js}"></script>
+
+</th:block>
+</body>
+</html>
