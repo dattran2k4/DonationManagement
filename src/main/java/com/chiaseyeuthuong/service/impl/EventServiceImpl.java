@@ -49,7 +49,7 @@ public class EventServiceImpl implements EventService {
 
     private final DonorService donorService;
 
-    private static final String UPLOAD_DIR = "uploads/thumbnails/";
+    public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
     @Override
     public PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, String... categoryIds) {

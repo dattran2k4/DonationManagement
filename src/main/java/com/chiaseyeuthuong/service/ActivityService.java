@@ -6,6 +6,7 @@ import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Activity;
 import com.chiaseyeuthuong.model.Donation;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,4 +25,6 @@ public interface ActivityService {
     ActivityResponse getActivityBySlug(String slug);
 
     void updateCurrentAmount(Activity activity, BigDecimal amount);
+
+    String saveThumbnailUrl(Long id, MultipartFile file);
 }

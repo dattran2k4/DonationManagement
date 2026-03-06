@@ -20,10 +20,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import static com.chiaseyeuthuong.service.impl.EventServiceImpl.UPLOAD_DIR;
 
 @Service
 @RequiredArgsConstructor
@@ -105,6 +115,38 @@ public class ActivityServiceImpl implements ActivityService {
         activityRepository.save(activity);
 
         log.info("Updated current amount={} for activityId={} ", newCurrentAmount, activity.getId());
+    }
+
+    @Override
+    public String saveThumbnailUrl(Long id, MultipartFile file) {
+        try {
+            Activity activity = null;
+            if (id != null) {
+                activity = getActivity(id);
+            }
+            File directory = new File(UPLOAD_DIR);
+            if (!directory.exists()) directory.mkdirs();
+
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = "/uploads/thumbnails/" + fileName;
+
+            if (activity != null) {
+                activity.setThumbnailUrl(fileUrl);
+                activityRepository.save(activity);
+                log.info("Saved thumbnail url event {} ", activity.getId());
+            } else {
+                log.info("Saved thumbnail url without activity reference");
+            }
+
+            return fileUrl;
+        } catch (IOException e) {
+            log.error("Cannot save thumbnail caused: {}", e.getMessage(), e);
+            throw new RuntimeException("Cannot save thumbnail url caused ", e);
+        }
     }
 
     private ActivityResponse toResponse(Activity activity) {

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,6 +54,15 @@ public class ApiActivityController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Successfully saved activity")
+                .build();
+    }
+
+    @PostMapping({"/upload", "/{id}/upload"})
+    public ApiResponse uploadThumbnail(@PathVariable(required = false) Long id, @RequestParam("file") MultipartFile file) {
+        return ApiResponse.builder()
+                .status(201)
+                .message("Successfully updated thumbnail event")
+                .data(activityService.saveThumbnailUrl(id, file))
                 .build();
     }
 }
