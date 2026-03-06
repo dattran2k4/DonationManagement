@@ -51,7 +51,7 @@ CREATE TABLE `events` (
 
 CREATE TABLE `roles` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
-                         `name` enum('ADMIN','L1','L2') DEFAULT NULL,
+                         `name` enum('ADMIN','STAFF','ACCOUNTING', 'DONOR') DEFAULT NULL,
                          PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -142,7 +142,7 @@ CREATE TABLE `organizations` (
                                  `tax_code` varchar(255) DEFAULT NULL,
                                  PRIMARY KEY (`id`),
                                  UNIQUE KEY `uk_organization_tax_code` (`tax_code`),
-                                 CONSTRAINT `fk_organization_donor` FOREIGN KEY (`donor_id`) REFERENCES `donors` (`id`)
+                                 CONSTRAINT `fk_organization_donor` FOREIGN KEY (`id`) REFERENCES `donors` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -211,7 +211,7 @@ CREATE TABLE `donation_transactions` (
                                          `transaction_date_time` varchar(255) DEFAULT NULL,
                                          PRIMARY KEY (`id`),
                                          UNIQUE KEY `uk_donation_transactions_donation` (`donation_id`),
-                                         CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`),
+                                         CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 1) roles (4 dòng)
@@ -305,7 +305,7 @@ INSERT INTO activities (
        'Gom đủ chi phí phẫu thuật theo dự toán bệnh viện.',
        'Đợt 1 tập trung chi phí phẫu thuật và vật tư y tế.',
        'Cập nhật: dự toán, biên lai, tiến độ đóng góp.',
-       'https://scontent.fsgn2-9.fna.fbcdn.net/v/t39.30808-6/525614301_3104592399701643_1755731153049501312_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=W5J_J3yAPgYQ7kNvwHpTs49&_nc_oc=AdkOQFSmxZxj1KWn9A60aNXWO95IyM07IFm-i-luXCkO_xOJ5Le1KRkUTou-OhyDiK8&_nc_zt=23&_nc_ht=scontent.fsgn2-9.fna&_nc_gid=lHuQuSEr0Mx69YPX8li0tQ&_nc_ss=8&oh=00_Afs6egiHb86LzJkjCzIrReEFIJfPG20cDoXBNbFIHa0vkQ&oe=69A9D36B',
+       'https://example.com/media/activities/ac2.jpg',
        140000000.00, 98500000.00, '2026-01-15', '2026-02-27', NULL,
        '2026-01-10 10:00:00.000000', '2026-02-22 09:30:00.000000'),
 
@@ -453,4 +453,4 @@ INSERT INTO attachments (id, object_id, file_url, file_name, entity_type, file_t
                                                                                          (2, 3,  'https://example.com/uploads/2026/02/anh-trao-qua-quang-nam-01.jpg', 'anh-trao-qua-quang-nam-01.jpg', 'ACTIVITY', 'IMAGE'),
                                                                                          (3, 1,  'https://example.com/uploads/2026/02/ck-gms-20260210-0001.png',     'ck-gms-20260210-0001.png',     'DONATION', 'IMAGE'),
                                                                                          (4, 2,  'https://example.com/uploads/2026/02/bao-cao-tet-am-2026.docx',     'bao-cao-tet-am-2026.docx',     'EVENT', 'DOCUMENT'),
-                                                                                         (5, 999,'https://example.com/uploads/2026/02/bai-viet-gioi-thieu.mp4',      'bai-viet-gioi-thieu.mp4',      'POST', 'VIDEO');
+                                                                                         (5, 999,'https://example.com/uploads/2026/02/bai-viet-gioi-thieu.mp4',      'bai-viet-gioi-thieu.mp4',      'EVENT', 'VIDEO');
