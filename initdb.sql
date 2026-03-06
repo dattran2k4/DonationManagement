@@ -8,7 +8,7 @@ CREATE TABLE `attachments` (
                                `entity_type` enum('ACTIVITY','DONATION','EVENT','POST') NOT NULL,
                                `file_type` enum('DOCUMENT','IMAGE','PDF','VIDEO') DEFAULT NULL,
                                PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- donation.categories definition
 
@@ -18,7 +18,7 @@ CREATE TABLE `categories` (
                               `slug` varchar(255) NOT NULL,
                               PRIMARY KEY (`id`),
                               UNIQUE KEY `uk_categories_slug` (`slug`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.events definition
@@ -44,7 +44,7 @@ CREATE TABLE `events` (
                           PRIMARY KEY (`id`),
                           UNIQUE KEY `uk_events_slug` (`slug`),
                           CONSTRAINT `fk_event_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.roles definition
@@ -53,7 +53,7 @@ CREATE TABLE `roles` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
                          `name` enum('ADMIN','L1','L2') DEFAULT NULL,
                          PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.system_configs definition
@@ -65,7 +65,7 @@ CREATE TABLE `system_configs` (
                                   `description` varchar(255) DEFAULT NULL,
                                   PRIMARY KEY (`id`),
                                   UNIQUE KEY `uk_system_configs_key` (`config_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.users definition
@@ -83,7 +83,7 @@ CREATE TABLE `users` (
                          UNIQUE KEY `uk_users_email` (`email`),
                          UNIQUE KEY `uk_users_phone` (`phone`),
                          UNIQUE KEY `uk_users_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.activities definition
@@ -108,7 +108,7 @@ CREATE TABLE `activities` (
                               PRIMARY KEY (`id`),
                               UNIQUE KEY `uk_activities_slug` (`slug`),
                               CONSTRAINT `fk_activity_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.donors definition
@@ -129,7 +129,7 @@ CREATE TABLE `donors` (
                           UNIQUE KEY `uk_donors_email` (`email`),
                           UNIQUE KEY `uk_donors_phone` (`phone`),
                           CONSTRAINT `fk_donor_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.organizations definition
@@ -143,7 +143,7 @@ CREATE TABLE `organizations` (
                                  PRIMARY KEY (`id`),
                                  UNIQUE KEY `uk_organization_tax_code` (`tax_code`),
                                  CONSTRAINT `fk_organization_donor` FOREIGN KEY (`donor_id`) REFERENCES `donors` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.user_roles definition
@@ -155,7 +155,7 @@ CREATE TABLE `user_roles` (
                               KEY `FKhfh9dx7w3ubf1co1vdev94g3f` (`user_id`),
                               CONSTRAINT `FKh8ciramu9cc9q3qcqiv4ue8a6` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
                               CONSTRAINT `FKhfh9dx7w3ubf1co1vdev94g3f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.donations definition
@@ -190,7 +190,7 @@ CREATE TABLE donations (
                            CONSTRAINT fk_donation_activity FOREIGN KEY (activity_id) REFERENCES activities (id),
                            CONSTRAINT fk_donation_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id),
                            CONSTRAINT fk_donation_confirmed_by FOREIGN KEY (confirmed_by_user_id) REFERENCES users (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- donation.donation_transactions definition
@@ -212,7 +212,7 @@ CREATE TABLE `donation_transactions` (
                                          PRIMARY KEY (`id`),
                                          UNIQUE KEY `uk_donation_transactions_donation` (`donation_id`),
                                          CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`),
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 1) roles (4 dòng)
 INSERT INTO roles (id, name) VALUES
