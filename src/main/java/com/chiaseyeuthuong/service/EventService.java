@@ -5,6 +5,7 @@ import com.chiaseyeuthuong.dto.request.EventRequest;
 import com.chiaseyeuthuong.dto.response.EventResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Event;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -25,4 +26,6 @@ public interface EventService {
     long getEventCount(EEventStatus status);
 
     void updateEventCurrentAmount(Event event, BigDecimal amount);
+
+    String saveThumbnailUrl(Long id, MultipartFile file);
 }

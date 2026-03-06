@@ -17,5 +17,18 @@ export const eventApi = {
     // Ví dụ các API khác (bạn có thể mở rộng sau)
     deleteEvent: async (id) => {
         return await apiClient.delete(`${BASE_URL}/${id}`);
+    },
+
+    uploadThumbnail: async (file, id = null) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const url = id ? `${BASE_URL}/${id}/upload` : `${BASE_URL}/upload`
+
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+        return response.json();
     }
 };

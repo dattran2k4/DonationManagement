@@ -5,6 +5,9 @@ app:
   token:
     expiry-minutes: 10
 
+upload:
+  path: uploads/thumbnails/
+
 spring:
   application:
     name: DonationManagement
@@ -33,6 +36,11 @@ spring:
   devtools:
     livereload:
       enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 #PayOS
 payos:

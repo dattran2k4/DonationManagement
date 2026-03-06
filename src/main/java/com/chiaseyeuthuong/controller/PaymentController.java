@@ -28,6 +28,6 @@ public class PaymentController {
 
     @GetMapping("/thanh-toan/that-bai")
     public String showHomePage() {
-        return "pages/web/index";
+        return "redirect:pages/web/index";
     }
 }

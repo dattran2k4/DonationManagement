@@ -6,7 +6,34 @@
 >
 <head>
     <title>Event Form</title>
+    <style>
+        .ck-editor {
+            height: 100% !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck-editor__main {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .ck-content.ck-editor__editable {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important; /* Quan trọng để flex-grow hoạt động */
+            border: 1px solid #cbd5e1 !important; /* Màu slate-300 */
+        }
+
+        .ck.ck-editor__top .ck-sticky-panel .ck-toolbar {
+            border-bottom: 1px solid #cbd5e1 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+    </style>
 </head>
+
 <body>
 <div layout:fragment="content" class="flex-grow container mx-auto px-4 py-8 max-w-[1200px]">
     <!-- Header Section -->
@@ -52,7 +79,7 @@
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                             Tên sự kiện <span class="text-red-500">*</span>
                         </label>
-                        <input class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm"
+                        <input class="p-2 w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm"
                                placeholder="Ví dụ: Gây quỹ xây trường học vùng cao"
                                id="eventName"
                                th:value="${event?.name}"
@@ -101,46 +128,8 @@
                     <span class="material-symbols-outlined text-primary-dark dark:text-primary">article</span>
                     Nội dung chi tiết
                 </h3>
-                <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden flex flex-col bg-white dark:bg-slate-800">
-                    <!-- Toolbar Simulation -->
-                    <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-2 flex flex-wrap gap-1">
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">format_bold</span>
-                        </button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">format_italic</span>
-                        </button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">format_underlined</span>
-                        </button>
-                        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1 self-center"></div>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
-                        </button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">format_list_numbered</span>
-                        </button>
-                        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1 self-center"></div>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">link</span>
-                        </button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            <span class="material-symbols-outlined text-[20px]">image</span>
-                        </button>
-                    </div>
-                    <!-- Content Area -->
-                    <div class="p-4 flex-1 overflow-y-auto text-slate-800 dark:text-slate-200 prose prose-sm max-w-none">
-                        <p>Hãy cùng chung tay giúp đỡ các em nhỏ vùng cao có một ngôi trường mới khang trang hơn. Mỗi
-                            đóng góp của bạn đều vô cùng quý giá.</p>
-                        <br/>
-                        <p><strong>Mục tiêu của dự án:</strong></p>
-                        <ul>
-                            <li>Xây dựng 5 phòng học mới.</li>
-                            <li>Cung cấp bàn ghế và trang thiết bị học tập.</li>
-                            <li>Xây dựng khu vệ sinh sạch sẽ.</li>
-                        </ul>
-                        <p th:utext="${event?.content ?: ''}"></p>
-                    </div>
+                <div id="editor" th:utext="${event.content}"
+                     class="h-full w-full flex-1 border border-slate-200 dark:border-slate-700 rounded-lg overflow-y-auto overflow-x-scroll flex flex-col bg-white dark:bg-slate-800">
                 </div>
             </section>
         </div>
@@ -175,14 +164,12 @@
                      class="w-full aspect-video rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-all group overflow-hidden relative">
 
                     <div id="thumbnailPreview"
-                         th:classappend="${event?.thumbnailUrl != null} ? '' : 'hidden'"
-                         class="absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40"
-                         th:style="${event?.thumbnailUrl != null} ? 'background-image: url(' + ${event.thumbnailUrl} + ')' : ''">
+                         th:style="${event?.thumbnailUrl != null} ? 'background-image: url(' + ${event.thumbnailUrl} + ')' : ''"
+                         th:class="${event?.thumbnailUrl != null} ? 'absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40' : 'absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40 hidden'">
                     </div>
 
                     <div id="uploadInstruction"
-                         th:classappend="${event?.thumbnailUrl != null} ? 'opacity-0 group-hover:opacity-100' : ''"
-                         class="z-10 flex flex-col items-center text-center p-4 transition-opacity">
+                         th:class="${event?.thumbnailUrl != null} ? 'z-10 flex flex-col items-center text-center p-4 transition-opacity opacity-0 group-hover:opacity-100' : 'z-10 flex flex-col items-center text-center p-4 transition-opacity'">
                         <span class="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary mb-2">add_photo_alternate</span>
                         <span class="text-sm font-medium text-slate-600 dark:text-slate-300">Tải ảnh lên</span>
                         <span class="text-xs text-slate-400 mt-1">PNG, JPG, GIF tối đa 5MB</span>
@@ -272,54 +259,98 @@
 </div>
 <th:block layout:fragment="scripts">
     <script type="module">
-        import {eventApi} from "/js/api/eventApi.js";
 
-        function previewThumbnail(input) {
+        import {eventApi} from "/js/apis/eventApi.js";
+
+        let currentThumbnailUrl = document.getElementById('thumbnailPreview').style.backgroundImage
+            .slice(5, -2).replace(/["']/g, "") || "";
+
+        console.log(currentThumbnailUrl);
+
+
+        window.previewThumbnail = async function (input) {
             const preview = document.getElementById('thumbnailPreview');
             const instruction = document.getElementById('uploadInstruction');
+            const eventId = document.getElementById('eventId')?.value;
 
             if (input.files && input.files[0]) {
-                const reader = new FileReader();
+                const file = input.files[0];
 
-                reader.onload = function (e) {
-                    // Thiết lập ảnh preview từ file vừa chọn
-                    preview.style.backgroundImage = `url('${e.target.result}')`;
-
-                    // Hiển thị div preview và điều chỉnh độ mờ chỉ dẫn
-                    preview.classList.remove('hidden');
-                    instruction.classList.add('opacity-0');
-                    // Giữ lại class group-hover để hiện text khi di chuột vào
-                    instruction.classList.add('group-hover:opacity-100');
+                // Kiểm tra dung lượng
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+                    return;
                 }
 
-                reader.readAsDataURL(input.files[0]);
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    preview.style.backgroundImage = `url('${e.target.result}')`;
+                    preview.classList.remove('hidden');
+                    if (instruction) {
+                        instruction.classList.add('opacity-0');
+                        instruction.classList.add('group-hover:opacity-100');
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                try {
+                    const response = await eventApi.uploadThumbnail(file, eventId || null);
+
+                    if (response.status === 201 || response.status === 200) {
+                        currentThumbnailUrl = response.data;
+                        console.log("Ảnh đã lưu tại Server:", currentThumbnailUrl);
+                    } else {
+                        alert("Server báo lỗi: " + response.message);
+                    }
+                } catch (error) {
+                    console.error("Lỗi upload ảnh:", error);
+                    alert("Không thể kết nối máy chủ để upload ảnh!");
+                }
             }
         }
 
         document.getElementById("saveBtn")
             .addEventListener("click", handleSaveEvent);
 
+        let myEditor;
+
+        // 1. Khởi tạo CKEditor
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'link', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'insertTable', 'imageUpload', 'mediaEmbed', '|',
+                    'undo', 'redo'
+                ],
+                placeholder: 'Hãy viết câu chuyện truyền cảm hứng cho chiến dịch của bạn...'
+            })
+            .then(editor => {
+                myEditor = editor; // Gán instance vào biến global của module
+            })
+            .catch(error => console.error(error));
+
         async function handleSaveEvent() {
-            // 1. Thu thập dữ liệu từ các trường input
+
+            const editorData = myEditor ? myEditor.getData() : "";
+
             const eventData = {
-                // Nếu là update thì event.id sẽ có giá trị, nếu create thì là null
                 id: document.getElementById('eventId')?.value || null,
                 name: document.getElementById('eventName').value,
                 status: document.getElementById('eventStatus').value,
                 categoryId: document.getElementById('eventCategory').value,
                 shortDescription: document.getElementById('eventShortDescription').value,
-                // Lấy nội dung từ div contenteditable (Rich Text)
-                content: document.querySelector('.prose').innerHTML,
+                content: editorData,
                 startDate: document.getElementById('eventStartDate').value,
                 endDate: document.getElementById('eventEndDate').value,
                 targetAmount: parseFloat(document.getElementById('eventTargetAmount').value) || 0,
                 currentAmount: parseFloat(document.getElementById('eventCurrentAmount').value) || 0,
-                thumbnailUrl: document.getElementById('thumbnailPreview').style.backgroundImage.slice(5, -2) // Lấy URL từ style
+                thumbnailUrl: currentThumbnailUrl
             };
 
             console.log("Payload:", eventData);
-            console.log("Value lấy được:", document.getElementById('eventCategory').value);
-            console.log("Element lấy được:", document.getElementById('eventCategory'));
 
             // 2. Kiểm tra dữ liệu sơ bộ (Validation)
             if (!eventData.name) {
@@ -334,7 +365,7 @@
                 if (response.status === 200) {
                     alert("Lưu thành công!");
                     // Chuyển hướng về danh sách hoặc load lại trang
-                    window.location.href = '/admin/events';
+                    // window.location.href = '/admin/events';
                 } else {
                     alert("Có lỗi xảy ra: " + response.message);
                 }
