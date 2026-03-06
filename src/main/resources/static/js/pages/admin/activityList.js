@@ -135,4 +135,4 @@ document.addEventListener('DOMContentLoaded', loadActivities);
 
 // Các hàm toàn cục
 window.viewActivityDetail = (id) => window.location.href = `/admin/activities/${id}`;
-window.editActivity = (id) => window.location.href = `/admin/activities/edit/${id}`;
+window.editActivity = (id) => window.location.href = `/admin/activities/${id}/form`;

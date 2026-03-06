@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -118,6 +119,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String saveThumbnailUrl(Long id, MultipartFile file) {
         try {
             Activity activity = null;
@@ -137,7 +139,8 @@ public class ActivityServiceImpl implements ActivityService {
             if (activity != null) {
                 activity.setThumbnailUrl(fileUrl);
                 activityRepository.save(activity);
-                log.info("Saved thumbnail url event {} ", activity.getId());
+                log.info("Saved thumbnail url activity {} ", activity.getId());
+                log.info("Saved thumbnail url {} ", activity.getThumbnailUrl());
             } else {
                 log.info("Saved thumbnail url without activity reference");
             }
