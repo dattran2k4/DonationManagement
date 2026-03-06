@@ -32,7 +32,8 @@
                     About the Event
                 </h2>
 
-                <div class="text-slate-600 dark:text-slate-300 leading-relaxed mb-6" th:utext="${event.content}">
+                <div class="text-slate-600 dark:text-slate-300 leading-relaxed mb-6 ck-content prose"
+                     th:utext="${event.content}">
                     Nội dung chi tiết sự kiện sẽ hiển thị ở đây...
                 </div>
             </div>
@@ -345,6 +346,35 @@
                 }
             });
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Tìm tất cả thẻ oembed có chứa thuộc tính url
+            document.querySelectorAll('figure.media oembed').forEach(element => {
+                const url = element.getAttribute('url');
+
+                if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                    // Trích xuất ID video từ URL
+                    let videoId = "";
+                    if (url.includes('v=')) {
+                        videoId = url.split('v=')[1].split('&')[0];
+                    } else {
+                        videoId = url.split('/').pop();
+                    }
+
+                    // Tạo mã iframe chuẩn của YouTube
+                    const iframe = document.createElement('iframe');
+                    iframe.setAttribute('src', `https://www.youtube.com/embed/${videoId}`);
+                    iframe.setAttribute('width', '100%');
+                    iframe.setAttribute('style', 'aspect-ratio: 16/9;'); // Giữ tỉ lệ chuẩn
+                    iframe.setAttribute('frameborder', '0');
+                    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                    iframe.setAttribute('allowfullscreen', 'true');
+
+                    // Thay thế thẻ oembed bằng iframe
+                    element.parentElement.replaceChild(iframe, element);
+                }
+            });
+        });
     </script>
 
     <script type="module" th:src="@{/js/modules/donation-form.js}"></script>

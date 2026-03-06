@@ -60,7 +60,7 @@ public class Event {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "thumbnail_url")
+    @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
     @Column(name = "status")

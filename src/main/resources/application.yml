@@ -13,7 +13,7 @@ spring:
     name: DonationManagement
   datasource:
     url:
-      ${MYSQL_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/donation?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+      ${MYSQL_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/donation?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci}
     username: ${DATABASE_USERNAME:root}
     password: ${DATABASE_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
