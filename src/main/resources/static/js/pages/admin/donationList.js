@@ -157,19 +157,15 @@ window.handleAction = async (id, action) => {
     const statusEnum = isConfirm ? 'CONFIRMED' : 'REJECTED';
     const confirmColor = isConfirm ? '#10b981' : '#ef4444'; // Xanh emerald hoặc Đỏ rose
 
-    // 1. Xác nhận với người dùng
     const message = `Bạn có chắc chắn muốn ${statusText} khoản quyên góp này không?`;
     if (!confirm(message)) return;
 
     try {
-        // 2. Gọi API
         const response = await donationApi.changeStatus(id, statusEnum);
 
         if (response.status === 200) {
-            // 3. Thông báo thành công (Có thể dùng Toast nếu có)
             alert(response.message || 'Cập nhật thành công!');
 
-            // 4. Load lại danh sách tại trang hiện tại để cập nhật UI
             loadDonations();
         }
     } catch (error) {

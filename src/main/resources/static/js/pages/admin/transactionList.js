@@ -85,7 +85,6 @@ const loadTransactions = async () => {
 
         elements.tableBody.innerHTML = transactions.map(txn => renderTransactionRow(txn)).join('');
 
-        // Phân trang
         renderPagination(pageData, elements.paginationContainer, (newPage) => {
             state.page = newPage;
             loadTransactions();

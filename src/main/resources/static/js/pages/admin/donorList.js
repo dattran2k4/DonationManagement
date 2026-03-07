@@ -132,7 +132,7 @@ const loadDonors = async () => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
-    loadDonors(); // Hoặc loadDonors() tùy vào logic trang của bạn
+    loadDonors();
 });
 
 // Gắn các hàm hành động vào window để HTML onclick gọi được
