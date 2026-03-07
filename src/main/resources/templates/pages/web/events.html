@@ -11,15 +11,13 @@
 <div layout:fragment="content">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div class="mb-10">
-            <h1
-                    class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4"
-            >
-                Explore Our Events
+            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
+                Khám phá các sự kiện
             </h1>
             <p class="text-lg text-slate-600 dark:text-slate-400 max-w-3xl">
-                Join us in our upcoming fundraising activities and see the impact of
-                our completed campaigns. Every event is a step towards a better
-                future.
+                Tham gia các sự kiện gây quỹ của chúng tôi và cùng tạo nên những
+                thay đổi tích cực cho cộng đồng. Mỗi sự kiện là một cơ hội để
+                lan tỏa hy vọng và giúp đỡ nhiều người hơn.
             </p>
         </div>
         <div class="flex flex-col lg:flex-row gap-8">
@@ -29,7 +27,7 @@
                     <div class="mb-6">
                         <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center">
                             <span class="material-icons text-primary mr-2">filter_list</span>
-                            Filters
+                            Bộ lọc
                         </h3>
 
                         <div class="relative mb-6">
@@ -41,7 +39,8 @@
                         </div>
                         <!-- Status Filter -->
                         <div class="space-y-1">
-                            <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">Status</label>
+                            <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">Trạng
+                                thái</label>
                             <div id="status-group" class="flex flex-col space-y-2">
                                 <label class="inline-flex items-center cursor-pointer group"
                                        th:each="status : ${statuses}">
@@ -55,7 +54,8 @@
                     </div>
 
                     <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
-                        <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 block">Categories</label>
+                        <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 block">Danh
+                            mục</label>
                         <div id="category-group" class="space-y-2">
                             <label th:each="category : ${categories}"
                                    class="flex items-center space-x-2 cursor-pointer">
@@ -71,7 +71,7 @@
 
                         <button onclick="resetFilters()"
                                 class="mt-6 w-full py-2 text-xs font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">
-                            Clear All Filters
+                            Xoá lọc
                         </button>
                     </div>
                 </div>
