@@ -1,6 +1,6 @@
-import {donorApi} from "../apis/donorApi.js";
 import {donationApi} from "../apis/donationApi.js";
 import {paymentApi} from "../apis/paymentApi.js";
+import {createDonor} from "./donor-submit.js";
 
 const form = document.getElementById('donationForm');
 const btnSubmit = document.getElementById('submitDonation');
@@ -39,66 +39,48 @@ const DonationFormHandler = {
         if (!this.validate(donorType, rawData)) return;
 
         try {
-            let donorRes;
-            if (donorType === 'INDIVIDUAL') {
-                donorRes = await donorApi.saveIndividual(rawData);
-            } else {
-                donorRes = await donorApi.saveOrganization(rawData);
-            }
+            const donorId = await createDonor(donorType, rawData);
 
-            if (donorRes.status === 200) {
-                const isNeedReceipt = receiptCheckbox?.checked === true;
+            const isNeedReceipt = receiptCheckbox?.checked === true;
 
-                const parseLongOrNull = (value) => {
-                    if (value === undefined || value === null || value === '') return null;
-                    const parsed = Number(value);
-                    return Number.isNaN(parsed) ? null : parsed;
-                };
+            const parseLongOrNull = (value) => {
+                if (value === undefined || value === null || value === '') return null;
+                const parsed = Number(value);
+                return Number.isNaN(parsed) ? null : parsed;
+            };
 
-                const donationRequest = {
-                    amount: Number(rawData.amount),
-                    message: rawData.note || null,
-                    needReceipt: isNeedReceipt,
-                    receiptName: isNeedReceipt ? (rawData.receiptName || null) : null,
-                    receiptEmail: isNeedReceipt ? (rawData.receiptEmail || rawData.email || null) : null,
-                    paymentMethod: rawData.paymentMethod,
-                    eventId: parseLongOrNull(rawData.eventId),
-                    activityId: parseLongOrNull(rawData.activityId),
-                    donorId: donorRes.data
-                };
+            const donationRequest = {
+                amount: Number(rawData.amount),
+                message: rawData.note || null,
+                needReceipt: isNeedReceipt,
+                receiptName: isNeedReceipt ? (rawData.receiptName || null) : null,
+                receiptEmail: isNeedReceipt ? (rawData.receiptEmail || rawData.email || null) : null,
+                paymentMethod: rawData.paymentMethod,
+                eventId: parseLongOrNull(rawData.eventId),
+                activityId: parseLongOrNull(rawData.activityId),
+                donorId: donorId
+            };
 
-                const donationRes = await donationApi.createWebDonation(donationRequest);
+            const donationRes = await donationApi.createWebDonation(donationRequest);
 
-                if (donationRes.status === 200) {
-                    const memoCode = donationRes.data;
+            if (donationRes.status === 200) {
+                const memoCode = donationRes.data;
 
-                    const paymentRes = await paymentApi.createPaymentUrl(memoCode);
+                const paymentRes = await paymentApi.createPaymentUrl(memoCode);
 
-                    if (paymentRes.status === 201) {
-                        const paymentUrl = paymentRes.data;
-                        window.location.href = paymentUrl;
-                    }
+                if (paymentRes.status === 201) {
+                    const paymentUrl = paymentRes.data;
+                    window.location.href = paymentUrl;
                 }
             }
         } catch (error) {
             console.error("Lỗi quy trình:", error.message);
+            alert(error.message || "Có lỗi xảy ra khi xử lý quyên góp");
         }
     },
 
     validate(type, data) {
-        const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
-
         if (!parseFloat(data.amount) || parseFloat(data.amount) > 10000000) return alert("Số tiền không được để trống và tối đa 10tr");
-
-        if (type === 'INDIVIDUAL') {
-            if (!data.fullName) return alert("Họ tên không được để trống");
-            if (!phoneRegex.test(data.phone)) return alert("Số điện thoại không hợp lệ");
-        } else {
-            if (!data.name) return alert("Tên tổ chức không được để trống");
-            if (!data.taxCode) return alert("Mã số thuế không được để trống");
-            if (!data.email) return alert("Email tổ chức không được để trống");
-        }
-
         return true;
     }
 };

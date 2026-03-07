@@ -1,4 +1,4 @@
-import {donorApi} from "../apis/donorApi.js";
+import {createDonor} from "./donor-submit.js";
 
 const form = document.getElementById("donorForm");
 const headerSaveBtn = document.getElementById("saveDonorHeaderBtn");
@@ -40,46 +40,6 @@ function updateTabUI(selectedValue) {
     }
 }
 
-function validate(rawData, donorType) {
-    const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
-
-    if (!rawData.phone || !phoneRegex.test(rawData.phone)) {
-        alert("Số điện thoại không hợp lệ");
-        return false;
-    }
-
-    if (!rawData.email) {
-        alert("Email không được để trống");
-        return false;
-    }
-
-    if (donorType === "INDIVIDUAL") {
-        if (!rawData.fullName) {
-            alert("Họ và tên không được để trống");
-            return false;
-        }
-        if (!rawData.displayName) {
-            alert("Tên hiển thị không được để trống");
-            return false;
-        }
-    } else {
-        if (!rawData.name) {
-            alert("Tên tổ chức không được để trống");
-            return false;
-        }
-        if (!rawData.taxCode) {
-            alert("Mã số thuế không được để trống");
-            return false;
-        }
-        if (!rawData.representative) {
-            alert("Người đại diện không được để trống");
-            return false;
-        }
-    }
-
-    return true;
-}
-
 async function handleSaveDonor() {
     if (!form) return;
 
@@ -87,17 +47,9 @@ async function handleSaveDonor() {
     const formData = new FormData(form);
     const rawData = Object.fromEntries(formData.entries());
 
-    if (!validate(rawData, donorType)) return;
-
     try {
-        let response;
-        if (donorType === "INDIVIDUAL") {
-            response = await donorApi.saveIndividual(rawData);
-        } else {
-            response = await donorApi.saveOrganization(rawData);
-        }
-
-        if (response?.status === 200) {
+        const donorId = await createDonor(donorType, rawData);
+        if (donorId) {
             alert("Lưu nhà hảo tâm thành công");
             window.location.href = "/admin/donors";
         }
