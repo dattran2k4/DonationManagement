@@ -209,8 +209,9 @@
                              class="w-full aspect-video rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-all group overflow-hidden relative">
 
                             <div id="thumbnailPreview"
-                                 th:style="${activity?.thumbnailUrl != null} ? 'background-image: url(' + ${activity.thumbnailUrl} + ')' : ''"
-                                 th:class="${activity?.thumbnailUrl != null} ? 'absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40' : 'absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40 hidden'">
+                                 th:if="${activity?.thumbnailUrl != null}"
+                                 th:style="|background-image:url('${activity.thumbnailUrl}')|"
+                                 class="absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40">
                             </div>
 
                             <div id="uploadInstruction"

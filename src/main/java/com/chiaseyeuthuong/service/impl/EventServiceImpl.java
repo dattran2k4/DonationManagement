@@ -154,7 +154,9 @@ public class EventServiceImpl implements EventService {
             File directory = new File(UPLOAD_DIR);
             if (!directory.exists()) directory.mkdirs();
 
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String safeName = file.getOriginalFilename().replace("\\s+", "_");
+
+            String fileName = UUID.randomUUID().toString() + "_" + safeName;
             Path filePath = Paths.get(UPLOAD_DIR + fileName);
 
             //Lưu file vật lý
