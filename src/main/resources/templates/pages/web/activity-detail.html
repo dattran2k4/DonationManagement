@@ -69,33 +69,36 @@
                         </div>
                     </div>
                 </div>
-                <!-- Progress Bar -->
-                <div class="relative w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
-                    <div class="absolute top-0 left-0 h-full bg-primary progress-bar-glow rounded-full transition-all duration-1000"
-                         th:with="percent=${(activity.currentAmount / activity.targetAmount) * 100}"
-                         th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">>
+                <div th:with="current=${activity.currentAmount != null ? activity.currentAmount : 0},
+                              target=${activity.targetAmount != null && activity.targetAmount != 0 ? activity.targetAmount : 1},
+                              percent=${current * 100 / target}">
+                    <!-- Progress Bar -->
+                    <div class="relative w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
+                        <div class="absolute top-0 left-0 h-full bg-primary progress-bar-glow rounded-full transition-all duration-1000"
+                             th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
+                        </div>
                     </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="space-y-1">
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Tiến độ</p>
-                        <p class="text-xl font-bold"
-                           th:with="percent=${(activity.currentAmount / activity.targetAmount) * 100}"
-                           th:text="${percent + '%'}">75%</p>
-                    </div>
-                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Nhà hảo tâm</p>
-                        <p class="text-xl font-bold">1,248</p>
-                    </div>
-                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày bắt đầu</p>
-                        <p class="text-xl font-bold" th:text="${#temporals.format(activity.startDate, 'dd/MM/yyyy')}">
-                            15/03/2024</p>
-                    </div>
-                    <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày kết thúc</p>
-                        <p class="text-xl font-bold" th:text="${#temporals.format(activity.endDate, 'dd/MM/yyyy')}">
-                            15/06/2024</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="space-y-1">
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Tiến độ</p>
+                            <p class="text-xl font-bold"
+                               th:text="${percent + '%'}">75%</p>
+                        </div>
+                        <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Nhà hảo tâm</p>
+                            <p class="text-xl font-bold">1,248</p>
+                        </div>
+                        <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày bắt đầu</p>
+                            <p class="text-xl font-bold"
+                               th:text="${#temporals.format(activity.startDate, 'dd/MM/yyyy')}">
+                                15/03/2024</p>
+                        </div>
+                        <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày kết thúc</p>
+                            <p class="text-xl font-bold" th:text="${#temporals.format(activity.endDate, 'dd/MM/yyyy')}">
+                                15/06/2024</p>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -123,20 +123,22 @@
                     </span>
                 </div>
 
-                <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-4 mb-2 overflow-hidden">
-                    <div class="bg-primary h-4 rounded-full transition-all duration-1000 ease-out relative"
-                         th:with="percent=${(event.currentAmount / event.targetAmount) * 100}"
-                         th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
-                        <div class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_infinite]"></div>
+                <div th:with="current=${event.currentAmount != null ? event.currentAmount : 0},
+                              target=${event.targetAmount != null && event.targetAmount != 0 ? event.targetAmount : 1},
+                              percent=${current * 100 / target}">
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-4 mb-2 overflow-hidden">
+                        <div class="bg-primary h-4 rounded-full transition-all duration-1000 ease-out relative"
+                             th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
+                            <div class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_infinite]"></div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex justify-between text-xs font-medium mt-2">
+                    <div class="flex justify-between text-xs font-medium mt-2">
                     <span class="text-primary"
-                          th:with="percent=${(event.currentAmount / event.targetAmount) * 100}"
                           th:text="${percent + '%'}">77% Raised</span>
-                    <span class="text-slate-500 dark:text-slate-400"
-                          th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 Donors</span>
+                        <span class="text-slate-500 dark:text-slate-400"
+                              th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 Donors</span>
+                    </div>
                 </div>
 
 
