@@ -13,6 +13,7 @@ import com.chiaseyeuthuong.repository.ActivityRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.DonorService;
+import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -87,6 +88,11 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setCurrentAmount(request.getCurrentAmount());
         activity.setTargetAmount(request.getTargetAmount());
         activity.setThumbnailUrl(request.getThumbnailUrl());
+        activity.setStatus(request.getStatus());
+
+        Slugify slugify = Slugify.builder().build();
+        String slug = slugify.slugify(request.getName());
+        activity.setSlug(slug);
 
         Activity result = activityRepository.save(activity);
 

@@ -29,7 +29,7 @@
                     <span class="px-3 py-1 bg-primary/20 text-primary text-xs font-bold uppercase rounded-full"
                           th:text="${activity.status.value}">Đang diễn ra</span>
                     <span class="flex items-center gap-1 text-slate-500 text-sm">
-                    <span class="material-symbols-outlined text-sm">location_on</span>
+                    <span class="material-symbols-outlined text-sm" th:text="${activity.location}">location_on</span>
                         Huyện Nậm Pồ, Tỉnh Điện Biên
                     </span>
                 </div>
@@ -55,7 +55,8 @@
                     <div class="space-y-1">
                         <p class="text-slate-500 text-sm font-medium">Số tiền đã quyên góp</p>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-black text-primary" th:text="${activity.currentAmount}">450.000.000</span>
+                            <span class="text-3xl font-black text-primary"
+                                  th:text="${#numbers.formatDecimal(activity.currentAmount, 0, 'COMMA', 0, 'POINT')}">450.000.000</span>
                             <span class="text-lg font-bold text-slate-400">VND</span>
                         </div>
                     </div>
@@ -63,7 +64,7 @@
                         <p class="text-slate-500 text-sm font-medium">Mục tiêu chiến dịch</p>
                         <div class="flex items-baseline gap-2">
                             <span class="text-2xl font-bold text-slate-800 dark:text-slate-200"
-                                  th:text="${activity.targetAmount}">600.000.000</span>
+                                  th:text="${#numbers.formatDecimal(activity.targetAmount, 0, 'COMMA', 0, 'POINT')}">600.000.000</span>
                             <span class="text-sm font-bold text-slate-400">VND</span>
                         </div>
                     </div>
@@ -88,44 +89,21 @@
                     </div>
                     <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
                         <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày bắt đầu</p>
-                        <p class="text-xl font-bold" th:text="${activity.startDate}">15/03/2024</p>
+                        <p class="text-xl font-bold" th:text="${#temporals.format(activity.startDate, 'dd/MM/yyyy')}">
+                            15/03/2024</p>
                     </div>
                     <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
                         <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày kết thúc</p>
-                        <p class="text-xl font-bold" th:text="${activity.endDate}">15/06/2024</p>
+                        <p class="text-xl font-bold" th:text="${#temporals.format(activity.endDate, 'dd/MM/yyyy')}">
+                            15/06/2024</p>
                     </div>
                 </div>
             </div>
             <!-- Detailed Content -->
             <article class="prose prose-slate dark:prose-invert max-w-none">
                 <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Về hoạt động này</h3>
-                <div class="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed" th:text="${activity.content}">
-                    <p>
-                        Điểm trường Nậm Pồ hiện đang là nơi học tập của 120 em học sinh mầm non và tiểu học. Tuy nhiên,
-                        cơ sở vật chất hiện tại đã xuống cấp trầm trọng với những mảng tường nứt nẻ, mái tôn dột nát mỗi
-                        khi mùa mưa về. Các em phải học tập trong điều kiện thiếu thốn cả về ánh sáng lẫn trang thiết bị
-                        giáo dục tối thiểu.
-                    </p>
-                    <p>
-                        Dự án "Xây trường cho em - Nậm Pồ" đặt mục tiêu xóa bỏ những phòng học tạm bợ, thay thế bằng các
-                        phòng học đạt chuẩn, xây dựng khu vệ sinh khép kín và trang bị đầy đủ bàn ghế, bảng viết mới.
-                        Chúng tôi tin rằng, một ngôi trường vững chãi không chỉ che nắng che mưa mà còn là nơi thắp sáng
-                        những ước mơ bay xa của các em nhỏ vùng cao.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
-                        <img alt="Construction progress" class="rounded-xl shadow-md w-full h-64 object-cover"
-                             data-alt="Construction site of a small building in mountains"
-                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHczkqOhgtIUeCVpMctqzETV4F3P0wVHo3fLLtCVD-DBgXjDaz18Ln8QKOeteYYeNM6qsQsUt2_Y_NChw7l9_t8PvNgNtKjRr4B8AsshDfiPDGJx37EKqaZxLSxL7rh5XwF034TssfjHT9LWtsaRo-J9Ae0-tiIz1heZKhYaZ2plB7_Sw66gHX-QPrHoPS7LkFhquDO7aeVz04q6SbH1aP9OqMCAcE3ab4Lto0TAFl-5QenLmEUA7taafdzdtdDw4xgVXhv71tsfo"/>
-                        <img alt="Kids in school" class="rounded-xl shadow-md w-full h-64 object-cover"
-                             data-alt="Children in classroom laughing"
-                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuD78woWZsAExOsoHFLpXHj3wWhdSkAdawUEwx7N9WFU6TaaE7wocTfsbl7hfl9fmK_UwiKsW4iXpD5q0iZ6OEQg3nRcq3FiVJVPOda_mXgdgRH-k3vzxiiBgLzcBiXf7Kwml8SdL4-l6IT5vdsx8lGR7m5x3g48c7ODl8G5vMIVEJRWDWiRgCr9Hgn49kCqoejMSzYZirTSZOMfBEaycNwaJBXb-MwrgZTDHVtng63py7MV4tElSeJXO3OPHp894uYqnDxQmduFi00"/>
-                    </div>
-                    <h4 class="text-xl font-bold">Kế hoạch triển khai:</h4>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li>Tháng 3-4/2024: Giai đoạn gây quỹ và hoàn thiện thủ tục cấp phép.</li>
-                        <li>Tháng 5/2024: Khởi công xây dựng phần móng và tường.</li>
-                        <li>Tháng 6/2024: Hoàn thiện nội thất, trang thiết bị và khánh thành.</li>
-                    </ul>
+                <div class="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed ck-content prose"
+                     th:utext="${activity.content}">
                 </div>
             </article>
         </div>
@@ -360,6 +338,31 @@
                 }
             });
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('figure.media oembed').forEach(element => {
+                const url = element.getAttribute('url');
+
+                if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                    let videoId = "";
+                    if (url.includes('v=')) {
+                        videoId = url.split('v=')[1].split('&')[0];
+                    } else {
+                        videoId = url.split('/').pop();
+                    }
+
+                    const iframe = document.createElement('iframe');
+                    iframe.setAttribute('src', `https://www.youtube.com/embed/${videoId}`);
+                    iframe.setAttribute('width', '100%');
+                    iframe.setAttribute('style', 'aspect-ratio: 16/9;');
+                    iframe.setAttribute('frameborder', '0');
+                    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                    iframe.setAttribute('allowfullscreen', 'true');
+
+                    element.parentElement.replaceChild(iframe, element);
+                }
+            });
+        });
     </script>
 
     <script type="module" th:src="@{/js/modules/donation-form.js}"></script>
