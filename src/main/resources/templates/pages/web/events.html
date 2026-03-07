@@ -10,6 +10,14 @@
 <body>
 <div layout:fragment="content">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
+            <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">home</span> Trang chủ
+            </a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="hover:text-primary text-primary font-medium">Sự kiện</span>
+        </nav>
+
         <div class="mb-10">
             <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
                 Khám phá các sự kiện

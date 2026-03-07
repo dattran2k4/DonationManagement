@@ -8,8 +8,19 @@
     <title th:text="${event.name}"></title>
 </head>
 <body>
-<div layout:fragment="content" class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12" th:if="${event != null}">
-    <div class="lg:col-span-2 space-y-12">
+<div layout:fragment="content" th:if="${event != null}">
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
+        <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">home</span> Trang chủ
+        </a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <a th:href="@{/events}" class="hover:text-primary">Sự kiện</a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-primary font-medium" th:text="${event.name}">Tên sự kiện</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div class="lg:col-span-2 space-y-12">
         <div class="lg:hidden bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
             <div class="flex items-center justify-between mb-4">
                 <div>
@@ -108,9 +119,9 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div>
 
-    <div class="lg:col-span-1 space-y-8">
+        <div class="lg:col-span-1 space-y-8">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-slate-100 dark:border-slate-700 sticky top-24">
             <div class="mb-6">
                 <div class="flex justify-between items-baseline mb-2">
@@ -294,6 +305,7 @@
                     Quyên góp ngay
                 </button>
             </form>
+        </div>
         </div>
     </div>
 </div>
