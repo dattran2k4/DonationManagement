@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -17,5 +18,15 @@ public class AdminDonorController {
     @GetMapping
     public String showDonorsPage(Model model) {
         return "pages/admin/donors";
+    }
+
+    @GetMapping("/form")
+    public String showCreateDonorPage(Model model) {
+        return "pages/admin/donor-form";
+    }
+
+    @GetMapping("/{id}/form")
+    public String showEditDonorPage(@PathVariable Long id, Model model) {
+        return "pages/admin/donor-form";
     }
 }

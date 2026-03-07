@@ -395,6 +395,9 @@
   .right-2 {
     right: calc(var(--spacing) * 2);
   }
+  .right-3 {
+    right: calc(var(--spacing) * 3);
+  }
   .right-4 {
     right: calc(var(--spacing) * 4);
   }
@@ -608,6 +611,10 @@
   .aspect-video {
     aspect-ratio: var(--aspect-video);
   }
+  .size-2 {
+    width: calc(var(--spacing) * 2);
+    height: calc(var(--spacing) * 2);
+  }
   .size-4 {
     width: calc(var(--spacing) * 4);
     height: calc(var(--spacing) * 4);
@@ -782,8 +789,17 @@
   .w-64 {
     width: calc(var(--spacing) * 64);
   }
+  .w-\[1px\] {
+    width: 1px;
+  }
   .w-\[240px\] {
     width: 240px;
+  }
+  .w-auto {
+    width: auto;
+  }
+  .w-fit {
+    width: fit-content;
   }
   .w-full {
     width: 100%;
@@ -929,6 +945,9 @@
   }
   .flex-col {
     flex-direction: column;
+  }
+  .flex-nowrap {
+    flex-wrap: nowrap;
   }
   .flex-wrap {
     flex-wrap: wrap;
@@ -1609,6 +1628,12 @@
   .px-8 {
     padding-inline: calc(var(--spacing) * 8);
   }
+  .px-9 {
+    padding-inline: calc(var(--spacing) * 9);
+  }
+  .px-10 {
+    padding-inline: calc(var(--spacing) * 10);
+  }
   .py-0 {
     padding-block: calc(var(--spacing) * 0);
   }
@@ -2048,6 +2073,12 @@
     --tw-shadow-color: #13ec5b;
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, var(--color-primary) var(--tw-shadow-alpha), transparent);
+    }
+  }
+  .shadow-primary\/10 {
+    --tw-shadow-color: color-mix(in srgb, #13ec5b 10%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 10%, transparent) var(--tw-shadow-alpha), transparent);
     }
   }
   .shadow-primary\/20 {
@@ -2587,6 +2618,14 @@
         @supports (color: color-mix(in lab, red, red)) {
           --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 20%, transparent) var(--tw-shadow-alpha), transparent);
         }
+      }
+    }
+  }
+  .hover\:brightness-105 {
+    &:hover {
+      @media (hover: hover) {
+        --tw-brightness: brightness(105%);
+        filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
       }
     }
   }
@@ -3701,6 +3740,15 @@
       &:hover {
         @media (hover: hover) {
           color: var(--color-slate-200);
+        }
+      }
+    }
+  }
+  .dark\:hover\:text-slate-300 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          color: var(--color-slate-300);
         }
       }
     }
