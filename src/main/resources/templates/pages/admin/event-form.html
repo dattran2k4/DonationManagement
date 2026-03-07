@@ -138,23 +138,17 @@
             <!-- Status Card -->
             <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                 <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Trạng thái</h3>
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm text-slate-500 dark:text-slate-400">Tình trạng hiện tại:</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                            Draft
-                    </span>
-                </div>
                 <select id="eventStatus"
-                        class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm mb-4">
+                        class="p-1 w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm mb-4">
                     <option th:each="status : ${statuses}"
                             th:value="${status}"
-                            th:text="${status.value}"
+                            th:text="${status?.value}"
                             th:selected="${status == event?.status}">
                     </option>
                 </select>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Chuyển sang "Đang diễn ra" để công khai sự kiện này trên trang chủ.
-                </p>
+                <!--                <p class="text-xs text-slate-500 dark:text-slate-400">-->
+                <!--                    Chuyển sang "Đang diễn ra" để công khai sự kiện này trên trang chủ.-->
+                <!--                </p>-->
             </div>
             <!-- Thumbnail Upload Card -->
             <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
@@ -191,7 +185,7 @@
                         <div class="relative">
                             <input id="eventStartDate"
                                    th:value="${event?.startDate}"
-                                   class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
+                                   class="p-1 w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
                                    type="date"/>
                         </div>
                     </div>
@@ -202,7 +196,7 @@
                         <div class="relative">
                             <input id="eventEndDate"
                                    th:value="${event?.endDate}"
-                                   class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
+                                   class="p-1 w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm text-sm"
                                    type="date"/>
                         </div>
                     </div>
@@ -220,7 +214,7 @@
                             <input th:value="${event?.targetAmount}"
                                    id="eventTargetAmount"
                                    class="block w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-3 pr-12 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-primary sm:text-sm font-semibold"
-                                   placeholder="0" type="text"/>
+                                   placeholder="0" type="number"/>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                 <span class="text-slate-500 sm:text-sm">VND</span>
                             </div>
@@ -234,7 +228,7 @@
                             <input th:value="${event?.currentAmount}"
                                    id="eventCurrentAmount"
                                    class="block w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 pl-3 pr-12 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-primary sm:text-sm"
-                                   placeholder="0" type="text" value="0"/>
+                                   placeholder="0" type="number"/>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                 <span class="text-slate-500 sm:text-sm">VND</span>
                             </div>

@@ -56,7 +56,7 @@ const renderActivityRow = (activity) => {
     return `
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
         <td class="px-6 py-4 whitespace-nowrap">
-            <a href="/admin/activities/${activity.id}" class="text-sm text-orange-600 font-medium text-text-main dark:text-white">${activity.name}</a>
+            <a href="/admin/activities/${activity.id}/form" class="text-sm text-orange-600 font-medium text-text-main dark:text-white">${activity.name}</a>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm text-text-main dark:text-gray-300">${activity.event?.name || 'Không thuộc sự kiện'}</div>
