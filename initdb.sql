@@ -264,7 +264,7 @@ INSERT INTO events (
        'Hỗ trợ chi phí phẫu thuật tim bẩm sinh cho bé An.',
        'Chiến dịch kêu gọi cộng đồng hỗ trợ chi phí phẫu thuật và hồi phục.',
        'Nội dung chi tiết: công khai tiến độ, chứng từ và cập nhật sức khỏe định kỳ.',
-       'https://example.com/media/events/ev1.jpg',
+       'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        200000000.00, 125500000.00, 2,
        '2026-01-15', '2026-03-31', NULL,
        '2026-01-10 09:00:00.000000', '2026-02-22 09:00:00.000000', 1),
@@ -273,7 +273,7 @@ INSERT INTO events (
        'Trao quà Tết cho các hộ khó khăn tại miền Trung.',
        'Chương trình tổng hợp quà thiết yếu và tiền mặt, trao trực tiếp theo danh sách xác minh.',
        'Nội dung chi tiết: báo cáo chi, hình ảnh trao quà, danh sách điểm phát.',
-       'https://example.com/media/events/ev2.jpg',
+       'https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        150000000.00, 158200000.00, 2,
        '2025-12-15', '2026-01-31', '2026-02-02 18:00:00.000000',
        '2025-12-10 08:30:00.000000', '2026-02-03 10:00:00.000000', 3),
@@ -282,7 +282,7 @@ INSERT INTO events (
        'Học bổng cho học sinh có hoàn cảnh khó khăn.',
        'Mở đợt tiếp nhận hồ sơ và xét duyệt theo tiêu chí minh bạch.',
        'Nội dung chi tiết: tiêu chí, quy trình xét duyệt, lịch trao học bổng.',
-       'https://example.com/media/events/ev3.jpg',
+       'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?q=80&w=927&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        300000000.00, 0.00, 1,
        '2026-03-01', '2026-06-30', NULL,
        '2026-02-15 09:00:00.000000', '2026-02-22 09:10:00.000000', 4),
@@ -291,7 +291,7 @@ INSERT INTO events (
        'Gây quỹ mua sách và dụng cụ học tập cho học sinh vùng cao.',
        'Mua sách theo danh mục được nhà trường đề xuất và trao tặng theo đợt.',
        'Nội dung chi tiết: danh mục sách, biên nhận mua hàng, lịch trao tặng.',
-       'https://example.com/media/events/ev4.jpg',
+       'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        80000000.00, 24300000.00, 1,
        '2026-02-01', '2026-04-30', NULL,
        '2026-01-25 10:00:00.000000', '2026-02-22 09:20:00.000000', 2);
@@ -305,7 +305,7 @@ INSERT INTO activities (
        'Gom đủ chi phí phẫu thuật theo dự toán bệnh viện.',
        'Đợt 1 tập trung chi phí phẫu thuật và vật tư y tế.',
        'Cập nhật: dự toán, biên lai, tiến độ đóng góp.',
-       'https://example.com/media/activities/ac2.jpg',
+       'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        140000000.00, 98500000.00, '2026-01-15', '2026-02-27', NULL,
        '2026-01-10 10:00:00.000000', '2026-02-22 09:30:00.000000'),
 
@@ -313,7 +313,7 @@ INSERT INTO activities (
        'Hỗ trợ chi phí thuốc và tái khám sau mổ.',
        'Đợt 2 dự kiến mở sau khi bé hoàn thành phẫu thuật.',
        'Cập nhật: kế hoạch chi phí, lịch tái khám.',
-       'https://example.com/media/activities/ac2.jpg',
+       'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        60000000.00, 0.00, '2026-03-01', '2026-03-31', NULL,
        '2026-02-10 09:00:00.000000', '2026-02-22 09:31:00.000000'),
 
@@ -321,7 +321,7 @@ INSERT INTO activities (
        'Trao quà Tết tại 2 xã thuộc Quảng Nam.',
        'Đã trao quà theo danh sách xác minh của địa phương.',
        'Cập nhật: hình ảnh trao quà, danh sách nhận quà.',
-       'https://example.com/media/activities/ac3.jpg',
+       'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        70000000.00, 72000000.00, '2026-01-10', '2026-01-20', '2026-01-20 17:30:00.000000',
        '2026-01-05 09:00:00.000000', '2026-01-22 10:00:00.000000'),
 
@@ -329,7 +329,7 @@ INSERT INTO activities (
        'Hỗ trợ sửa chữa nhà ở bị hư hại.',
        'Hoàn tất khảo sát và hỗ trợ vật liệu + nhân công.',
        'Cập nhật: biên nhận vật tư, hình ảnh trước/sau.',
-       'https://example.com/media/activities/ac4.jpg',
+       'https://plus.unsplash.com/premium_photo-1663040178972-ee1d45d33899?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        80000000.00, 86200000.00, '2025-12-20', '2026-01-31', '2026-02-01 12:00:00.000000',
        '2025-12-18 08:00:00.000000', '2026-02-02 09:00:00.000000'),
 
@@ -337,7 +337,7 @@ INSERT INTO activities (
        'Mua sách theo danh mục nhà trường đề xuất.',
        'Mua và đóng gói sách theo lớp để trao trong tháng 3.',
        'Cập nhật: danh mục sách, hóa đơn, tiến độ đóng góp.',
-       'https://example.com/media/activities/ac5.jpg',
+       'https://images.unsplash.com/photo-1593113616828-6f22bca04804?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
        50000000.00, 24300000.00, '2026-02-05', '2026-03-10', NULL,
        '2026-02-01 09:00:00.000000', '2026-02-22 09:40:00.000000');
 
