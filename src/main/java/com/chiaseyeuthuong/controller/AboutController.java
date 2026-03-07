@@ -16,6 +16,6 @@ public class AboutController {
 
     @GetMapping
     public String showAboutPage(Model model) {
-        return "pages/web/about";
+        return "pages/web/about-us";
     }
 }
