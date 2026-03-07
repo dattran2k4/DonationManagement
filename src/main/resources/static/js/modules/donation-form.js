@@ -7,18 +7,20 @@ const btnSubmit = document.getElementById('submitDonation');
 const receiptCheckbox = document.getElementById('needReceipt');
 const receiptFields = document.getElementById('receipt-fields');
 
-receiptCheckbox.addEventListener('change', (e) => {
-    receiptFields.classList.toggle('hidden', !e.target.checked);
+if (receiptCheckbox && receiptFields) {
+    receiptCheckbox.addEventListener('change', (e) => {
+        receiptFields.classList.toggle('hidden', !e.target.checked);
 
-    // Nếu check vào mà mail donor đã có thì tự điền vào
-    if (e.target.checked) {
-        const donorEmail = document.getElementById('email').value;
-        const receiptEmailInput = document.getElementById('receiptEmail');
-        if (donorEmail && !receiptEmailInput.value) {
-            receiptEmailInput.value = donorEmail;
+        // Nếu check vào mà mail donor đã có thì tự điền vào
+        if (e.target.checked) {
+            const donorEmail = document.getElementById('email')?.value;
+            const receiptEmailInput = document.getElementById('receiptEmail');
+            if (donorEmail && receiptEmailInput && !receiptEmailInput.value) {
+                receiptEmailInput.value = donorEmail;
+            }
         }
-    }
-});
+    });
+}
 
 const DonationFormHandler = {
     init() {
@@ -31,13 +33,8 @@ const DonationFormHandler = {
 
         const donorType = document.querySelector('input[name="donor_type"]:checked').value;
 
-        console.log(donorType)
-
         const formData = new FormData(form);
         const rawData = Object.fromEntries(formData.entries());
-
-        console.log('Form data: ', formData)
-        console.log('Raw data: ', rawData)
 
         if (!this.validate(donorType, rawData)) return;
 
@@ -50,43 +47,40 @@ const DonationFormHandler = {
             }
 
             if (donorRes.status === 200) {
-                console.log("Donor saved id:! " + donorRes.data);
+                const isNeedReceipt = receiptCheckbox?.checked === true;
 
-                const donationRequest = {
-                    amount: rawData.amount,
-                    message: rawData.message,
-                    needReceipt: rawData.needReceipt,
-                    receiptName: rawData.receiptName,
-                    receiptEmail: rawData.receiptEmail,
-                    paymentMethod: rawData.paymentMethod,
-                    eventId: rawData.eventId,
-                    activityId: rawData.activityId,
-                    donorId: donorRes.data
+                const parseLongOrNull = (value) => {
+                    if (value === undefined || value === null || value === '') return null;
+                    const parsed = Number(value);
+                    return Number.isNaN(parsed) ? null : parsed;
                 };
 
-                console.log(donationRequest)
+                const donationRequest = {
+                    amount: Number(rawData.amount),
+                    message: rawData.note || null,
+                    needReceipt: isNeedReceipt,
+                    receiptName: isNeedReceipt ? (rawData.receiptName || null) : null,
+                    receiptEmail: isNeedReceipt ? (rawData.receiptEmail || rawData.email || null) : null,
+                    paymentMethod: rawData.paymentMethod,
+                    eventId: parseLongOrNull(rawData.eventId),
+                    activityId: parseLongOrNull(rawData.activityId),
+                    donorId: donorRes.data
+                };
 
                 const donationRes = await donationApi.createWebDonation(donationRequest);
 
                 if (donationRes.status === 200) {
-                    console.log(donationRes)
-
                     const memoCode = donationRes.data;
 
                     const paymentRes = await paymentApi.createPaymentUrl(memoCode);
 
                     if (paymentRes.status === 201) {
-                        console.log(paymentRes)
                         const paymentUrl = paymentRes.data;
-                        console.log(paymentUrl)
-
                         window.location.href = paymentUrl;
                     }
                 }
             }
         } catch (error) {
-            console.log(error)
-            console.log(error.message)
             console.error("Lỗi quy trình:", error.message);
         }
     },
