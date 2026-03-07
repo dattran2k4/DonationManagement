@@ -120,7 +120,7 @@ const loadDonors = async () => {
             page: pageData.number + 1,
             pageSize: pageData.size,
             totalPages: pageData.totalPages,
-            totalItems: pageData.totalElements
+            totalItems: pageData.totalItems
         }, elements.paginationContainer, (newPage) => {
             state.page = newPage;
             loadDonors();

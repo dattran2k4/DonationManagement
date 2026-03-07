@@ -28,7 +28,7 @@ public class ApiTransactionController {
                                           @RequestParam(required = false) ETransactionStatus status,
                                           @RequestParam(required = false) EPaymentMethod method) {
         return ApiResponse.builder()
-                .status(HttpStatus.FOUND.value())
+                .status(200)
                 .message("Transactions found!")
                 .data(transactionService.getTransactions(page, size, status))
                 .build();
