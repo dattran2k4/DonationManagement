@@ -1,10 +1,11 @@
 import {apiClient} from "./apiClient.js";
+import {buildQuery} from "../utils/queryUtils.js";
 
 const BASE_URL = '/api/donations';
 
 export const donationApi = {
     getDonations: async (params) => {
-        const queryString = new URLSearchParams(params).toString();
+        const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}/list?${queryString}`);
     },
     changeStatus: async (id, status) => {

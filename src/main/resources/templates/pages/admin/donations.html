@@ -89,26 +89,30 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="material-symbols-outlined text-slate-400">search</span>
                         </div>
-                        <input class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                        <input id="donationSearchInput"
+                               class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                                placeholder="Tìm theo mã đơn (ORD-...) hoặc tên nhà hảo tâm..." type="text"/>
                     </div>
                     <!-- Filters Group -->
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <select class="block w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
-                            <option disabled="" selected="" value="">Trạng thái</option>
-                            <option value="ALL">Tất cả</option>
+                        <select id="donationStatusFilter"
+                                class="block w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
+                            <option value="">Tất cả trạng thái</option>
                             <option value="PENDING_APPROVED">Chờ duyệt</option>
                             <option value="PENDING_PAYMENT">Chờ thanh toán</option>
                             <option value="CONFIRMED">Đã xác nhận</option>
                             <option value="REJECTED">Đã từ chối</option>
+                            <option value="FAILED">Thất bại</option>
                         </select>
-                        <select class="block w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
-                            <option disabled="" selected="" value="">Mục tiêu</option>
-                            <option value="ALL">Tất cả chiến dịch</option>
+                        <select id="donationTargetFilter"
+                                class="block w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
+                            <option value="">Tất cả mục tiêu</option>
                             <option value="EVENT">Sự kiện từ thiện</option>
                             <option value="ACTIVITY">Hoạt động thường niên</option>
+                            <option value="NONE">Không gắn mục tiêu</option>
                         </select>
-                        <button class="flex items-center justify-center px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-800"
+                        <button id="donationResetFilterBtn"
+                                class="flex items-center justify-center px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-800"
                                 title="Reset Filters">
                             <span class="material-symbols-outlined text-[20px]">restart_alt</span>
                         </button>

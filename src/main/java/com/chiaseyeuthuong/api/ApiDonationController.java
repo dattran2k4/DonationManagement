@@ -29,11 +29,11 @@ public class ApiDonationController {
                                        @RequestParam(required = false) EDonationStatus status,
                                        @RequestParam(required = false) EDonationTarget target,
                                        @RequestParam(required = false) EDonationType type,
-                                       @RequestParam(required = false, defaultValue = "0") int page,
+                                       @RequestParam(required = false, defaultValue = "1") int page,
                                        @RequestParam(required = false, defaultValue = "10") int size) {
         return ApiResponse.builder()
                 .status(200)
-                .message("Hi, how are you doing?")
+                .message("Lấy danh sách quyên góp thành công")
                 .data(donationService.getAllDonations(search, status, target, type, page, size))
                 .build();
     }

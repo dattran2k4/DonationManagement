@@ -149,7 +149,7 @@ public class DonationServiceImpl implements DonationService {
 
         List<DonationResponse> data = donationPage.stream().map(this::toResponse).toList();
         return PageResponse.<DonationResponse>builder()
-                .page(page)
+                .page(pageNumber + 1)
                 .pageSize(size)
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
