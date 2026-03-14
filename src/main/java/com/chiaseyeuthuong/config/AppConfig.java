@@ -1,6 +1,5 @@
 package com.chiaseyeuthuong.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +21,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class AppConfig {
 
-    public static final List<String> WHITE_LIST_URL = List.of("/about", "/contact", "/events/*", "/activities/*", "/");
+    public static final List<String> WHITE_LIST_URL = List.of("/about", "/contact", "/events/*", "/activities/*", "/", "/donations");
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,34 +29,33 @@ public class AppConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF cho REST API
                 .authorizeHttpRequests(auth -> auth
 
-                                .requestMatchers("/**").permitAll()
+                        // Public resources
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico", "/error").permitAll()
 
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                // 1. Nhóm Public cho Donor
-                                .requestMatchers(WHITE_LIST_URL.toArray(String[]::new)).permitAll()
+                        // Public pages
+                        .requestMatchers(WHITE_LIST_URL.toArray(String[]::new)).permitAll()
 
-                                // 2. Nhóm Swagger/API Docs
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Public API docs
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                                // 3. Nhóm Admin/Staff
-//                        .requestMatchers("/api/v1/admin/**").hasAnyRole("STAFF", "ADMIN")
-//                        .requestMatchers("/api/v1/approval/**").hasRole("ADMIN")
+                        // Spring Security default login page
+                        .requestMatchers("/login").permitAll()
 
-                                .anyRequest().authenticated()
+                        // Admin pages must be authenticated
+                        .requestMatchers("/admin/**").authenticated()
+
+                        // The rest is public
+                        .anyRequest().permitAll()
                 )
 
                 .formLogin(form -> form
-                        .loginProcessingUrl("/api/login") // Endpoint để gửi username/password lên
-                        .successHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)// Trả về 200 thay vì redirect
-                        )
-                        .failureHandler((request, response, exception) -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
+                        .defaultSuccessUrl("/admin/dashboard", true)
+                        .permitAll()
                 )
 
                 .logout(logout -> logout
-                        .logoutUrl("/api/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                        })
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
                 )
 
                 .sessionManagement(session -> session
