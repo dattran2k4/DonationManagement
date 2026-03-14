@@ -8,8 +8,7 @@
     <title>Admin Dashboard</title>
 </head>
 <body>
-<div layout:fragment="content" class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-4 md:p-8">
-    <div class="max-w-7xl mx-auto space-y-6">
+<div layout:fragment="content" class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-text-main dark:text-white tracking-tight">Quản lý Hoạt
@@ -25,43 +24,39 @@
         <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-color p-4 md:p-5">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <div class="md:col-span-5 lg:col-span-4">
-                    <label class="block text-xs font-medium text-text-secondary mb-1.5 uppercase tracking-wider">Tìm
-                        kiếm</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-gray-400 text-[20px]">search</span>
+                            <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
                         </div>
                         <input id="activitySearchInput"
-                               class="block w-full pl-10 pr-3 py-2.5 border border-border-color rounded-lg leading-5 bg-white dark:bg-gray-800 dark:border-gray-700 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow"
+                               class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-white dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow"
                                placeholder="Tìm theo tên hoạt động, địa điểm..." type="text"/>
                     </div>
                 </div>
                 <div class="md:col-span-3 lg:col-span-3">
-                    <label class="block text-xs font-medium text-text-secondary mb-1.5 uppercase tracking-wider">Trạng
-                        thái</label>
                     <div class="relative">
                         <select id="activityStatusFilter"
-                                class="block w-full pl-3 pr-10 py-2.5 border border-border-color rounded-lg leading-5 bg-white dark:bg-gray-800 dark:border-gray-700 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm appearance-none cursor-pointer">
+                                class="block w-full pl-3 pr-10 py-2.5 border border-slate-200 rounded-lg leading-5 bg-white dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm appearance-none cursor-pointer">
                             <option value="">Tất cả trạng thái</option>
                             <option value="UPCOMING">Sắp diễn ra</option>
                             <option value="ONGOING">Đang diễn ra</option>
                             <option value="COMPLETED">Hoàn thành</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <span class="material-symbols-outlined text-gray-400 text-[20px]">expand_more</span>
+                            <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
                         </div>
                     </div>
                 </div>
                 <div class="md:col-span-12 lg:col-span-2 flex items-end">
                     <button id="activityResetFilterBtn"
-                            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-border-color rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-text-secondary dark:text-gray-300 text-sm font-medium transition-colors">
+                            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
                         <span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
                         <span>Đặt lại</span>
                     </button>
                 </div>
             </div>
         </div>
-        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-color overflow-hidden flex flex-col">
+    <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-color overflow-hidden flex flex-col">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-border-color">
                     <thead class="bg-gray-50 dark:bg-gray-800/50">
@@ -98,7 +93,6 @@
             </div>
             <!-- Pagination -->
             <div id="paginationContainer"></div>
-        </div>
     </div>
 </div>
 <th:block layout:fragment="scripts">

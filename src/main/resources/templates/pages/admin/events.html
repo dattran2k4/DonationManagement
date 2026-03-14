@@ -8,7 +8,7 @@
     <title>Admin Dashboard</title>
 </head>
 <body>
-<div layout:fragment="content" class="max-w-7xl mx-auto space-y-6">
+<div layout:fragment="content" class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Quản lý Sự kiện</h2>
@@ -58,45 +58,45 @@
                         <span class="material-symbols-outlined text-slate-400">search</span>
                     </div>
                     <input id="searchFilter"
-                           class="block w-full pl-10 pr-3 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/20 transition-all text-sm"
+                           class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm"
                        placeholder="Tìm kiếm theo tên sự kiện, mã dự án..." type="text"/>
                 </div>
                 <div class="flex flex-wrap gap-3">
                 <div class="relative min-w-[160px]">
                     <select id="statusFilter" name="status"
-                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                            class="block w-full pl-3 pr-11 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 text-sm leading-5 focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
                         <option value="">Tất cả trạng thái</option>
                         <option th:each="status : ${statuses}"
                                 th:value="${status}"
                                 th:text="${status.value}">
                         </option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
-                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                    <div class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px] leading-none">expand_more</span>
                     </div>
                 </div>
                 <div class="relative min-w-[180px]">
                     <select id="categoryFilter" name="categoryId"
-                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                            class="block w-full pl-3 pr-11 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 text-sm leading-5 focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
                         <option value="">Tất cả danh mục</option>
                         <option th:each="category : ${categories}"
                                 th:value="${category.id}"
                                 th:text="${category.name}">
                         </option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
-                        <span class="material-symbols-outlined text-[20px]">category</span>
+                    <div class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px] leading-none">expand_more</span>
                     </div>
                 </div>
                 <div class="relative min-w-[160px]">
                     <select id="sortFilter"
-                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                            class="block w-full pl-3 pr-11 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 text-sm leading-5 focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
                         <option value="id:desc">Mới nhất</option>
                         <option value="id:asc">Cũ nhất</option>
                         <option value="currentAmount:desc">Gây quỹ cao nhất</option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
-                        <span class="material-symbols-outlined text-[20px]">sort</span>
+                    <div class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px] leading-none">expand_more</span>
                     </div>
                 </div>
                 <button class="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
