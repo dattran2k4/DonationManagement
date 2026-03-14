@@ -86,6 +86,7 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setName(request.getName());
         activity.setContent(request.getContent());
         activity.setShortDescription(request.getShortDescription());
+        activity.setLocation(request.getLocation());
         activity.setStartDate(request.getStartDate());
         activity.setEndDate(request.getEndDate());
         activity.setCurrentAmount(request.getCurrentAmount());
