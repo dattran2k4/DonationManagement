@@ -1,7 +1,6 @@
 package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EPaymentMethod;
-import com.chiaseyeuthuong.common.ETransactionStatus;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.dto.response.TransactionResponse;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
@@ -9,12 +8,14 @@ import com.chiaseyeuthuong.model.Donation;
 import com.chiaseyeuthuong.model.Transaction;
 import com.chiaseyeuthuong.repository.TransactionRepository;
 import com.chiaseyeuthuong.service.TransactionService;
+import com.chiaseyeuthuong.service.TransactionSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.payos.model.webhooks.WebhookData;
@@ -30,16 +31,17 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
 
     @Override
-    public PageResponse<TransactionResponse> getTransactions(int page, int size, ETransactionStatus status) {
+    public PageResponse<TransactionResponse> getTransactions(int page, int size, String search, EPaymentMethod method) {
         int pageNumber = (page > 0) ? page - 1 : 0;
         PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Page<Transaction> transactionPage = transactionRepository.findAll(pageRequest);
+        Specification<Transaction> specification = TransactionSpecification.filterTransaction(search, method);
+        Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageRequest);
 
         List<TransactionResponse> response = transactionPage.stream().map(this::toResponse).toList();
 
         return PageResponse.<TransactionResponse>builder()
-                .page(page)
+                .page(pageNumber + 1)
                 .pageSize(size)
                 .totalItems(transactionPage.getTotalElements())
                 .totalPages(transactionPage.getTotalPages())
@@ -50,6 +52,10 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionResponse toResponse(Transaction transaction) {
         TransactionResponse response = new TransactionResponse();
         BeanUtils.copyProperties(transaction, response);
+        if (transaction.getDonation() != null) {
+            response.setDonationId(transaction.getDonation().getId());
+            response.setDonationCode(transaction.getDonation().getMemoCode());
+        }
         return response;
     }
 

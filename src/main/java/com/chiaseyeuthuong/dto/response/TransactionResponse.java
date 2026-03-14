@@ -30,10 +30,6 @@ public class TransactionResponse {
 
     private EPaymentMethod paymentMethod;
 
-//    @Column(name = "status")
-//    @Enumerated(EnumType.STRING)
-//    private ETransactionStatus status;
-
     private String transactionDateTime;
 
     private String rawApiData; //webhook callback
@@ -41,4 +37,11 @@ public class TransactionResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private Long donationId;
+    private String donationCode;
+
+    public String getPaymentMethodValue() {
+        return paymentMethod != null ? paymentMethod.getValue() : null;
+    }
 }
