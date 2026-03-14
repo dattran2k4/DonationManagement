@@ -13,11 +13,14 @@ import com.chiaseyeuthuong.model.Organization;
 import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.repository.DonorRepository;
 import com.chiaseyeuthuong.service.DonorService;
+import com.chiaseyeuthuong.service.DonorSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,16 +87,20 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
-    public PageResponse<DonorResponse> getAllDonor() {
+    public PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type) {
 
-        PageRequest pageRequest = PageRequest.of(0, 10);
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Page<Donor> donorPage = donorRepository.findAll(pageRequest);
+        Specification<Donor> specification = DonorSpecification.filterDonor(search, type);
+
+        Page<Donor> donorPage = donorRepository.findAll(specification, pageRequest);
 
         List<DonorResponse> response = donorPage.stream().map(this::toResponse).toList();
 
         return PageResponse.<DonorResponse>builder()
-                .page(0)
+                .page(pageNumber + 1)
+                .pageSize(size)
                 .totalItems(donorPage.getTotalElements())
                 .totalPages(donorPage.getTotalPages())
                 .data(response)

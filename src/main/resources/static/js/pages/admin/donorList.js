@@ -5,7 +5,9 @@ const state = {page: 1, size: 10, search: '', type: ''};
 
 const elements = {
     tableBody: document.getElementById('donorTableBody'),
-    paginationContainer: document.getElementById('paginationContainer')
+    paginationContainer: document.getElementById('paginationContainer'),
+    searchInput: document.getElementById('donorSearchInput'),
+    typeFilter: document.getElementById('donorTypeFilter')
 };
 
 // 1. Hàm helper lấy chữ cái đầu của tên (Avatar cá nhân)
@@ -104,10 +106,9 @@ const renderDonorRow = (donor) => {
 // 5. Hàm Load dữ liệu
 const loadDonors = async () => {
     try {
-        const apiParams = {...state, page: state.page - 1};
-        const response = await donorApi.getAllDonors(apiParams);
+        const response = await donorApi.getAllDonors(state);
 
-        const pageData = response.data; // Giả sử BE trả về Page object trong field data
+        const pageData = response.data;
         const donors = pageData.data || [];
 
         if (donors.length === 0) {
@@ -116,12 +117,7 @@ const loadDonors = async () => {
             elements.tableBody.innerHTML = donors.map(d => renderDonorRow(d)).join('');
         }
 
-        renderPagination({
-            page: pageData.number + 1,
-            pageSize: pageData.size,
-            totalPages: pageData.totalPages,
-            totalItems: pageData.totalItems
-        }, elements.paginationContainer, (newPage) => {
+        renderPagination(pageData, elements.paginationContainer, (newPage) => {
             state.page = newPage;
             loadDonors();
         });
@@ -130,8 +126,36 @@ const loadDonors = async () => {
     }
 };
 
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const bindFilters = () => {
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', debounce((event) => {
+            state.search = event.target.value.trim();
+            state.page = 1;
+            loadDonors();
+        }));
+    }
+
+    if (elements.typeFilter) {
+        elements.typeFilter.addEventListener('change', (event) => {
+            state.type = event.target.value;
+            state.page = 1;
+            loadDonors();
+        });
+    }
+
+};
+
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
+    bindFilters();
     loadDonors();
 });
 

@@ -34,28 +34,18 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
                         </div>
-                        <input class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow"
-                               placeholder="Họ tên, Số điện thoại..." type="text" value=""/>
+                        <input id="donorSearchInput"
+                               class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow"
+                               placeholder="Họ tên, số điện thoại, email..." type="text" value=""/>
                     </div>
                     <!-- Filters -->
                     <div class="flex gap-3">
                         <div class="relative group">
-                            <select class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-w-[140px]">
-                                <option>Loại: Tất cả</option>
-                                <option>Cá nhân</option>
-                                <option>Tổ chức</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                                <span class="material-symbols-outlined text-sm">expand_more</span>
-                            </div>
-                        </div>
-                        <div class="relative group">
-                            <select class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-w-[180px]">
-                                <option>Nguồn: Tất cả</option>
-                                <option>Facebook</option>
-                                <option>Website</option>
-                                <option>Sự kiện</option>
-                                <option>Giới thiệu</option>
+                            <select id="donorTypeFilter"
+                                    class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2.5 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-w-[140px]">
+                                <option value="">Loại: Tất cả</option>
+                                <option value="INDIVIDUAL">Cá nhân</option>
+                                <option value="ORGANIZATION">Tổ chức</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
                                 <span class="material-symbols-outlined text-sm">expand_more</span>

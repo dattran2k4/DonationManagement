@@ -1,15 +1,15 @@
 package com.chiaseyeuthuong.repository;
 
 import com.chiaseyeuthuong.model.Donor;
-import jakarta.validation.constraints.Email;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface DonorRepository extends JpaRepository<Donor, Long> {
+public interface DonorRepository extends JpaRepository<Donor, Long>, JpaSpecificationExecutor<Donor> {
 
     Boolean existsByPhone(String phone);
 
