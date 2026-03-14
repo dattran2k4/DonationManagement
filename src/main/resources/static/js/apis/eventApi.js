@@ -1,12 +1,12 @@
 import {apiClient} from "./apiClient.js";
+import {buildQuery} from "../utils/queryUtils.js";
 
 const BASE_URL = '/api/events';
 
 export const eventApi = {
     // Lấy danh sách kèm filter và pagination
     getEvents: async (params) => {
-        // Chuyển object { page: 0, size: 10, search: 'abc' } thành query string
-        const queryString = new URLSearchParams(params).toString();
+        const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}?${queryString}`);
     },
 

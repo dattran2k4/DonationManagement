@@ -11,6 +11,10 @@ upload:
 spring:
   application:
     name: DonationManagement
+  security:
+    user:
+      name: admin
+      password: "{noop}123456"
   datasource:
     url:
       ${MYSQL_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/donation?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci}
@@ -49,4 +53,3 @@ payos:
   checksum-key: 5304c2338d683c8eb7d9734b2ccdecb52016e029d464946f11b8a653971eefc1
   return-url: ${app.base-url}/thanh-toan/thanh-cong
   cancel-url: ${app.base-url}/thanh-toan/that-bai
-

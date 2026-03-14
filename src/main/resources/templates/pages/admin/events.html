@@ -53,14 +53,15 @@
     <!--  Filter + Search  -->
     <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark space-y-4">
         <div class="flex flex-col lg:flex-row gap-4">
-            <div class="flex-1 relative group">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="material-symbols-outlined text-slate-400">search</span>
-                </div>
-                <input class="block w-full pl-10 pr-3 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/20 transition-all text-sm"
+                <div class="flex-1 relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-slate-400">search</span>
+                    </div>
+                    <input id="searchFilter"
+                           class="block w-full pl-10 pr-3 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/20 transition-all text-sm"
                        placeholder="Tìm kiếm theo tên sự kiện, mã dự án..." type="text"/>
-            </div>
-            <div class="flex flex-wrap gap-3">
+                </div>
+                <div class="flex flex-wrap gap-3">
                 <div class="relative min-w-[160px]">
                     <select id="statusFilter" name="status"
                             class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
@@ -74,11 +75,25 @@
                         <span class="material-symbols-outlined text-[20px]">expand_more</span>
                     </div>
                 </div>
+                <div class="relative min-w-[180px]">
+                    <select id="categoryFilter" name="categoryId"
+                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                        <option value="">Tất cả danh mục</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
+                                th:text="${category.name}">
+                        </option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                        <span class="material-symbols-outlined text-[20px]">category</span>
+                    </div>
+                </div>
                 <div class="relative min-w-[160px]">
-                    <select class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
-                        <option>Mới nhất</option>
-                        <option>Cũ nhất</option>
-                        <option>Gây quỹ cao nhất</option>
+                    <select id="sortFilter"
+                            class="block w-full pl-3 pr-10 py-2.5 border-none bg-slate-50 dark:bg-white/5 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+                        <option value="id:desc">Mới nhất</option>
+                        <option value="id:asc">Cũ nhất</option>
+                        <option value="currentAmount:desc">Gây quỹ cao nhất</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
                         <span class="material-symbols-outlined text-[20px]">sort</span>
