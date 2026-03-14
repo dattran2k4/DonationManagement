@@ -162,6 +162,11 @@ public class ActivityServiceImpl implements ActivityService {
         }
     }
 
+    @Override
+    public long getActivityCount() {
+        return activityRepository.count();
+    }
+
     private ActivityResponse toResponse(Activity activity) {
         ActivityResponse activityResponse = new ActivityResponse();
         BeanUtils.copyProperties(activity, activityResponse);

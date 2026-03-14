@@ -27,4 +27,6 @@ public interface ActivityService {
     void updateCurrentAmount(Activity activity, BigDecimal amount);
 
     String saveThumbnailUrl(Long id, MultipartFile file);
+
+    long getActivityCount();
 }

@@ -6,6 +6,9 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class EventSpecification {
 
     private EventSpecification() {
@@ -21,8 +24,13 @@ public class EventSpecification {
                 predicate = cb.and(predicate, cb.equal(root.get("status"), status));
             }
 
-            if (categoryIds != null) {
-                predicate = cb.and(predicate, root.get("category").get("id").in(categoryIds));
+            if (categoryIds != null && categoryIds.length > 0) {
+                List<String> validCategoryIds = Arrays.stream(categoryIds)
+                        .filter(StringUtils::hasLength)
+                        .toList();
+                if (!validCategoryIds.isEmpty()) {
+                    predicate = cb.and(predicate, root.get("category").get("id").in(validCategoryIds));
+                }
             }
 
             if (StringUtils.hasLength(search)) {
