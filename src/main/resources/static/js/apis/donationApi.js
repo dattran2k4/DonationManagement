@@ -15,4 +15,7 @@ export const donationApi = {
     createWebDonation: async (data) => {
         return await apiClient.post(`${BASE_URL}/donor-create`, data);
     },
+    createStaffDonation: async (data) => {
+        return await apiClient.post(`${BASE_URL}/staff-create`, data);
+    },
 };

@@ -18,4 +18,9 @@ public class AdminDonationController {
     public String showAdminDonationPage(Model model) {
         return "pages/admin/donations";
     }
+
+    @GetMapping("/form")
+    public String showAdminDonationFormPage(Model model) {
+        return "pages/admin/donation-form";
+    }
 }

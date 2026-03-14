@@ -64,22 +64,30 @@ public class TransactionServiceImpl implements TransactionService {
     public void createTransactionFromPayOS(WebhookData data, Donation donation) {
         log.info("Processing create transaction from PayOS");
 
-        if (transactionRepository.existsByTransactionCode(data.getReference())) {
-            log.info("Transaction with code {} already exists", data.getReference());
-            return;
-        }
 
         Transaction transaction = new Transaction();
 
-        transaction.setTransactionCode(data.getReference());
+        transaction.setAmount(donation.getAmount());
+
+        if (data != null) {
+
+            if (transactionRepository.existsByTransactionCode(data.getReference())) {
+                log.info("Transaction with code {} already exists", data.getReference());
+                return;
+            }
+
+            transaction.setTransactionCode(data.getReference());
+            transaction.setAccountBankId(data.getCounterAccountBankId());
+            transaction.setTransactionDateTime(data.getTransactionDateTime());
+            transaction.setAmount(BigDecimal.valueOf(data.getAmount()));
+            transaction.setDescription(data.getDescription());
+            transaction.setCounterAccountName(data.getCounterAccountName());
+            transaction.setCounterAccountNumber(data.getCounterAccountNumber());
+            transaction.setRawApiData(data.toString());
+        }
+
         transaction.setPaymentMethod(EPaymentMethod.BANK_TRANSFER_ONLINE);
-        transaction.setAccountBankId(data.getCounterAccountBankId());
-        transaction.setTransactionDateTime(data.getTransactionDateTime());
-        transaction.setAmount(BigDecimal.valueOf(data.getAmount()));
-        transaction.setDescription(data.getDescription());
-        transaction.setCounterAccountName(data.getCounterAccountName());
-        transaction.setCounterAccountNumber(data.getCounterAccountNumber());
-        transaction.setRawApiData(data.toString());
+
         transaction.setDonation(donation);
 
         Transaction result = transactionRepository.save(transaction);
