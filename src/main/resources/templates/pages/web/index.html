@@ -20,7 +20,7 @@
                     alt="Volunteers smiling together"
                     class="h-full w-full object-cover opacity-90 dark:opacity-60"
                     data-alt="Group of diverse volunteers smiling together outdoors"
-                    src="https://scontent.fdad1-1.fna.fbcdn.net/v/t39.30808-6/621779722_3290008547826693_5413700251492346147_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=WTbVdjBR5l4Q7kNvwHawjP9&_nc_oc=Adn0fUZZEf1JrNbWhH-3qFp4e9MhbyLpiGvLvNC426421Aa3agTLbL99ImAU7ob7v8Kwpk-2h5wKrWjxlmeiRDtZ&_nc_zt=23&_nc_ht=scontent.fdad1-1.fna&_nc_gid=aoSewykwudscGY0Pr39-yA&_nc_ss=8&oh=00_Afwydh8bda3VGS7KnaDcRg4QdV3zgNew2JIbaupxcJXG_Q&oe=69BBAE69"
+                    th:src="${systemConfig['HOME_BANNER_URL'] != null and !#strings.isEmpty(systemConfig['HOME_BANNER_URL'])} ? ${systemConfig['HOME_BANNER_URL']} : 'https://scontent.fdad1-1.fna.fbcdn.net/v/t39.30808-6/621779722_3290008547826693_5413700251492346147_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=WTbVdjBR5l4Q7kNvwHawjP9&_nc_oc=Adn0fUZZEf1JrNbWhH-3qFp4e9MhbyLpiGvLvNC426421Aa3agTLbL99ImAU7ob7v8Kwpk-2h5wKrWjxlmeiRDtZ&_nc_zt=23&_nc_ht=scontent.fdad1-1.fna&_nc_gid=aoSewykwudscGY0Pr39-yA&_nc_ss=8&oh=00_Afwydh8bda3VGS7KnaDcRg4QdV3zgNew2JIbaupxcJXG_Q&oe=69BBAE69'"
             />
             <div
                     class="absolute inset-0 bg-gradient-to-r from-background-light dark:from-background-dark via-transparent to-transparent md:via-background-light/20"
@@ -34,34 +34,39 @@
                         class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-6"
                 >
                     <span class="w-2 h-2 rounded-full bg-primary mr-2"></span>
-                    Tổ chức phi lợi nhuận
+                    <span th:text="${systemConfig['HOME_HERO_BADGE'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_BADGE']) ? systemConfig['HOME_HERO_BADGE'] : 'Tổ chức phi lợi nhuận'}">Tổ chức phi lợi nhuận</span>
                 </div>
                 <h1
                         class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight"
                 >
-                    Cùng nhau, chúng ta <br/>
+                    <span th:text="${systemConfig['HOME_HERO_TITLE'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_TITLE']) ? systemConfig['HOME_HERO_TITLE'] : 'Cùng nhau, chúng ta'}">Cùng nhau, chúng ta</span> <br/>
                     <span
                             class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400"
+                            th:text="${systemConfig['HOME_HERO_TITLE_HIGHLIGHT'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_TITLE_HIGHLIGHT']) ? systemConfig['HOME_HERO_TITLE_HIGHLIGHT'] : 'tạo nên hy vọng'}"
                     >tạo nên hy vọng</span>
                 </h1>
 
                 <p
                         class="mt-4 text-xl text-slate-600 dark:text-slate-300 max-w-lg mb-10 leading-relaxed"
                 >
-                    Hãy tham gia cộng đồng những người mong muốn tạo ra sự thay đổi,
-                    cùng chung tay cải thiện cuộc sống trên khắp thế giới thông qua
-                    giáo dục, chăm sóc sức khỏe và phát triển bền vững.
+                    <span th:text="${systemConfig['HOME_HERO_DESCRIPTION'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_DESCRIPTION']) ? systemConfig['HOME_HERO_DESCRIPTION'] : 'Hãy tham gia cộng đồng những người mong muốn tạo ra sự thay đổi, cùng chung tay cải thiện cuộc sống trên khắp thế giới thông qua giáo dục, chăm sóc sức khỏe và phát triển bền vững.'}">
+                        Hãy tham gia cộng đồng những người mong muốn tạo ra sự thay đổi,
+                        cùng chung tay cải thiện cuộc sống trên khắp thế giới thông qua
+                        giáo dục, chăm sóc sức khỏe và phát triển bền vững.
+                    </span>
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <a
                             th:href="@{/donations}"
                             class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 transition-colors"
+                            th:text="${systemConfig['HOME_HERO_PRIMARY_CTA'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_PRIMARY_CTA']) ? systemConfig['HOME_HERO_PRIMARY_CTA'] : 'Quyên góp'}"
                     >
                         Quyên góp
                     </a>
                     <a
                             th:href="@{/events}"
                             class="inline-flex items-center justify-center px-8 py-3.5 border-2 border-slate-200 dark:border-slate-700 text-base font-semibold rounded-lg text-slate-700 dark:text-white bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            th:text="${systemConfig['HOME_HERO_SECONDARY_CTA'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_SECONDARY_CTA']) ? systemConfig['HOME_HERO_SECONDARY_CTA'] : 'Tổng hợp các sự kiện'}"
                     >
                         Tổng hợp các sự kiện
                     </a>

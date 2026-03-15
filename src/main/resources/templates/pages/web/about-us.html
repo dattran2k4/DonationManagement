@@ -5,7 +5,7 @@
         layout:decorate="~{layouts/web/main-layout}"
 >
 <head>
-    <title>Về chúng tooi</title>
+    <title>Về chúng tôi</title>
 </head>
 <body>
 <div layout:fragment="content" class="flex flex-1 flex-col">
@@ -14,12 +14,14 @@
         <div class="max-w-[1200px] mx-auto">
             <div class="relative flex flex-col justify-end overflow-hidden rounded-xl min-h-[450px] bg-cover bg-center"
                  data-alt="Children smiling together in a community setting"
-                 style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 50%), url("https://scontent.fdad2-1.fna.fbcdn.net/v/t39.30808-6/531543710_3117474291746787_5442302395585835797_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=5a4EB3FI_WYQ7kNvwE9VVPc&_nc_oc=Adm9P5PNzq0NHulFyja6XkvXt_xsM5TMEcjeKUzWFIwVt7HcL4oSO6k1R9r0LgaUN1A&_nc_zt=23&_nc_ht=scontent.fdad2-1.fna&_nc_gid=60O8h7AxqKA_jsJk8k14kA&_nc_ss=8&oh=00_AfylfcMyD_I_adEEq9TFP8B-QZwjQ_XmhZjklsZZjA59Cw&oe=69B1C30D");'>
+                 th:style="'background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 50%), url(&quot;' + (${systemConfig['ABOUT_BANNER_URL'] != null and !#strings.isEmpty(systemConfig['ABOUT_BANNER_URL']) ? systemConfig['ABOUT_BANNER_URL'] : 'https://scontent.fdad2-1.fna.fbcdn.net/v/t39.30808-6/531543710_3117474291746787_5442302395585835797_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=5a4EB3FI_WYQ7kNvwE9VVPc&_nc_oc=Adm9P5PNzq0NHulFyja6XkvXt_xsM5TMEcjeKUzWFIwVt7HcL4oSO6k1R9r0LgaUN1A&_nc_zt=23&_nc_ht=scontent.fdad2-1.fna&_nc_gid=60O8h7AxqKA_jsJk8k14kA&_nc_ss=8&oh=00_AfylfcMyD_I_adEEq9TFP8B-QZwjQ_XmhZjklsZZjA59Cw&oe=69B1C30D'}) + '&quot;);'">
                 <div class="p-8 md:p-12 max-w-2xl">
-                    <h1 class="text-white text-4xl md:text-5xl font-extrabold leading-tight mb-4">Lan Tỏa Yêu Thương,
-                        Kết Nối Những Tấm Lòng</h1>
-                    <p class="text-white text-lg">Hành trình từ Tâm Hạnh Nguyện đến sứ mệnh phụng sự cộng đồng bền
-                        vững.</p>
+                    <h1 class="text-white text-4xl md:text-5xl font-extrabold leading-tight mb-4"
+                        th:text="${systemConfig['ABOUT_HERO_TITLE'] != null and !#strings.isEmpty(systemConfig['ABOUT_HERO_TITLE']) ? systemConfig['ABOUT_HERO_TITLE'] : 'Lan Tỏa Yêu Thương, Kết Nối Những Tấm Lòng'}">
+                        Lan Tỏa Yêu Thương, Kết Nối Những Tấm Lòng</h1>
+                    <p class="text-white text-lg"
+                       th:text="${systemConfig['ABOUT_HERO_SUBTITLE'] != null and !#strings.isEmpty(systemConfig['ABOUT_HERO_SUBTITLE']) ? systemConfig['ABOUT_HERO_SUBTITLE'] : 'Hành trình từ Tâm Hạnh Nguyện đến sứ mệnh phụng sự cộng đồng bền vững.'}">
+                        Hành trình từ Tâm Hạnh Nguyện đến sứ mệnh phụng sự cộng đồng bền vững.</p>
                 </div>
             </div>
         </div>
@@ -27,7 +29,8 @@
     <!-- Mission & Intro -->
     <section class="px-6 md:px-20 py-12 text-center max-w-4xl mx-auto">
         <h2 class="text-3xl font-bold mb-6">Câu Chuyện Của Chúng Tôi</h2>
-        <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8">
+        <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8"
+           th:text="${systemConfig['ABOUT_STORY'] != null and !#strings.isEmpty(systemConfig['ABOUT_STORY']) ? systemConfig['ABOUT_STORY'] : 'Chia Sẻ Yêu Thương (tiền thân là Tâm Hạnh Nguyện) là tổ chức thiện nguyện không ngừng nỗ lực vì cộng đồng từ năm 2016. Khởi đầu từ những hành động nhỏ bé của một nhóm bạn thân và gia đình, chúng tôi đã lớn mạnh thành một cộng đồng gắn kết để hỗ trợ những mảnh đời khó khăn trên khắp đất nước.'}">
             Chia Sẻ Yêu Thương (tiền thân là Tâm Hạnh Nguyện) là tổ chức thiện nguyện không ngừng nỗ lực vì cộng đồng từ
             năm 2016. Khởi đầu từ những hành động nhỏ bé của một nhóm bạn thân và gia đình, chúng tôi đã lớn mạnh thành
             một cộng đồng gắn kết để hỗ trợ những mảnh đời khó khăn trên khắp đất nước.
@@ -38,7 +41,9 @@
                     <span class="material-symbols-outlined text-3xl">visibility</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">Tầm nhìn</h3>
-                <p class="text-slate-600 dark:text-slate-400">Trở thành cầu nối tin cậy và bền vững nhất cho mọi hoạt
+                <p class="text-slate-600 dark:text-slate-400"
+                   th:text="${systemConfig['ABOUT_VISION'] != null and !#strings.isEmpty(systemConfig['ABOUT_VISION']) ? systemConfig['ABOUT_VISION'] : 'Trở thành cầu nối tin cậy và bền vững nhất cho mọi hoạt động thiện nguyện tại Việt Nam.'}">
+                    Trở thành cầu nối tin cậy và bền vững nhất cho mọi hoạt
                     động thiện nguyện tại Việt Nam.</p>
             </div>
             <div class="p-8 rounded-xl bg-primary/5 border border-primary/20 flex flex-col items-center">
@@ -46,7 +51,9 @@
                     <span class="material-symbols-outlined text-3xl">favorite</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">Sứ mệnh</h3>
-                <p class="text-slate-600 dark:text-slate-400">Mang lại niềm hy vọng và cải thiện chất lượng cuộc sống
+                <p class="text-slate-600 dark:text-slate-400"
+                   th:text="${systemConfig['ABOUT_MISSION'] != null and !#strings.isEmpty(systemConfig['ABOUT_MISSION']) ? systemConfig['ABOUT_MISSION'] : 'Mang lại niềm hy vọng và cải thiện chất lượng cuộc sống cho những hoàn cảnh kém may mắn thông qua sự sẻ chia chân thành.'}">
+                    Mang lại niềm hy vọng và cải thiện chất lượng cuộc sống
                     cho những hoàn cảnh kém may mắn thông qua sự sẻ chia chân thành.</p>
             </div>
         </div>
@@ -64,8 +71,10 @@
             </div>
             <div class="flex-1 flex justify-center items-center gap-8 bg-background-light dark:bg-background-dark p-10 rounded-2xl border border-primary/10">
                 <div class="flex flex-col items-center opacity-60">
-                    <div class="size-24 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-2">
-                        <span class="material-symbols-outlined text-4xl text-slate-500">history_edu</span>
+                    <div class="size-24 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-2 overflow-hidden border border-slate-300 dark:border-slate-700">
+                        <img class="w-full h-full object-cover"
+                             th:src="${systemConfig['ABOUT_OLD_LOGO_URL'] != null and !#strings.isEmpty(systemConfig['ABOUT_OLD_LOGO_URL']) ? systemConfig['ABOUT_OLD_LOGO_URL'] : '/images/logo.jpg'}"
+                             alt="Logo cũ">
                     </div>
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tâm Hạnh Nguyện</span>
                 </div>
@@ -73,8 +82,10 @@
                     <span class="material-symbols-outlined text-4xl">trending_flat</span>
                 </div>
                 <div class="flex flex-col items-center">
-                    <div class="size-32 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center mb-2">
-                        <span class="material-symbols-outlined text-5xl text-primary">volunteer_activism</span>
+                    <div class="size-32 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center mb-2 overflow-hidden">
+                        <img class="w-full h-full object-cover"
+                             th:src="${systemConfig['ABOUT_NEW_LOGO_URL'] != null and !#strings.isEmpty(systemConfig['ABOUT_NEW_LOGO_URL']) ? systemConfig['ABOUT_NEW_LOGO_URL'] : ((systemConfig['ORG_LOGO_URL'] != null and !#strings.isEmpty(systemConfig['ORG_LOGO_URL'])) ? systemConfig['ORG_LOGO_URL'] : '/images/logo.jpg')}"
+                             alt="Logo mới">
                     </div>
                     <span class="text-sm font-bold uppercase tracking-widest text-primary">Chia Sẻ Yêu Thương</span>
                 </div>
@@ -131,7 +142,9 @@
             </div>
             <div class="flex-1">
                 <span class="text-primary font-bold uppercase tracking-widest text-sm mb-2 block">Người Sáng Lập &amp; Chủ Nhiệm</span>
-                <h2 class="text-4xl font-extrabold mb-6">Bà Trần Thị Mỹ Hạnh</h2>
+                <h2 class="text-4xl font-extrabold mb-6"
+                    th:text="${systemConfig['ABOUT_FOUNDER_NAME'] != null and !#strings.isEmpty(systemConfig['ABOUT_FOUNDER_NAME']) ? systemConfig['ABOUT_FOUNDER_NAME'] : 'Bà Trần Thị Mỹ Hạnh'}">
+                    Bà Trần Thị Mỹ Hạnh</h2>
                 <div class="space-y-4 text-slate-600 dark:text-slate-400 text-lg leading-relaxed italic">
                     <p>"Thiện nguyện không chỉ là cho đi những gì chúng ta có dư thừa, mà là chia sẻ từ chính trái tim
                         để sưởi ấm những mảnh đời khác. Tôi tin rằng mỗi hành động tử tế dù nhỏ bé đều có sức mạnh thay
