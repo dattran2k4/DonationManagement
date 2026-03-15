@@ -9,7 +9,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
             <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
                 <span class="material-symbols-outlined text-base">home</span> Trang chủ
@@ -41,7 +41,7 @@
                         <div class="relative mb-6">
                             <input id="search-event"
                                    class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary text-sm"
-                                   placeholder="Search events..."
+                                   placeholder="Tìm sự kiện..."
                                    type="text"/>
                             <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
                         </div>
@@ -248,7 +248,7 @@
                         <div class="absolute top-4 left-4 ${isCompleted ? 'bg-slate-600/90' : 'bg-emerald-500/90'} backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
                             ${isCompleted ?
                     `<span class="material-icons text-[10px]">check_circle</span> ${event.status || 'Hoàn thành'}` :
-                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status || 'Đang diễn ra'}`}
+                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status.value || 'Đang diễn ra'}`}
                         </div>
                     </div>
 

@@ -9,7 +9,216 @@
 </head>
 <body>
 <div layout:fragment="content">
-
+    <header class="mb-8">
+        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Cài đặt hệ thống</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Quản lý thông tin và cấu hình tổ chức từ thiện</p>
+    </header>
+    <div class="border-b border-slate-200 dark:border-slate-800 mb-8">
+        <div class="flex flex-wrap gap-8">
+            <button id="settingsTabGeneral"
+                    type="button"
+                    data-tab-target="general"
+                    class="settings-tab-btn pb-4 border-b-2 border-primary text-primary font-semibold text-sm">
+                Thông tin chung
+            </button>
+            <button id="settingsTabAppearance"
+                    type="button"
+                    data-tab-target="appearance"
+                    class="settings-tab-btn pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 font-medium text-sm">
+                Giao diện
+            </button>
+            <button id="settingsTabAbout"
+                    type="button"
+                    data-tab-target="about"
+                    class="settings-tab-btn pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 font-medium text-sm">
+                Về chúng tôi
+            </button>
+        </div>
+    </div>
+    <form id="systemSettingsForm" class="max-w-5xl space-y-8">
+        <section
+                data-tab-panel="general"
+                class="settings-panel bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">info</span>
+                Thông tin tổ chức
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2 col-span-2 md:col-span-1">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tên câu lạc bộ</label>
+                    <input id="ORG_NAME" name="ORG_NAME"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                           type="text" value="Chia Sẻ Yêu Thương"/>
+                </div>
+                <div class="space-y-2 col-span-2 md:col-span-1">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Logo tổ chức</label>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-4">
+                            <div class="size-16 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <img id="ORG_LOGO_URL_preview" class="w-full h-full object-cover"
+                                     th:src="@{/images/logo.jpg}" alt="Xem trước logo">
+                            </div>
+                            <label for="ORG_LOGO_URL_file"
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                                <span class="material-symbols-outlined text-base">upload_file</span>
+                                Chọn logo từ máy tính
+                            </label>
+                        </div>
+                        <input id="ORG_LOGO_URL_file" type="file" accept="image/*" class="hidden"
+                               data-preview-target="ORG_LOGO_URL_preview" data-path-target="ORG_LOGO_URL">
+                        <input id="ORG_LOGO_URL" name="ORG_LOGO_URL"
+                               class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                               placeholder="/uploads/images/logo-du-an.png" type="text"/>
+                        <p class="text-xs text-slate-500">Gợi ý lưu: <code>/uploads/images/ten-file.png</code></p>
+                    </div>
+                </div>
+                <div class="space-y-2 col-span-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Địa chỉ văn phòng</label>
+                    <input id="ORG_ADDRESS" name="ORG_ADDRESS"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                           placeholder="Nhập địa chỉ trụ sở chính" type="text"/>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Số điện thoại</label>
+                    <input id="ORG_PHONE" name="ORG_PHONE"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                           placeholder="09xx xxx xxx" type="tel"/>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Email liên hệ</label>
+                    <input id="ORG_EMAIL" name="ORG_EMAIL"
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                           placeholder="contact@chiaseyeuthuong.org" type="email"/>
+                </div>
+                <div class="space-y-2 col-span-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Link Facebook
+                        Fanpage</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-sm">link</span>
+                        <input id="ORG_FACEBOOK_URL" name="ORG_FACEBOOK_URL"
+                               class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                               type="url" value="https://facebook.com/chiaseyeuthuong"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section
+                data-tab-panel="appearance"
+                class="settings-panel hidden bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">image</span>
+                Hình ảnh &amp; Banners
+            </h2>
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Banner Trang chủ (Tối ưu:
+                        1920x600px)</label>
+                    <div class="space-y-3">
+                        <div class="h-36 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <img id="HOME_BANNER_URL_preview" class="w-full h-full object-cover hidden" alt="Xem trước banner trang chủ">
+                            <div id="HOME_BANNER_URL_placeholder"
+                                 class="w-full h-full flex items-center justify-center text-sm text-slate-500">
+                                Chưa chọn ảnh banner trang chủ
+                            </div>
+                        </div>
+                        <label for="HOME_BANNER_URL_file"
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                            <span class="material-symbols-outlined text-base">upload_file</span>
+                            Chọn banner từ máy tính
+                        </label>
+                        <input id="HOME_BANNER_URL_file" type="file" accept="image/*" class="hidden"
+                               data-preview-target="HOME_BANNER_URL_preview"
+                               data-placeholder-target="HOME_BANNER_URL_placeholder"
+                               data-path-target="HOME_BANNER_URL">
+                        <input id="HOME_BANNER_URL" name="HOME_BANNER_URL"
+                               class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                               placeholder="/uploads/images/banner-home.jpg" type="text"/>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Banner Trang 'Về chúng
+                        tôi'</label>
+                    <div class="space-y-3">
+                        <div class="h-36 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <img id="ABOUT_BANNER_URL_preview" class="w-full h-full object-cover hidden" alt="Xem trước banner giới thiệu">
+                            <div id="ABOUT_BANNER_URL_placeholder"
+                                 class="w-full h-full flex items-center justify-center text-sm text-slate-500">
+                                Chưa chọn ảnh banner giới thiệu
+                            </div>
+                        </div>
+                        <label for="ABOUT_BANNER_URL_file"
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                            <span class="material-symbols-outlined text-base">upload_file</span>
+                            Chọn banner từ máy tính
+                        </label>
+                        <input id="ABOUT_BANNER_URL_file" type="file" accept="image/*" class="hidden"
+                               data-preview-target="ABOUT_BANNER_URL_preview"
+                               data-placeholder-target="ABOUT_BANNER_URL_placeholder"
+                               data-path-target="ABOUT_BANNER_URL">
+                        <input id="ABOUT_BANNER_URL" name="ABOUT_BANNER_URL"
+                               class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                               placeholder="/uploads/images/banner-about.jpg" type="text"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section
+                data-tab-panel="about"
+                class="settings-panel hidden bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">history_edu</span>
+                Nội dung giới thiệu
+            </h2>
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Câu chuyện của chúng
+                        tôi</label>
+                    <textarea id="ABOUT_STORY" name="ABOUT_STORY"
+                              class="w-full px-4 py-3 min-h-36 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                              placeholder="Kể lại hành trình hình thành của tổ chức..."></textarea>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tầm nhìn &amp; Sứ
+                        mệnh</label>
+                    <textarea id="ABOUT_MISSION_VISION" name="ABOUT_MISSION_VISION"
+                              class="w-full px-4 py-3 min-h-36 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                              placeholder="Mục tiêu và giá trị cốt lõi hướng tới cộng đồng..."></textarea>
+                </div>
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h3 class="text-md font-bold text-slate-800 dark:text-slate-200 mb-4">Sự chuyển mình mạnh mẽ</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Logo cũ (Tâm Hạnh
+                                Nguyện)</p>
+                            <input id="ABOUT_OLD_LOGO_URL" name="ABOUT_OLD_LOGO_URL"
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                                   placeholder="https://.../logo-cu.jpg" type="url"/>
+                        </div>
+                        <div class="space-y-3">
+                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Logo mới (Chia Sẻ Yêu
+                                Thương)</p>
+                            <input id="ABOUT_NEW_LOGO_URL" name="ABOUT_NEW_LOGO_URL"
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm"
+                                   placeholder="https://.../logo-moi.jpg" type="url"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="flex justify-end gap-4 py-8">
+            <button id="resetSettingsBtn" type="button"
+                    class="px-6 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                Hủy thay đổi
+            </button>
+            <button type="submit"
+                    class="px-8 py-2.5 rounded-lg bg-primary text-slate-900 font-bold hover:brightness-110 shadow-lg shadow-primary/20 transition-all">
+                Lưu cấu hình
+            </button>
+        </div>
+    </form>
 </div>
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/admin/settings.js}"></script>
+</th:block>
 </body>
 </html>
