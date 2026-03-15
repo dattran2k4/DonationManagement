@@ -40,7 +40,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700">
             <div class="prose prose-slate dark:prose-invert max-w-none">
                 <h2 class="text-2xl font-bold mb-6 text-slate-900 dark:text-white" th:text="${event.name}">
-                    About the Event
+                    Nội dung sự kiện
                 </h2>
 
                 <div class="text-slate-600 dark:text-slate-300 leading-relaxed mb-6 ck-content prose"
@@ -70,7 +70,7 @@
                     <div>
                         <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Địa điểm</p>
                         <p class="text-slate-900 dark:text-white font-medium" th:text="${event.location}">
-                            Downtown Community Center
+                            Trung tâm cộng đồng
                         </p>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                     <div>
                         <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Danh mục</p>
                         <p class="text-slate-900 dark:text-white font-medium" th:text="${event.category.name}">
-                            Category</p>
+                            Danh mục</p>
                     </div>
                 </div>
             </div>
@@ -90,9 +90,9 @@
 
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700 mt-8">
             <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Planned Activities</h2>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Danh sách hoạt động</h2>
                 <span class="px-3 py-1 bg-primary-light text-primary dark:bg-primary/20 dark:text-primary-light rounded-full text-sm font-bold"
-                      th:text="${#lists.size(event.activities)} + ' Total Sessions'">123 Total Sessions</span>
+                      th:text="${#lists.size(event.activities)} + ' hoạt động'">3 hoạt động</span>
             </div>
             <!-- Activities List -->
             <!-- Nếu không có activities -->
@@ -103,17 +103,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" th:if="${!#lists.isEmpty(event.activities)}">
                 <div th:each="act: ${event.activities}"
                      class="flex flex-col p-5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-primary/30 hover:shadow-md transition-all group">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors"
-                        th:text="${act.name}">
-                        Interactive STEM Workshop</h3>
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors"
+                            th:text="${act.name}">
+                            Hoạt động hỗ trợ cộng đồng</h3>
+                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                              th:classappend="${act.status != null && act.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700'
+                                : (${act.status != null && act.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700' : ' bg-slate-200 text-slate-700')"
+                              th:text="${act.status != null ? act.status.value : 'Chưa cập nhật'}">
+                            Đang diễn ra
+                        </span>
+                    </div>
                     <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 flex-grow"
                        th:text="${act.shortDescription}">
-                        Hands-on experiments covering basic physics and chemistry principles designed specifically for
-                        middle school students.
+                        Nội dung hoạt động đang được cập nhật.
                     </p>
                     <a class="inline-flex items-center text-sm font-semibold text-primary hover:text-blue-700 transition-colors mt-auto"
                        th:href="@{/activities/{slug}(slug=${act.slug})}">
-                        View Details
+                        Xem chi tiết
                         <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
                     </a>
                 </div>
@@ -146,9 +153,9 @@
 
                     <div class="flex justify-between text-xs font-medium mt-2">
                     <span class="text-primary"
-                          th:text="${percent + '%'}">77% Raised</span>
+                          th:text="${percent + '%'}">77% đã đạt</span>
                         <span class="text-slate-500 dark:text-slate-400"
-                              th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 Donors</span>
+                              th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 lượt ủng hộ</span>
                     </div>
                 </div>
 
