@@ -1,12 +1,26 @@
 import {eventApi} from '../../apis/eventApi.js';
 import {renderPagination} from '../../components/pagination.js';
 
-const state = {page: 1, size: 5, search: ''};
+const state = {
+    page: 1,
+    size: 5,
+    search: '',
+    status: '',
+    categoryId: '',
+    sortBy: 'id',
+    sortDir: 'desc'
+};
 
 const elements = {
     tableBody: document.getElementById('eventTableBody'),
-    paginationContainer: document.getElementById('paginationContainer')
+    paginationContainer: document.getElementById('paginationContainer'),
+    searchInput: document.getElementById('searchFilter'),
+    statusSelect: document.getElementById('statusFilter'),
+    categorySelect: document.getElementById('categoryFilter'),
+    sortSelect: document.getElementById('sortFilter')
 };
+
+let searchDebounceId = null;
 
 // Hàm tiện ích format tiền tệ rút gọn (VD: 650000000 -> 650tr)
 const formatMoney = (amount) => {
@@ -23,15 +37,10 @@ const getStatusBadge = (status) => {
             colorClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
             dotClass: 'bg-green-500'
         },
-        'ENDED': {
+        'COMPLETED': {
             text: 'Đã kết thúc',
             colorClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
             dotClass: 'bg-blue-500'
-        },
-        'DRAFT': {
-            text: 'Nháp',
-            colorClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-            dotClass: 'bg-slate-400'
         },
         'UPCOMING': {
             text: 'Sắp diễn ra',
@@ -39,7 +48,7 @@ const getStatusBadge = (status) => {
             dotClass: 'bg-amber-500'
         }
     };
-    const s = styles[status] || styles['DRAFT'];
+    const s = styles[status] || styles['UPCOMING'];
     return `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${s.colorClass}">
             <span class="w-1.5 h-1.5 rounded-full ${s.dotClass}"></span> ${s.text}
@@ -101,19 +110,72 @@ const renderTable = (data) => {
 
 const loadEvents = async () => {
     try {
-        const response = await eventApi.getEvents(state);
-        const data = response.data
-        console.log(data)
+        const response = await eventApi.getEvents(buildEventQueryParams());
+        const data = response.data;
         renderTable(data.data);
 
-        // Gọi render phân trang
         renderPagination(data, elements.paginationContainer, (newPage) => {
             state.page = newPage;
             loadEvents();
         });
     } catch (error) {
-        console.error("Lỗi:", error);
+        console.error("Lỗi tải danh sách sự kiện:", error);
+        elements.tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Không thể tải dữ liệu sự kiện.</td></tr>`;
     }
 };
 
-document.addEventListener('DOMContentLoaded', loadEvents);
+function buildEventQueryParams() {
+    return {
+        page: state.page,
+        size: state.size,
+        search: state.search,
+        status: state.status,
+        categoryIds: state.categoryId,
+        sortBy: state.sortBy,
+        sortDir: state.sortDir
+    };
+}
+
+function bindFilters() {
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchDebounceId);
+            searchDebounceId = setTimeout(() => {
+                state.search = e.target.value.trim();
+                state.page = 1;
+                loadEvents();
+            }, 300);
+        });
+    }
+
+    if (elements.statusSelect) {
+        elements.statusSelect.addEventListener('change', (e) => {
+            state.status = e.target.value;
+            state.page = 1;
+            loadEvents();
+        });
+    }
+
+    if (elements.categorySelect) {
+        elements.categorySelect.addEventListener('change', (e) => {
+            state.categoryId = e.target.value;
+            state.page = 1;
+            loadEvents();
+        });
+    }
+
+    if (elements.sortSelect) {
+        elements.sortSelect.addEventListener('change', (e) => {
+            const [sortBy, sortDir] = e.target.value.split(':');
+            state.sortBy = sortBy || 'id';
+            state.sortDir = sortDir || 'desc';
+            state.page = 1;
+            loadEvents();
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    bindFilters();
+    loadEvents();
+});

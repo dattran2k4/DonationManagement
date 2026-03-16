@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.service;
 
 import com.chiaseyeuthuong.common.EDonationStatus;
+import com.chiaseyeuthuong.common.EDonorType;
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
 import com.chiaseyeuthuong.dto.request.OrganizeDonorRequest;
@@ -16,7 +17,7 @@ public interface DonorService {
 
     long saveOrganizeDonor(OrganizeDonorRequest request);
 
-    PageResponse<DonorResponse> getAllDonor();
+    PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type);
 
     long getDorCountByObjectId(Long objectId, EEntityType type);
 

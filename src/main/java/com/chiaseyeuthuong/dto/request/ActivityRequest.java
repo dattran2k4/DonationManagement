@@ -21,6 +21,8 @@ public class ActivityRequest {
 
     private String shortDescription;
 
+    private String location;
+
     private String content;
 
     private LocalDate startDate;

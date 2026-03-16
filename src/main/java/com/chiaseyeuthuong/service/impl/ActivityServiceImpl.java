@@ -12,6 +12,7 @@ import com.chiaseyeuthuong.model.Event;
 import com.chiaseyeuthuong.repository.ActivityRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.service.ActivityService;
+import com.chiaseyeuthuong.service.ActivitySpecification;
 import com.chiaseyeuthuong.service.DonorService;
 import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,7 +54,9 @@ public class ActivityServiceImpl implements ActivityService {
 
         PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Page<Activity> pageActivities = activityRepository.findAll(pageRequest);
+        Specification<Activity> specification = ActivitySpecification.filterActivity(search, status);
+
+        Page<Activity> pageActivities = activityRepository.findAll(specification, pageRequest);
 
         List<ActivityResponse> response = pageActivities.stream().map(this::toResponse).toList();
 
@@ -83,6 +86,7 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setName(request.getName());
         activity.setContent(request.getContent());
         activity.setShortDescription(request.getShortDescription());
+        activity.setLocation(request.getLocation());
         activity.setStartDate(request.getStartDate());
         activity.setEndDate(request.getEndDate());
         activity.setCurrentAmount(request.getCurrentAmount());
@@ -156,6 +160,11 @@ public class ActivityServiceImpl implements ActivityService {
             log.error("Cannot save thumbnail caused: {}", e.getMessage(), e);
             throw new RuntimeException("Cannot save thumbnail url caused ", e);
         }
+    }
+
+    @Override
+    public long getActivityCount() {
+        return activityRepository.count();
     }
 
     private ActivityResponse toResponse(Activity activity) {

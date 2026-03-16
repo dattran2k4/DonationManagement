@@ -2,10 +2,12 @@ import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
 
 const state = {page: 1, size: 2, search: '', status: ''};
-
 const elements = {
     tableBody: document.getElementById('activityTableBody'),
-    paginationContainer: document.getElementById('paginationContainer')
+    paginationContainer: document.getElementById('paginationContainer'),
+    searchInput: document.getElementById('activitySearchInput'),
+    statusFilter: document.getElementById('activityStatusFilter'),
+    resetFilterBtn: document.getElementById('activityResetFilterBtn')
 };
 
 // 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
@@ -130,8 +132,50 @@ const loadActivities = async () => {
     }
 };
 
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const bindFilters = () => {
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', debounce((event) => {
+            state.search = event.target.value.trim();
+            state.page = 1;
+            loadActivities();
+        }));
+    }
+
+    if (elements.statusFilter) {
+        elements.statusFilter.addEventListener('change', (event) => {
+            state.status = event.target.value;
+            state.page = 1;
+            loadActivities();
+        });
+    }
+
+    if (elements.resetFilterBtn) {
+        elements.resetFilterBtn.addEventListener('click', () => {
+            state.search = '';
+            state.status = '';
+            state.page = 1;
+
+            if (elements.searchInput) elements.searchInput.value = '';
+            if (elements.statusFilter) elements.statusFilter.value = '';
+
+            loadActivities();
+        });
+    }
+};
+
 // Khởi chạy
-document.addEventListener('DOMContentLoaded', loadActivities);
+document.addEventListener('DOMContentLoaded', () => {
+    bindFilters();
+    loadActivities();
+});
 
 // Các hàm toàn cục
 window.viewActivityDetail = (id) => window.location.href = `/admin/activities/${id}`;

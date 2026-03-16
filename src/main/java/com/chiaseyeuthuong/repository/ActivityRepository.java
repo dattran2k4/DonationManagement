@@ -2,13 +2,14 @@ package com.chiaseyeuthuong.repository;
 
 import com.chiaseyeuthuong.model.Activity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ActivityRepository extends JpaRepository<Activity, Long> {
+public interface ActivityRepository extends JpaRepository<Activity, Long>, JpaSpecificationExecutor<Activity> {
     Optional<Activity> findBySlug(String slug);
 
     List<Activity> findAllByEventId(Long eventId);

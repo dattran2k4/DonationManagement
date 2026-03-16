@@ -1,12 +1,10 @@
 package com.chiaseyeuthuong.api;
 
 import com.chiaseyeuthuong.common.EPaymentMethod;
-import com.chiaseyeuthuong.common.ETransactionStatus;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
 import com.chiaseyeuthuong.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,14 +21,14 @@ public class ApiTransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public ApiResponse getAllTransactions(@RequestParam(required = false, defaultValue = "0") int page,
+    public ApiResponse getAllTransactions(@RequestParam(required = false, defaultValue = "1") int page,
                                           @RequestParam(required = false, defaultValue = "10") int size,
-                                          @RequestParam(required = false) ETransactionStatus status,
+                                          @RequestParam(required = false) String search,
                                           @RequestParam(required = false) EPaymentMethod method) {
         return ApiResponse.builder()
                 .status(200)
-                .message("Transactions found!")
-                .data(transactionService.getTransactions(page, size, status))
+                .message("Lấy danh sách giao dịch thành công")
+                .data(transactionService.getTransactions(page, size, search, method))
                 .build();
     }
 }

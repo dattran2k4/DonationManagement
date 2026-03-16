@@ -33,6 +33,8 @@ public class EventRequest {
 
     private String description;
 
+    private String location;
+
     private String content;
 
     private String thumbnailUrl;

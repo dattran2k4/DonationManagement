@@ -1,7 +1,10 @@
 package com.chiaseyeuthuong.controller;
 
 import com.chiaseyeuthuong.model.Donation;
+import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.DonationService;
+import com.chiaseyeuthuong.service.DonorService;
+import com.chiaseyeuthuong.service.EventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -15,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PaymentController {
 
     private final DonationService donationService;
+    private final DonorService donorService;
+    private final EventService eventService;
+    private final ActivityService activityService;
 
     @GetMapping("/thanh-toan/thanh-cong")
     public String showSuccessPaymentPage(@RequestParam("orderCode") long orderCode, Model model) {
@@ -27,7 +33,10 @@ public class PaymentController {
     }
 
     @GetMapping("/thanh-toan/that-bai")
-    public String showHomePage() {
-        return "redirect:/";
+    public String showHomePage(Model model) {
+        model.addAttribute("totalDonors", donorService.getDorCountByObjectId(null, null));
+        model.addAttribute("totalEvents", eventService.getEventCount(null));
+        model.addAttribute("totalActivities", activityService.getActivityCount());
+        return "pages/web/index";
     }
 }

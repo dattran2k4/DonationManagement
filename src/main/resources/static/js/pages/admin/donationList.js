@@ -1,11 +1,15 @@
 import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
 
-const state = {page: 1, size: 2, search: ''};
+const state = {page: 1, size: 10, search: '', status: '', target: ''};
 
 const elements = {
     tableBody: document.getElementById('donationTableBody'),
-    paginationContainer: document.getElementById('paginationContainer')
+    paginationContainer: document.getElementById('paginationContainer'),
+    searchInput: document.getElementById('donationSearchInput'),
+    statusFilter: document.getElementById('donationStatusFilter'),
+    targetFilter: document.getElementById('donationTargetFilter'),
+    resetFilterBtn: document.getElementById('donationResetFilterBtn')
 };
 
 // 1. Hàm tiện ích format tiền tệ (Ví dụ: 5000000 -> 5.000.000 đ)
@@ -16,11 +20,17 @@ const formatCurrency = (amount) => {
 // 2. Hàm tiện ích lấy Badge Trạng thái theo giao diện
 const getStatusBadge = (status) => {
     const styles = {
-        'PENDING': {
+        'PENDING_APPROVED': {
             text: 'Chờ duyệt',
             class: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800',
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>',
             rowClass: 'bg-amber-50/50 dark:bg-amber-900/10'
+        },
+        'PENDING_PAYMENT': {
+            text: 'Chờ thanh toán',
+            class: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
+            dot: '<span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>',
+            rowClass: ''
         },
         'CONFIRMED': {
             text: 'Đã xác nhận',
@@ -41,7 +51,7 @@ const getStatusBadge = (status) => {
             rowClass: 'opacity-75'
         }
     };
-    return styles[status] || styles['PENDING'];
+    return styles[status] || styles['PENDING_APPROVED'];
 };
 
 // 3. Hàm lấy Icon cho Phương thức thanh toán
@@ -61,6 +71,15 @@ const getPaymentMethodIcon = (method) => {
         }
     };
     return icons[method] || {icon: 'help_outline', label: method};
+};
+
+const getTargetLabel = (target) => {
+    const labels = {
+        EVENT: 'Sự kiện',
+        ACTIVITY: 'Hoạt động',
+        NONE: 'Không gắn mục tiêu'
+    };
+    return labels[target] || '---';
 };
 
 // 4. Hàm Render Bảng
@@ -93,7 +112,7 @@ const renderTable = (donations) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-slate-700 dark:text-slate-300">${item.objectName || '---'}</div>
-                <div class="text-xs text-slate-500">${item.type === 'EVENT' ? 'Sự kiện' : 'Hoạt động'}</div>
+                <div class="text-xs text-slate-500">${getTargetLabel(item.target)}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap hidden xl:table-cell">
                 <div class="flex items-center gap-1.5">
@@ -126,6 +145,55 @@ const renderTable = (donations) => {
         </tr>
         `;
     }).join('');
+};
+
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const bindFilters = () => {
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', debounce((event) => {
+            state.search = event.target.value.trim();
+            state.page = 1;
+            loadDonations();
+        }));
+    }
+
+    if (elements.statusFilter) {
+        elements.statusFilter.addEventListener('change', (event) => {
+            state.status = event.target.value;
+            state.page = 1;
+            loadDonations();
+        });
+    }
+
+    if (elements.targetFilter) {
+        elements.targetFilter.addEventListener('change', (event) => {
+            state.target = event.target.value;
+            state.page = 1;
+            loadDonations();
+        });
+    }
+
+    if (elements.resetFilterBtn) {
+        elements.resetFilterBtn.addEventListener('click', () => {
+            state.search = '';
+            state.status = '';
+            state.target = '';
+            state.page = 1;
+
+            if (elements.searchInput) elements.searchInput.value = '';
+            if (elements.statusFilter) elements.statusFilter.value = '';
+            if (elements.targetFilter) elements.targetFilter.value = '';
+
+            loadDonations();
+        });
+    }
 };
 
 // 5. Hàm Load dữ liệu chính
@@ -175,4 +243,7 @@ window.handleAction = async (id, action) => {
 };
 
 // Khởi chạy
-document.addEventListener('DOMContentLoaded', loadDonations);
+document.addEventListener('DOMContentLoaded', () => {
+    bindFilters();
+    loadDonations();
+});

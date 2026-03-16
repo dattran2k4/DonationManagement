@@ -21,14 +21,14 @@ public class ApiDonorController {
     private final DonorService donorService;
 
     @GetMapping
-    public ApiResponse getAllDonors(@RequestParam(required = false, defaultValue = "0") int page,
+    public ApiResponse getAllDonors(@RequestParam(required = false, defaultValue = "1") int page,
                                     @RequestParam(required = false, defaultValue = "10") int size,
                                     @RequestParam(required = false) String search,
                                     @RequestParam(required = false) EDonorType type) {
         return ApiResponse.builder()
                 .status(200)
-                .message("Get donation list successfully")
-                .data(donorService.getAllDonor())
+                .message("Get donor list successfully")
+                .data(donorService.getAllDonor(page, size, search, type))
                 .build();
     }
 

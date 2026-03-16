@@ -1,11 +1,14 @@
 import {transactionApi} from '../../apis/transactionApi.js';
 import {renderPagination} from '../../components/pagination.js';
 
-const state = {page: 1, size: 10, status: '', method: ''};
+const state = {page: 1, size: 10, search: '', method: ''};
 
 const elements = {
     tableBody: document.getElementById('transactionTableBody'),
-    paginationContainer: document.getElementById('paginationContainer')
+    paginationContainer: document.getElementById('paginationContainer'),
+    searchInput: document.getElementById('transactionSearchInput'),
+    methodFilter: document.getElementById('transactionMethodFilter'),
+    resetFilterBtn: document.getElementById('transactionResetFilterBtn')
 };
 
 // 1. Format tiền tệ
@@ -15,19 +18,18 @@ const formatCurrency = (amount) => {
 
 // 2. Format Thời gian
 const formatDateTime = (dateStr) => {
+    if (!dateStr) return {date: '---', time: ''};
     const date = new Date(dateStr);
     return {
-        date: date.toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric'}),
-        time: date.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})
+        date: date.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}),
+        time: date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})
     };
 };
 
 // 3. Render Row Giao dịch
 const renderTransactionRow = (txn) => {
     const dt = formatDateTime(txn.createdAt);
-
-    // Logic: Nếu không có donationCode/donationId thì coi là Unlinked (Chưa khớp lệnh)
-    const isUnlinked = !txn.donationCode && !txn.donationId;
+    const isUnlinked = !txn.donationCode;
 
     // CSS Class cho hàng Unlinked
     const rowClass = isUnlinked
@@ -39,18 +41,12 @@ const renderTransactionRow = (txn) => {
         <td class="p-4 text-sm font-medium text-blue-400 dark:text-white whitespace-nowrap font-mono">
             <a class="text-blue-400" href="/admin/transactions/${txn.id}">${txn.transactionCode || `TXN-${txn.id}`}</a>
         </td>
-        <td class="p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-            <div class="flex flex-col">
-                <span>${dt.date}</span>
-                <span class="text-xs text-slate-400">${dt.time}</span>
-            </div>
-        </td>
         <td class="p-4 text-sm font-bold text-slate-900 dark:text-white text-right whitespace-nowrap">
             ${formatCurrency(txn.amount)}
         </td>
         <td class="p-4 text-sm text-slate-600 dark:text-slate-300">
             <div class="flex flex-col">
-                <span class="font-medium text-slate-900 dark:text-white">${txn.counterAccountName || 'Unknown'}</span>
+                <span class="font-medium text-slate-900 dark:text-white">${txn.counterAccountName || 'Không xác định'}</span>
                 <span class="text-xs text-slate-400">${txn.counterAccountNumber || ''}</span>
             </div>
         </td>
@@ -63,7 +59,13 @@ const renderTransactionRow = (txn) => {
             ` : `<span class="text-slate-400 italic">--</span>`}
         </td>
         <td class="p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
-            ${txn.paymentMethod}
+            ${txn.paymentMethodValue || txn.paymentMethod || '---'}
+        </td>
+        <td class="p-4 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+            <div class="flex flex-col">
+                <span>${dt.date}</span>
+                <span class="text-xs text-slate-400">${dt.time}</span>
+            </div>
         </td>
     </tr>`;
 };
@@ -95,5 +97,47 @@ const loadTransactions = async () => {
     }
 };
 
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const bindFilters = () => {
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', debounce((event) => {
+            state.search = event.target.value.trim();
+            state.page = 1;
+            loadTransactions();
+        }));
+    }
+
+    if (elements.methodFilter) {
+        elements.methodFilter.addEventListener('change', (event) => {
+            state.method = event.target.value;
+            state.page = 1;
+            loadTransactions();
+        });
+    }
+
+    if (elements.resetFilterBtn) {
+        elements.resetFilterBtn.addEventListener('click', () => {
+            state.search = '';
+            state.method = '';
+            state.page = 1;
+
+            if (elements.searchInput) elements.searchInput.value = '';
+            if (elements.methodFilter) elements.methodFilter.value = '';
+
+            loadTransactions();
+        });
+    }
+};
+
 // Khởi chạy khi load trang
-document.addEventListener('DOMContentLoaded', loadTransactions);
+document.addEventListener('DOMContentLoaded', () => {
+    bindFilters();
+    loadTransactions();
+});

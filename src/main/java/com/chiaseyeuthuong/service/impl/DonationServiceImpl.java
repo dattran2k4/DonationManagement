@@ -10,6 +10,7 @@ import com.chiaseyeuthuong.model.*;
 import com.chiaseyeuthuong.repository.*;
 import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.DonationSpecification;
+import com.chiaseyeuthuong.service.TransactionService;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,8 @@ public class DonationServiceImpl implements DonationService {
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
     private final DonorRepository donorRepository;
+
+    private final TransactionService transactionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -130,6 +133,7 @@ public class DonationServiceImpl implements DonationService {
         donation.setStatus(status);
         if (status.equals(EDonationStatus.CONFIRMED)) {
             donation.setConfirmedAt(LocalDateTime.now());
+            transactionService.createTransactionFromPayOS(null, donation);
         }
         donationRepository.save(donation);
         log.info("Donation updated status to {}", status);
@@ -149,7 +153,7 @@ public class DonationServiceImpl implements DonationService {
 
         List<DonationResponse> data = donationPage.stream().map(this::toResponse).toList();
         return PageResponse.<DonationResponse>builder()
-                .page(page)
+                .page(pageNumber + 1)
                 .pageSize(size)
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())

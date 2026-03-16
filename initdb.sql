@@ -239,13 +239,36 @@ INSERT INTO user_roles (role_id, user_id) VALUES
                                               (3, 5), -- accounting
                                               (4, 6); -- donor portal user
 
--- 4) system_configs (5 dòng)
+-- 4) system_configs (25 dòng)
 INSERT INTO system_configs (id, config_key, config_value, description) VALUES
                                                                            (1, 'club_name', 'CLB Chia sẻ Yêu Thương', 'Tên hiển thị của câu lạc bộ'),
                                                                            (2, 'default_currency', 'VND', 'Đơn vị tiền tệ mặc định'),
                                                                            (3, 'receipt_sender_email', 'receipt@gms.local', 'Email gửi biên nhận'),
                                                                            (4, 'bank_account_display', 'Ngân hàng Agribank - 2000206383413 - CLB Chia sẻ Yêu Thương', 'Thông tin tài khoản nhận chuyển khoản'),
-                                                                           (5, 'approval_threshold_vnd', '10000000', 'Ngưỡng cần duyệt (VND)');
+                                                                           (5, 'approval_threshold_vnd', '10000000', 'Ngưỡng cần duyệt (VND)'),
+                                                                           (6, 'ORG_NAME', 'Chia Sẻ Yêu Thương', 'Tên tổ chức hiển thị'),
+                                                                           (7, 'ORG_LOGO_URL', '/images/logo.jpg', 'Đường dẫn logo tổ chức'),
+                                                                           (8, 'ORG_ADDRESS', '25 An Nhơn 2, An Hải, Thành Phố Đà Nẵng', 'Địa chỉ văn phòng'),
+                                                                           (9, 'ORG_PHONE', '+84 982 746 462', 'Số điện thoại liên hệ'),
+                                                                           (10, 'ORG_EMAIL', 'contact@chiaseyeuthuong.vn', 'Email liên hệ'),
+                                                                           (11, 'ORG_FACEBOOK_URL', 'https://facebook.com/chiaseyeuthuong', 'Link fanpage Facebook'),
+                                                                           (12, 'HOME_BANNER_URL', 'https://scontent.fdad1-1.fna.fbcdn.net/v/t39.30808-6/621779722_3290008547826693_5413700251492346147_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=WTbVdjBR5l4Q7kNvwHawjP9&_nc_oc=Adn0fUZZEf1JrNbWhH-3qFp4e9MhbyLpiGvLvNC426421Aa3agTLbL99ImAU7ob7v8Kwpk-2h5wKrWjxlmeiRDtZ&_nc_zt=23&_nc_ht=scontent.fdad1-1.fna&_nc_gid=aoSewykwudscGY0Pr39-yA&_nc_ss=8&oh=00_Afwydh8bda3VGS7KnaDcRg4QdV3zgNew2JIbaupxcJXG_Q&oe=69BBAE69', 'Ảnh banner hero trang chủ'),
+                                                                           (13, 'HOME_HERO_BADGE', 'Tổ chức phi lợi nhuận', 'Nhãn hero trang chủ'),
+                                                                           (14, 'HOME_HERO_TITLE', 'Cùng nhau, chúng ta', 'Dòng tiêu đề chính trang chủ'),
+                                                                           (15, 'HOME_HERO_TITLE_HIGHLIGHT', 'tạo nên hy vọng', 'Dòng tiêu đề nhấn mạnh trang chủ'),
+                                                                           (16, 'HOME_HERO_DESCRIPTION', 'Hãy tham gia cộng đồng những người mong muốn tạo ra sự thay đổi, cùng chung tay cải thiện cuộc sống trên khắp thế giới thông qua giáo dục, chăm sóc sức khỏe và phát triển bền vững.', 'Mô tả hero trang chủ'),
+                                                                           (17, 'ABOUT_BANNER_URL', 'https://scontent.fdad2-1.fna.fbcdn.net/v/t39.30808-6/531543710_3117474291746787_5442302395585835797_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=5a4EB3FI_WYQ7kNvwE9VVPc&_nc_oc=Adm9P5PNzq0NHulFyja6XkvXt_xsM5TMEcjeKUzWFIwVt7HcL4oSO6k1R9r0LgaUN1A&_nc_zt=23&_nc_ht=scontent.fdad2-1.fna&_nc_gid=60O8h7AxqKA_jsJk8k14kA&_nc_ss=8&oh=00_AfylfcMyD_I_adEEq9TFP8B-QZwjQ_XmhZjklsZZjA59Cw&oe=69B1C30D', 'Ảnh banner trang giới thiệu'),
+                                                                           (18, 'ABOUT_HERO_TITLE', 'Lan Tỏa Yêu Thương, Kết Nối Những Tấm Lòng', 'Tiêu đề hero trang giới thiệu'),
+                                                                           (19, 'ABOUT_HERO_SUBTITLE', 'Hành trình từ Tâm Hạnh Nguyện đến sứ mệnh phụng sự cộng đồng bền vững.', 'Mô tả hero trang giới thiệu'),
+                                                                           (20, 'ABOUT_STORY', 'Chia Sẻ Yêu Thương (tiền thân là Tâm Hạnh Nguyện) là tổ chức thiện nguyện không ngừng nỗ lực vì cộng đồng từ năm 2016. Khởi đầu từ những hành động nhỏ bé của một nhóm bạn thân và gia đình, chúng tôi đã lớn mạnh thành một cộng đồng gắn kết để hỗ trợ những mảnh đời khó khăn trên khắp đất nước.', 'Câu chuyện của tổ chức'),
+                                                                           (21, 'ABOUT_VISION', 'Trở thành cầu nối tin cậy và bền vững nhất cho mọi hoạt động thiện nguyện tại Việt Nam.', 'Nội dung tầm nhìn'),
+                                                                           (22, 'ABOUT_MISSION', 'Mang lại niềm hy vọng và cải thiện chất lượng cuộc sống cho những hoàn cảnh kém may mắn thông qua sự sẻ chia chân thành.', 'Nội dung sứ mệnh'),
+                                                                           (23, 'ABOUT_MISSION_VISION', 'Tầm nhìn: Trở thành cầu nối tin cậy và bền vững nhất cho mọi hoạt động thiện nguyện tại Việt Nam. Sứ mệnh: Mang lại niềm hy vọng và cải thiện chất lượng cuộc sống cho những hoàn cảnh kém may mắn thông qua sự sẻ chia chân thành.', 'Nội dung tầm nhìn và sứ mệnh tổng hợp'),
+                                                                           (24, 'ABOUT_OLD_LOGO_URL', '/images/logo.jpg', 'Logo cũ giới thiệu'),
+                                                                           (25, 'ABOUT_NEW_LOGO_URL', '/images/logo.jpg', 'Logo mới giới thiệu'),
+                                                                           (26, 'HOME_HERO_PRIMARY_CTA', 'Quyên góp', 'Nút CTA chính trang chủ'),
+                                                                           (27, 'HOME_HERO_SECONDARY_CTA', 'Tổng hợp các sự kiện', 'Nút CTA phụ trang chủ'),
+                                                                           (28, 'ABOUT_FOUNDER_NAME', 'Bà Trần Thị Mỹ Hạnh', 'Tên người sáng lập');
 
 -- 5) categories (4 dòng)
 INSERT INTO categories (id, name, slug) VALUES

@@ -9,7 +9,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
             <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
                 <span class="material-symbols-outlined text-base">home</span> Trang chủ
@@ -41,7 +41,7 @@
                         <div class="relative mb-6">
                             <input id="search-event"
                                    class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-primary focus:border-primary text-sm"
-                                   placeholder="Search events..."
+                                   placeholder="Tìm sự kiện..."
                                    type="text"/>
                             <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
                         </div>
@@ -50,10 +50,14 @@
                             <label class="font-semibold text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">Trạng
                                 thái</label>
                             <div id="status-group" class="flex flex-col space-y-2">
+                                <label class="inline-flex items-center cursor-pointer group">
+                                    <input value="" class="form-radio text-primary" name="status" type="radio" checked/>
+                                    <span class="ml-2 text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tất cả</span>
+                                </label>
                                 <label class="inline-flex items-center cursor-pointer group"
                                        th:each="status : ${statuses}">
                                     <input th:value="${status}" class="form-radio text-primary" name="status"
-                                           type="radio" th:name="status"/>
+                                           type="radio"/>
                                     <span class="ml-2 text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors"
                                           th:text="${status.value}"></span>
                                 </label>
@@ -77,7 +81,7 @@
 
                         </div>
 
-                        <button onclick="resetFilters()"
+                        <button id="resetFiltersBtn"
                                 class="mt-6 w-full py-2 text-xs font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">
                             Xoá lọc
                         </button>
@@ -87,103 +91,152 @@
             <!--  Event List  -->
             <div class="flex-1">
                 <div id="event-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div id="loading-events" class="col-span-full text-center py-20 text-slate-500">
-                        <span class="animate-pulse">Loading events...</span>
-                    </div>
                 </div>
+                <div id="loading-events" class="text-center py-8 text-slate-500 hidden">
+                    <span class="animate-pulse">Đang tải sự kiện...</span>
+                </div>
+                <div id="load-more-trigger" class="h-8"></div>
             </div>
         </div>
     </div>
 </div>
 <th:block layout:fragment="scripts">
     <script type="module">
-        import {buildQuery} from "/js/utils/queryUtils.js";
-
         const eventContainer = document.getElementById("event-container");
         const loadingEvents = document.getElementById("loading-events");
+        const loadMoreTrigger = document.getElementById("load-more-trigger");
         const searchInput = document.getElementById("search-event");
         const statusGroup = document.getElementById("status-group");
         const categoryGroup = document.getElementById("category-group");
+        const resetFilterBtn = document.getElementById("resetFiltersBtn");
 
-        let searchTimeout;
+        const state = {
+            page: 1,
+            size: 9,
+            search: "",
+            status: "",
+            categoryIds: [],
+            isLoading: false,
+            hasMore: true
+        };
+
+        let searchTimeout = null;
+        let observer = null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            loadEventsFromServer();
-
-            document.getElementById("search-event").addEventListener("input", handleFilterChange);
-
-            document.getElementById("status-group").addEventListener("change", handleFilterChange);
-
-            document.getElementById("category-group").addEventListener("change", handleFilterChange);
+            bindFilters();
+            initInfiniteScroll();
+            resetAndLoad();
         });
 
-        function handleFilterChange() {
-            // Xóa timeout cũ nếu người dùng đang gõ nhanh
-            clearTimeout(searchTimeout);
+        function bindFilters() {
+            searchInput.addEventListener("input", () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    state.search = searchInput.value.trim();
+                    resetAndLoad();
+                }, 400);
+            });
 
-            // Đợi 500ms sau khi ngừng gõ mới gọi API (tránh spam server)
-            searchTimeout = setTimeout(() => {
-                loadEventsFromServer();
-            }, 500);
+            statusGroup.addEventListener("change", () => {
+                const selectedStatus = statusGroup.querySelector('input[name="status"]:checked');
+                state.status = selectedStatus ? selectedStatus.value : "";
+                resetAndLoad();
+            });
+
+            categoryGroup.addEventListener("change", () => {
+                state.categoryIds = Array.from(categoryGroup.querySelectorAll(".category-checkbox:checked"))
+                    .map((cb) => cb.value);
+                resetAndLoad();
+            });
+
+            resetFilterBtn?.addEventListener("click", (event) => {
+                event.preventDefault();
+                searchInput.value = "";
+                const allStatusRadio = statusGroup.querySelector('input[name="status"][value=""]');
+                if (allStatusRadio) allStatusRadio.checked = true;
+                categoryGroup.querySelectorAll(".category-checkbox").forEach((cb) => cb.checked = false);
+
+                state.search = "";
+                state.status = "";
+                state.categoryIds = [];
+                resetAndLoad();
+            });
         }
 
-        async function loadEventsFromServer() {
-
-            loadingEvents.style.display = "none";
-            eventContainer.style.opacity = "1";
-
-            const query = searchInput.value;
-            const selectedStatus = statusGroup.querySelector(
-                'input[name="status"]:checked'
+        function initInfiniteScroll() {
+            observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting) {
+                        loadEvents();
+                    }
+                },
+                {rootMargin: "200px"}
             );
-            const status = selectedStatus ? selectedStatus.value : "";
-            const selectedCats = Array.from(categoryGroup.querySelectorAll('input:checked'))
-                .map(cb => cb.value)
-                .join(','); // Chuyển mảng [1,2] thành chuỗi "1,2"
+            observer.observe(loadMoreTrigger);
+        }
 
-            const params = {
-                search: query,
-                status: status ? status : "",
-                categoryIds: selectedCats,
-                page: 0,
-                size: 20 // Hoặc số lượng bạn muốn
-            };
+        function resetAndLoad() {
+            state.page = 1;
+            state.hasMore = true;
+            eventContainer.innerHTML = "";
+            loadEvents();
+        }
+
+        async function loadEvents() {
+            if (state.isLoading || !state.hasMore) return;
+            state.isLoading = true;
+            loadingEvents.classList.remove("hidden");
 
             try {
-                const response = await fetch(`/api/events?${buildQuery(params)}`);
+                const params = new URLSearchParams();
+                params.set("page", String(state.page));
+                params.set("size", String(state.size));
+                if (state.search) params.set("search", state.search);
+                if (state.status) params.set("status", state.status);
+                state.categoryIds.forEach((id) => params.append("categoryIds", id));
+
+                const response = await fetch(`/api/events?${params.toString()}`);
                 const result = await response.json();
 
-                // Tùy theo cấu trúc Page của Spring: result.content hoặc result.data
-                const data = result.data.data || [];
+                const pageData = result?.data || {};
+                const events = pageData.data || [];
 
-                renderEvents(data);
-
-                if (data.length === 0) {
-                    eventContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Không tìm thấy sự hiệu nào khớp với bộ lọc.</div>';
+                if (state.page === 1 && events.length === 0) {
+                    eventContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Không tìm thấy sự kiện nào khớp với bộ lọc.</div>';
+                    state.hasMore = false;
+                    return;
                 }
 
+                appendEvents(events);
+
+                const totalPages = pageData.totalPages || 0;
+                state.page += 1;
+                state.hasMore = state.page <= totalPages;
             } catch (error) {
                 console.error("Lỗi khi tải sự kiện:", error);
-                loadingEvents.innerHTML = `<p class="text-red-500">Không thể kết nối máy chủ.</p>`;
+                if (state.page === 1) {
+                    eventContainer.innerHTML = '<div class="col-span-full text-center py-10 text-red-500">Không thể kết nối máy chủ.</div>';
+                }
             } finally {
-                loadingEvents.style.display = "none";
-                eventContainer.style.opacity = "1";
+                state.isLoading = false;
+                loadingEvents.classList.add("hidden");
             }
         }
 
-        function renderEvents(events) {
-            eventContainer.innerHTML = ''; // Xóa trắng trước khi render
-
+        function appendEvents(events) {
             events.forEach(event => {
                 const isCompleted = event.status === 'COMPLETED';
-                const progress = Math.min((event.currentAmount / event.targetAmount) * 100, 100).toFixed(2);
+                const currentAmount = Number(event.currentAmount || 0);
+                const targetAmount = Number(event.targetAmount || 0);
+                const progress = targetAmount > 0 ? Math.min((currentAmount / targetAmount) * 100, 100).toFixed(2) : 0;
 
                 const col = document.createElement('div');
-                col.className = 'event-item'; // Để phục vụ filter sau này
+                col.className = 'event-item';
                 col.dataset.status = event.status;
-                col.dataset.categoryId = event.category.id;
+                col.dataset.categoryId = event.category?.id || '';
 
-                const dataRange = new Date(event.startDate).toDateString()
+                const dateRange = formatDateRange(event.startDate, event.endDate);
 
                 col.innerHTML = `
                 <article class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200 dark:border-slate-800 group flex flex-col h-full ${isCompleted ? 'opacity-90' : ''}">
@@ -194,19 +247,19 @@
 
                         <div class="absolute top-4 left-4 ${isCompleted ? 'bg-slate-600/90' : 'bg-emerald-500/90'} backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
                             ${isCompleted ?
-                    `<span class="material-icons text-[10px]">check_circle</span> ${event.status}` :
-                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status}`}
+                    `<span class="material-icons text-[10px]">check_circle</span> ${event.status || 'Hoàn thành'}` :
+                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status.value || 'Đang diễn ra'}`}
                         </div>
                     </div>
 
                     <div class="p-5 flex-1 flex flex-col">
                         <div class="flex justify-between items-start mb-2">
                             <div class="text-xs font-semibold text-primary bg-primary-light/50 px-2 py-1 rounded">
-                                ${event.category.name}
+                                ${event.category?.name || 'Sự kiện'}
                             </div>
                             <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
                                 <span class="material-icons text-sm mr-1">event</span>
-                                ${dataRange}
+                                ${dateRange}
                             </div>
                         </div>
 
@@ -215,13 +268,13 @@
                         </h3>
 
                         <p class="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2 flex-grow">
-                            ${event.shortDescription}
+                            ${event.shortDescription || ''}
                         </p>
 
                         <div class="mt-auto">
                             <div class="flex justify-between text-sm mb-1.5 font-medium">
-                                <span class="text-slate-900 dark:text-white">${formatCurrency(event.currentAmount)}</span>
-                                <span class="text-slate-500">of ${formatCurrency(event.targetAmount)}</span>
+                                <span class="text-slate-900 dark:text-white">${formatCurrency(currentAmount)}</span>
+                                <span class="text-slate-500">/ ${formatCurrency(targetAmount)}</span>
                             </div>
 
                             <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-2">
@@ -229,10 +282,10 @@
                             </div>
 
                             <div class="flex justify-between items-center mt-4">
-                                <span class="text-xs font-bold text-primary">${Math.round(progress)}% Funded</span>
+                                <span class="text-xs font-bold text-primary">Đạt ${Math.round(progress)}%</span>
                                 <a href="/events/${event.slug}" class="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center transition-colors">
-                                    ${isCompleted ? 'Report' : 'Details'}
-                                    <span class="material-icons text-sm ml-1">${isCompleted ? 'description' : 'arrow_forward'}</span>
+                                    Xem chi tiết
+                                    <span class="material-icons text-sm ml-1">arrow_forward</span>
                                 </a>
                             </div>
                         </div>
@@ -243,18 +296,18 @@
             });
         }
 
-        function resetFilters() {
-            searchInput.value = "";
-            statusGroup.querySelector('input[value="ALL"]').checked = true;
-            categoryGroup.querySelectorAll('input').forEach(cb => cb.checked = false);
-            loadEventsFromServer();
+        function formatDateRange(startDate, endDate) {
+            if (!startDate) return '---';
+            const start = new Date(startDate);
+            const startText = start.toLocaleDateString('vi-VN');
+            if (!endDate) return startText;
+            const end = new Date(endDate);
+            return `${startText} - ${end.toLocaleDateString('vi-VN')}`;
         }
-
 
         function formatCurrency(value) {
             return new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'})
-                .format(value)
-                .replace('₫', 'VND'); // Hoặc để ₫ tùy ý bạn
+                .format(value || 0);
         }
     </script>
 </th:block>

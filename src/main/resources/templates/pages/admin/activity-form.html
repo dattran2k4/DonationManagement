@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-<div layout:fragment="content" class="flex-1 flex flex-col h-screen overflow-hidden">
+<div layout:fragment="content" class="flex flex-col overflow-hidden">
     <!-- Top Header -->
     <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
         <div class="flex items-center gap-2">
@@ -55,8 +55,8 @@
         </div>
     </header>
     <!-- Scrollable Content -->
-    <div class="flex-1 overflow-y-auto p-8">
-        <div class="max-w-6xl mx-auto">
+    <div class="flex-1 overflow-y-auto py-2">
+        <div class="max-w-6xl">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Main Form Area -->
                 <div class="lg:col-span-2 space-y-8">
@@ -221,8 +221,8 @@
                              class="w-full aspect-video rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-all group overflow-hidden relative">
 
                             <div id="thumbnailPreview"
-                                 th:if="${activity?.thumbnailUrl != null}"
-                                 th:style="|background-image:url('${activity.thumbnailUrl}')|"
+                                 th:style="${activity?.thumbnailUrl != null} ? |background-image:url('${activity.thumbnailUrl}')| : ''"
+                                 th:classappend="${activity?.thumbnailUrl != null} ? '' : ' hidden'"
                                  class="absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40">
                             </div>
 
@@ -247,8 +247,15 @@
         import {activityApi} from "/js/apis/activityApi.js";
 
         let myEditor;
-        let currentThumbnailUrl = document.getElementById('thumbnailPreview').style.backgroundImage
-            .slice(5, -2).replace(/["']/g, "") || "";
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        let currentThumbnailUrl = "";
+
+        if (thumbnailPreview && thumbnailPreview.style.backgroundImage) {
+            const bgImage = thumbnailPreview.style.backgroundImage;
+            currentThumbnailUrl = bgImage.startsWith("url(")
+                ? bgImage.slice(5, -2).replace(/["']/g, "")
+                : "";
+        }
 
         console.log(currentThumbnailUrl);
 
@@ -286,8 +293,10 @@
                 const reader = new FileReader();
 
                 reader.onload = (e) => {
-                    preview.style.backgroundImage = `url('${e.target.result}')`;
-                    preview.classList.remove('hidden');
+                    if (preview) {
+                        preview.style.backgroundImage = `url('${e.target.result}')`;
+                        preview.classList.remove('hidden');
+                    }
                     if (instruction) {
                         instruction.classList.add('opacity-0');
                         instruction.classList.add('group-hover:opacity-100');
@@ -321,6 +330,7 @@
                     id: document.getElementById('activityId')?.value || null, // Nếu là edit sẽ có ID
                     eventId: document.getElementById('activityEvent').value,
                     name: document.getElementById('activityName').value,
+                    location: document.getElementById('activityLocation').value,
                     shortDescription: document.getElementById('activityShortDescription').value,
                     content: editorData,
                     status: document.getElementById('activityStatus').value,
