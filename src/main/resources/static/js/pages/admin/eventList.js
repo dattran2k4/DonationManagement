@@ -67,6 +67,14 @@ const renderTable = (data) => {
         // Tính phần trăm gây quỹ
         const percent = item.targetAmount > 0 ? Math.min(Math.round((item.currentAmount / item.targetAmount) * 100), 100) : 0;
         const isCompleted = percent >= 100;
+        const isLocked = item.status === 'COMPLETED';
+        const actionHtml = isLocked
+            ? ''
+            : `
+                <a href="/admin/events/${item.id}/form" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Cập nhật">
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                </a>
+            `;
 
         return `
         <tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
@@ -98,9 +106,7 @@ const renderTable = (data) => {
             </td>
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
-                    <a href="/admin/events/${item.id}/form" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Cập nhật">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </a>
+                    ${actionHtml}
                 </div>
             </td>
         </tr>

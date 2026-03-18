@@ -18,11 +18,9 @@ public class EventRequest {
     private String name;
 
     @NotNull(message = "Thời gian bắt đầu sự kiện không được để trống")
-    @FutureOrPresent(message = "Thời gian bắt đầu sự kiện phải trong hiện tại hoặc tương lai")
     private LocalDate startDate;
 
     @NotNull(message = "Thời gian kết thúc sự kiện không được để trống")
-    @Future(message = "Thời gian kết thúc sự kiện phải trong tương lai")
     private LocalDate endDate;
 
     private BigDecimal currentAmount;

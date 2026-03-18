@@ -8,6 +8,7 @@ import com.chiaseyeuthuong.dto.response.CategoryResponse;
 import com.chiaseyeuthuong.dto.response.EventResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
+import com.chiaseyeuthuong.exception.BusinessException;
 import com.chiaseyeuthuong.model.Category;
 import com.chiaseyeuthuong.model.Event;
 import com.chiaseyeuthuong.repository.CategoryRepository;
@@ -36,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,7 +82,12 @@ public class EventServiceImpl implements EventService {
     @Override
     public long saveEvent(EventRequest request) {
         log.info("Processing saving event: ");
+        validateEventSchedule(request);
         Event event = (request.getId() != null) ? findEventById(request.getId()) : new Event();
+
+        if (request.getId() != null && EEventStatus.COMPLETED.equals(event.getStatus())) {
+            throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
+        }
 
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         event.setCategory(category);
@@ -94,6 +101,45 @@ public class EventServiceImpl implements EventService {
         log.info("Saved event: {} ", result.getId());
 
         return result.getId();
+    }
+
+    private void validateEventSchedule(EventRequest request) {
+        LocalDate startDate = request.getStartDate();
+        LocalDate endDate = request.getEndDate();
+        EEventStatus status = request.getStatus();
+        LocalDate today = LocalDate.now();
+
+        if (startDate == null || endDate == null || status == null) {
+            return;
+        }
+
+        if (endDate.isBefore(startDate)) {
+            throw new BusinessException("Thời gian kết thúc sự kiện không được trước thời gian bắt đầu");
+        }
+
+        switch (status) {
+            case UPCOMING -> {
+                if (startDate.isBefore(today)) {
+                    throw new BusinessException("Sự kiện sắp diễn ra không được có thời gian bắt đầu trong quá khứ");
+                }
+            }
+            case ONGOING -> {
+                if (startDate.isAfter(today)) {
+                    throw new BusinessException("Sự kiện đang diễn ra phải có thời gian bắt đầu trong hiện tại hoặc quá khứ");
+                }
+                if (endDate.isBefore(today)) {
+                    throw new BusinessException("Sự kiện đang diễn ra phải có thời gian kết thúc trong hiện tại hoặc tương lai");
+                }
+            }
+            case COMPLETED -> {
+                if (startDate.isAfter(today)) {
+                    throw new BusinessException("Sự kiện đã hoàn thành không được có thời gian bắt đầu trong tương lai");
+                }
+                if (endDate.isAfter(today)) {
+                    throw new BusinessException("Sự kiện đã hoàn thành không được có thời gian kết thúc trong tương lai");
+                }
+            }
+        }
     }
 
     @Override
@@ -116,6 +162,11 @@ public class EventServiceImpl implements EventService {
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(EEventStatus status, Long id) {
         Event event = findEventById(id);
+
+        if (EEventStatus.COMPLETED.equals(event.getStatus())) {
+            throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
+        }
+
         event.setStatus(status);
 
         if (status.equals(EEventStatus.COMPLETED)) {
@@ -150,6 +201,9 @@ public class EventServiceImpl implements EventService {
             Event event = null;
             if (id != null) {
                 event = findEventById(id);
+                if (EEventStatus.COMPLETED.equals(event.getStatus())) {
+                    throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
+                }
             }
             File directory = new File(UPLOAD_DIR);
             if (!directory.exists()) directory.mkdirs();
