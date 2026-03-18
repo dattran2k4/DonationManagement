@@ -30,6 +30,7 @@ public class AdminActivityController {
         ActivityRequest activityRequest = new ActivityRequest();
         if (eventId != null) {
             activityRequest.setEventId(eventId);
+            activityRequest.setStartDate(eventService.getEventById(eventId).getStartDate());
         }
 
         model.addAttribute("activity", activityRequest);

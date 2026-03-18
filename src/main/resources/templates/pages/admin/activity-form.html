@@ -77,6 +77,7 @@
                                     <option value="">-- Chọn sự kiện --</option>
                                     <option th:each="e : ${events.data}"
                                             th:value="${e.id}"
+                                            th:attr="data-start-date=${e.startDate}"
                                             th:text="${e.name}"
                                             th:selected="${activity.eventId != null and activity.eventId == e.id}">
                                     </option>
@@ -248,6 +249,9 @@
 
         let myEditor;
         const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const activityIdInput = document.getElementById('activityId');
+        const activityEventSelect = document.getElementById('activityEvent');
+        const activityStartDateInput = document.getElementById('activityStartDate');
         let currentThumbnailUrl = "";
 
         if (thumbnailPreview && thumbnailPreview.style.backgroundImage) {
@@ -256,8 +260,6 @@
                 ? bgImage.slice(5, -2).replace(/["']/g, "")
                 : "";
         }
-
-        console.log(currentThumbnailUrl);
 
         // 1. Khởi tạo CKEditor
         ClassicEditor
@@ -309,7 +311,6 @@
 
                     if (response.status === 201 || response.status === 200) {
                         currentThumbnailUrl = response.data;
-                        console.log("Ảnh đã lưu tại Server:", currentThumbnailUrl);
                     } else {
                         alert("Server báo lỗi: " + response.message);
                     }
@@ -322,6 +323,22 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const saveBtn = document.getElementById('saveBtn');
+            const isCreateMode = !activityIdInput?.value;
+
+            const syncStartDateFromEvent = () => {
+                if (!isCreateMode || !activityEventSelect || !activityStartDateInput) return;
+
+                const selectedOption = activityEventSelect.options[activityEventSelect.selectedIndex];
+                const eventStartDate = selectedOption?.dataset?.startDate;
+
+                if (!eventStartDate) return;
+                if (activityStartDateInput.value) return;
+
+                activityStartDateInput.value = eventStartDate;
+            };
+
+            syncStartDateFromEvent();
+            activityEventSelect?.addEventListener('change', syncStartDateFromEvent);
 
             saveBtn.addEventListener('click', async () => {
                 const editorData = myEditor ? myEditor.getData() : "";
