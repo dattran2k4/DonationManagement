@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface DonorRepository extends JpaRepository<Donor, Long>, JpaSpecificationExecutor<Donor> {
@@ -29,4 +30,6 @@ public interface DonorRepository extends JpaRepository<Donor, Long>, JpaSpecific
     @Query("SELECT COUNT(DISTINCT d.donor.id) FROM Donation d " +
             "WHERE d.status = 'CONFIRMED'")
     long countDonor();
+
+    long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(LocalDateTime from, LocalDateTime to);
 }
