@@ -61,7 +61,7 @@ CREATE TABLE `roles` (
 CREATE TABLE `system_configs` (
                                   `id` bigint NOT NULL AUTO_INCREMENT,
                                   `config_key` varchar(255) DEFAULT NULL,
-                                  `config_value` varchar(255) DEFAULT NULL,
+                                  `config_value` text,
                                   `description` varchar(255) DEFAULT NULL,
                                   PRIMARY KEY (`id`),
                                   UNIQUE KEY `uk_system_configs_key` (`config_key`)
@@ -389,62 +389,112 @@ INSERT INTO organizations (id, billing_address, name, representative, tax_code) 
                                                                                               (4, '12 Đường Số 3, Quận Hải Châu, Đà Nẵng', 'Công ty TNHH An Phát', 'Nguyễn Hoài Nam', '0402123456'),
                                                                                               (5, '88 Nguyễn Văn Linh, Quận Thanh Khê, Đà Nẵng', 'Thiện Tâm Group', 'Trần Thị Mai', '0402987654');
 
--- 10) donations (10 dòng)
+-- 10) donations
 INSERT INTO donations (
     id, amount, approval_required, confirmed_at, created_at, donated_at,
     donation_via, memo_code, message, need_receipt, order_code, payment_method,
     receipt_email, receipt_name, status, target, type, updated_at,
     activity_id, confirmed_by_user_id, created_by_user_id, donor_id, event_id
 ) VALUES
-      (1,  500000.00, 0, '2026-02-10 10:30:00.000000', '2026-02-10 10:05:00.000000', '2026-02-10 10:05:00.000000',
-       'WEB', 'GMS-20260210-0001', 'Chúc bé sớm khỏe lại.', 1, 202602100001, 'BANK_TRANSFER_ONLINE',
-       'lan.pham@example.com', 'Phạm Thị Lan', 'CONFIRMED', 'ACTIVITY', 'MONEY', '2026-02-10 10:30:00.000000',
-       1, 3, NULL, 1, NULL),
+      (1,  500000.00, 0, '2025-12-28 10:30:00.000000', '2025-12-28 10:05:00.000000', '2025-12-28 10:05:00.000000',
+       'WEB', 'GMS-20251228-0001', 'Ủng hộ cho chương trình cuối năm.', 1, 202512280001, 'BANK_TRANSFER_ONLINE',
+       'lan.pham@example.com', 'Phạm Thị Lan', 'CONFIRMED', 'EVENT', 'MONEY', '2025-12-28 10:30:00.000000',
+       NULL, 3, NULL, 1, 2),
 
-      (2, 2000000.00, 0, NULL, '2026-02-11 09:10:00.000000', '2026-02-11 09:10:00.000000',
-       'WEB', 'GMS-20260211-0002', 'Góp một phần nhỏ cho chương trình.', 0, 202602110002, 'BANK_TRANSFER_OFFLINE',
-       NULL, NULL, 'PENDING_PAYMENT', 'EVENT', 'MONEY', '2026-02-11 09:10:00.000000',
-       NULL, NULL, NULL, 2, 4),
+      (2, 2000000.00, 0, '2026-01-03 09:25:00.000000', '2026-01-03 09:10:00.000000', '2026-01-03 09:10:00.000000',
+       'WEB', 'GMS-20260103-0002', 'Góp một phần nhỏ cho chương trình.', 0, 202601030002, 'BANK_TRANSFER_OFFLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-03 09:25:00.000000',
+       NULL, 3, NULL, 2, 4),
 
-      (3, 30000000.00, 1, NULL, '2026-02-12 14:20:00.000000', '2026-02-12 14:20:00.000000',
-       'STAFF', 'GMS-20260212-0003', 'Tài trợ theo chương trình cộng đồng, vui lòng liên hệ xác nhận.', 1, 202602120003, 'BANK_TRANSFER_OFFLINE',
-       'accounting@anphat-co.local', 'Công ty TNHH An Phát', 'PENDING_APPROVED', 'EVENT', 'MONEY', '2026-02-12 14:20:00.000000',
-       NULL, NULL, 2, 4, 2),
+      (3, 30000000.00, 1, '2026-01-08 14:45:00.000000', '2026-01-08 14:20:00.000000', '2026-01-08 14:20:00.000000',
+       'STAFF', 'GMS-20260108-0003', 'Tài trợ theo chương trình cộng đồng.', 1, 202601080003, 'BANK_TRANSFER_OFFLINE',
+       'contact@anphat-co.local', 'Công ty TNHH An Phát', 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-08 14:45:00.000000',
+       NULL, 3, 2, 4, 2),
 
-      (4, 1500000.00, 0, NULL, '2026-02-13 08:55:00.000000', '2026-02-13 08:55:00.000000',
-       'WEB', 'GMS-20260213-0004', 'Không tiện để lại thông tin thêm.', 0, 202602130004, 'BANK_TRANSFER_ONLINE',
-       NULL, NULL, 'FAILED', 'ACTIVITY', 'MONEY', '2026-02-13 08:55:00.000000',
-       5, NULL, NULL, 3, NULL),
+      (4, 1500000.00, 0, '2026-01-12 08:55:00.000000', '2026-01-12 08:40:00.000000', '2026-01-12 08:40:00.000000',
+       'WEB', 'GMS-20260112-0004', 'Ủng hộ mua sách cho các em.', 0, 202601120004, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-12 08:55:00.000000',
+       NULL, 3, NULL, 3, 4),
 
-      (5, 800000.00, 0, NULL, '2026-02-14 11:00:00.000000', '2026-02-14 11:00:00.000000',
-       'WEB', 'GMS-20260214-0005', 'Xin hủy do nhập nhầm số tiền.', 0, 202602140005, 'BANK_TRANSFER_ONLINE',
-       NULL, NULL, 'CANCELLED', 'EVENT', 'MONEY', '2026-02-14 11:05:00.000000',
-       NULL, NULL, NULL, 1, 1),
+      (5, 800000.00, 0, '2026-01-16 11:10:00.000000', '2026-01-16 11:00:00.000000', '2026-01-16 11:00:00.000000',
+       'WEB', 'GMS-20260116-0005', 'Chúc chương trình thành công.', 0, 202601160005, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-16 11:10:00.000000',
+       NULL, 3, NULL, 1, 1),
 
-      (6, 1200000.00, 0, NULL, '2026-02-15 16:40:00.000000', '2026-02-15 16:40:00.000000',
-       'WEB', 'GMS-20260215-0006', 'Mong chương trình triển khai suôn sẻ.', 0, 202602150006, 'BANK_TRANSFER_OFFLINE',
-       NULL, NULL, 'REJECTED', 'EVENT', 'MONEY', '2026-02-15 17:10:00.000000',
-       NULL, NULL, NULL, 2, 3),
+      (6, 1200000.00, 0, '2026-01-21 16:55:00.000000', '2026-01-21 16:40:00.000000', '2026-01-21 16:40:00.000000',
+       'WEB', 'GMS-20260121-0006', 'Mong chương trình triển khai suôn sẻ.', 0, 202601210006, 'BANK_TRANSFER_OFFLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-21 16:55:00.000000',
+       NULL, 3, NULL, 2, 1),
 
-      (7, 1000000.00, 0, '2026-02-16 10:15:00.000000', '2026-02-16 09:50:00.000000', '2026-02-16 09:50:00.000000',
-       'STAFF', 'GMS-20260216-0007', 'Đóng góp tại buổi gây quỹ offline.', 1, 202602160007, 'CASH',
-       'minh.nguyen@example.com', 'Nguyễn Văn Minh', 'CONFIRMED', 'EVENT', 'MONEY', '2026-02-16 10:15:00.000000',
+      (7, 1000000.00, 0, '2026-01-26 10:15:00.000000', '2026-01-26 09:50:00.000000', '2026-01-26 09:50:00.000000',
+       'STAFF', 'GMS-20260126-0007', 'Đóng góp tại buổi gây quỹ offline.', 1, 202601260007, 'CASH',
+       'minh.nguyen@example.com', 'Nguyễn Văn Minh', 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-26 10:15:00.000000',
        NULL, 5, 4, 2, 4),
 
-      (8, 5000000.00, 0, '2026-02-17 15:30:00.000000', '2026-02-17 15:00:00.000000', '2026-02-17 15:00:00.000000',
-       'STAFF', 'GMS-20260217-0008', 'Hiện vật quy đổi theo giá trị hóa đơn (ước tính).', 1, 202602170008, 'CASH',
-       'huong.tran@example.com', 'Trần Ngọc Hương', 'CONFIRMED', 'ACTIVITY', 'ITEM', '2026-02-17 15:30:00.000000',
+      (8, 5000000.00, 0, '2026-02-01 15:30:00.000000', '2026-02-01 15:00:00.000000', '2026-02-01 15:00:00.000000',
+       'STAFF', 'GMS-20260201-0008', 'Hiện vật quy đổi theo giá trị hóa đơn.', 1, 202602010008, 'CASH',
+       'huong.tran@example.com', 'Trần Ngọc Hương', 'CONFIRMED', 'ACTIVITY', 'ITEM', '2026-02-01 15:30:00.000000',
        3, 3, 2, 3, NULL),
 
-      (9, 250000.00, 0, '2026-02-18 09:20:00.000000', '2026-02-18 09:10:00.000000', '2026-02-18 09:10:00.000000',
-       'WEB', 'GMS-20260218-0009', 'Ủng hộ chung cho hoạt động của CLB.', 0, 202602180009, 'BANK_TRANSFER_ONLINE',
-       NULL, NULL, 'CONFIRMED', 'NONE', 'MONEY', '2026-02-18 09:20:00.000000',
+      (9, 250000.00, 0, '2026-02-05 09:20:00.000000', '2026-02-05 09:10:00.000000', '2026-02-05 09:10:00.000000',
+       'WEB', 'GMS-20260205-0009', 'Ủng hộ chung cho hoạt động của CLB.', 0, 202602050009, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'NONE', 'MONEY', '2026-02-05 09:20:00.000000',
        NULL, 3, NULL, 1, NULL),
 
-      (10, 3500000.00, 0, NULL, '2026-02-19 13:30:00.000000', '2026-02-19 13:30:00.000000',
-       'WEB', 'GMS-20260219-0010', 'Chuyển khoản theo nội dung, nhờ CLB xác nhận sau.', 1, 202602190010, 'BANK_TRANSFER_OFFLINE',
-       'csr@thientam-group.local', 'Thiện Tâm Group', 'PENDING_PAYMENT', 'ACTIVITY', 'MONEY', '2026-02-19 13:30:00.000000',
-       1, NULL, NULL, 5, NULL);
+      (10, 3500000.00, 0, '2026-02-09 13:45:00.000000', '2026-02-09 13:30:00.000000', '2026-02-09 13:30:00.000000',
+       'WEB', 'GMS-20260209-0010', 'Ủng hộ cho chi phí phẫu thuật.', 1, 202602090010, 'BANK_TRANSFER_OFFLINE',
+       'csr@thientam-group.local', 'Thiện Tâm Group', 'CONFIRMED', 'ACTIVITY', 'MONEY', '2026-02-09 13:45:00.000000',
+       1, 3, NULL, 5, NULL),
+
+      (11, 2200000.00, 0, '2026-02-14 10:10:00.000000', '2026-02-14 09:40:00.000000', '2026-02-14 09:40:00.000000',
+       'WEB', 'GMS-20260214-0011', 'Ủng hộ đợt 1 cho bé An.', 0, 202602140011, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-02-14 10:10:00.000000',
+       NULL, 3, NULL, 2, 1),
+
+      (12, 4700000.00, 0, '2026-02-20 11:25:00.000000', '2026-02-20 11:05:00.000000', '2026-02-20 11:05:00.000000',
+       'STAFF', 'GMS-20260220-0012', 'Ủng hộ tại bàn tiếp nhận trực tiếp.', 1, 202602200012, 'CASH',
+       'lan.pham@example.com', 'Phạm Thị Lan', 'CONFIRMED', 'EVENT', 'MONEY', '2026-02-20 11:25:00.000000',
+       NULL, 5, 4, 1, 4),
+
+      (13, 1250000.00, 0, '2026-02-25 17:05:00.000000', '2026-02-25 16:50:00.000000', '2026-02-25 16:50:00.000000',
+       'WEB', 'GMS-20260225-0013', 'Ủng hộ hoạt động mua sách.', 0, 202602250013, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'ACTIVITY', 'MONEY', '2026-02-25 17:05:00.000000',
+       5, 3, NULL, 3, NULL),
+
+      (14, 9000000.00, 0, '2026-03-02 09:15:00.000000', '2026-03-02 08:50:00.000000', '2026-03-02 08:50:00.000000',
+       'STAFF', 'GMS-20260302-0014', 'Tài trợ đầu tháng cho sách vùng cao.', 1, 202603020014, 'BANK_TRANSFER_OFFLINE',
+       'contact@anphat-co.local', 'Công ty TNHH An Phát', 'CONFIRMED', 'EVENT', 'MONEY', '2026-03-02 09:15:00.000000',
+       NULL, 3, 2, 4, 4),
+
+      (15, 1850000.00, 0, '2026-03-06 14:00:00.000000', '2026-03-06 13:35:00.000000', '2026-03-06 13:35:00.000000',
+       'WEB', 'GMS-20260306-0015', 'Ủng hộ chung tay cùng câu lạc bộ.', 0, 202603060015, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CONFIRMED', 'EVENT', 'MONEY', '2026-03-06 14:00:00.000000',
+       NULL, 3, NULL, 5, 1),
+
+      (16, 2600000.00, 0, NULL, '2026-03-08 10:30:00.000000', '2026-03-08 10:30:00.000000',
+       'WEB', 'GMS-20260308-0016', 'Chuyển khoản nhưng chưa hoàn tất.', 1, 202603080016, 'BANK_TRANSFER_ONLINE',
+       'minh.nguyen@example.com', 'Nguyễn Văn Minh', 'PENDING_PAYMENT', 'EVENT', 'MONEY', '2026-03-08 10:30:00.000000',
+       NULL, NULL, NULL, 2, 4),
+
+      (17, 3200000.00, 1, NULL, '2026-03-10 09:20:00.000000', '2026-03-10 09:20:00.000000',
+       'STAFF', 'GMS-20260310-0017', 'Cần chờ duyệt do tài trợ số tiền lớn hơn ngưỡng.', 1, 202603100017, 'BANK_TRANSFER_OFFLINE',
+       'csr@thientam-group.local', 'Thiện Tâm Group', 'PENDING_APPROVED', 'EVENT', 'MONEY', '2026-03-10 09:20:00.000000',
+       NULL, NULL, 2, 5, 1),
+
+      (18, 600000.00, 0, NULL, '2026-03-12 15:10:00.000000', '2026-03-12 15:10:00.000000',
+       'WEB', 'GMS-20260312-0018', 'Nhập nhầm thông tin nên yêu cầu hủy.', 0, 202603120018, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'CANCELLED', 'EVENT', 'MONEY', '2026-03-12 15:20:00.000000',
+       NULL, NULL, NULL, 1, 3),
+
+      (19, 1100000.00, 0, NULL, '2026-03-14 11:45:00.000000', '2026-03-14 11:45:00.000000',
+       'WEB', 'GMS-20260314-0019', 'Giao dịch lỗi ngân hàng.', 0, 202603140019, 'BANK_TRANSFER_ONLINE',
+       NULL, NULL, 'FAILED', 'ACTIVITY', 'MONEY', '2026-03-14 11:45:00.000000',
+       1, NULL, NULL, 3, NULL),
+
+      (20, 1400000.00, 0, NULL, '2026-03-16 16:05:00.000000', '2026-03-16 16:05:00.000000',
+       'WEB', 'GMS-20260316-0020', 'Không đạt điều kiện xác nhận hồ sơ.', 0, 202603160020, 'BANK_TRANSFER_OFFLINE',
+       NULL, NULL, 'REJECTED', 'EVENT', 'MONEY', '2026-03-16 16:30:00.000000',
+       NULL, NULL, NULL, 2, 3);
 
 -- 11) donation_transactions (6 dòng)
 INSERT INTO donation_transactions (

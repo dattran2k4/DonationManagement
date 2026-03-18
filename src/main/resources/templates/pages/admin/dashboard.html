@@ -73,82 +73,54 @@
         <div class="grid grid-cols-1 gap-8">
             <!-- Chart -->
             <div class="bg-surface rounded-xl p-6 shadow-sm border border-slate-100">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900">Xu hướng quyên góp</h3>
-                        <p class="text-slate-500 text-sm">Thống kê trong 30 ngày qua</p>
+                        <p id="donationTrendSummary" class="text-slate-500 text-sm">Thống kê trong 7 ngày gần nhất</p>
                     </div>
-                    <button class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
-                        <span class="material-symbols-outlined text-[18px]">calendar_today</span>
-                        Tháng này
-                    </button>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
+                            <button data-dashboard-period="WEEK"
+                                    class="rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-slate-900 transition-colors">
+                                1 tuần
+                            </button>
+                            <button data-dashboard-period="MONTH"
+                                    class="rounded-lg border border-transparent bg-transparent px-3 py-2 text-xs font-semibold text-slate-600 transition-colors">
+                                1 tháng
+                            </button>
+                            <button data-dashboard-period="QUARTER"
+                                    class="rounded-lg border border-transparent bg-transparent px-3 py-2 text-xs font-semibold text-slate-600 transition-colors">
+                                1 quý
+                            </button>
+                            <button data-dashboard-period="YEAR"
+                                    class="rounded-lg border border-transparent bg-transparent px-3 py-2 text-xs font-semibold text-slate-600 transition-colors">
+                                1 năm
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            <span id="donationTrendActivePeriod">1 tuần</span>
+                        </div>
+                    </div>
                 </div>
-                <!-- Simple CSS Chart Visualization -->
-                <div class="relative h-64 w-full mt-4">
-                    <!-- Grid Lines -->
-                    <div class="absolute inset-0 flex flex-col justify-between text-xs text-slate-400">
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>50tr</span></div>
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>40tr</span></div>
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>30tr</span></div>
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>20tr</span></div>
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>10tr</span></div>
-                        <div class="border-b border-slate-100 w-full h-0 flex items-center"><span>0</span></div>
-                    </div>
-                    <!-- Chart Area -->
-                    <div class="absolute inset-0 ml-8 flex items-end justify-between px-2 pb-6 gap-2">
-                        <!-- Bar 1 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[40%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                15tr
-                            </div>
-                        </div>
-                        <!-- Bar 2 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[65%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                32tr
-                            </div>
-                        </div>
-                        <!-- Bar 3 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[45%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                21tr
-                            </div>
-                        </div>
-                        <!-- Bar 4 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[80%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                40tr
-                            </div>
-                        </div>
-                        <!-- Bar 5 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[55%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                27tr
-                            </div>
-                        </div>
-                        <!-- Bar 6 -->
-                        <div class="group relative w-full bg-primary hover:bg-primary-dark rounded-t-md h-[90%] transition-all duration-300 shadow-lg shadow-primary/20">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 block bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap z-10">
-                                45tr
-                            </div>
-                        </div>
-                        <!-- Bar 7 -->
-                        <div class="group relative w-full bg-primary/10 hover:bg-primary/20 rounded-t-sm h-[70%] transition-all duration-300">
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                35tr
-                            </div>
+                <div class="relative h-72 w-full mt-4">
+                    <div id="donationTrendGrid"
+                         class="absolute inset-0 flex flex-col justify-between text-xs text-slate-400 pointer-events-none">
+                        <div class="flex-1 border-b border-slate-100 flex items-end">
+                            <span class="inline-block w-14 pr-2 bg-white">0</span>
                         </div>
                     </div>
-                    <!-- X Axis Labels -->
-                    <div class="absolute bottom-0 left-8 right-0 flex justify-between text-xs text-slate-400 px-2 pt-2">
-                        <span>T2</span>
-                        <span>T3</span>
-                        <span>T4</span>
-                        <span>T5</span>
-                        <span>T6</span>
-                        <span class="font-bold text-primary">T7</span>
-                        <span>CN</span>
+                    <div id="donationTrendCanvas"
+                         class="absolute inset-y-0 left-14 right-0 px-2 pb-6">
+                        <div id="donationTrendBars"
+                             class="flex h-full w-full items-end gap-1"></div>
                     </div>
+                    <div id="donationTrendEmptyState"
+                         class="hidden absolute left-16 right-4 top-10 bottom-10 rounded-xl border border-dashed border-slate-200 bg-slate-50/95 px-6 py-4 text-center text-sm text-slate-500 flex items-center justify-center">
+                        Chưa có dữ liệu quyên góp trong khoảng thời gian này.
+                    </div>
+                    <div id="donationTrendLabels"
+                         class="absolute bottom-0 left-14 right-0 flex gap-1 text-[11px] text-slate-400 px-2 pt-2"></div>
                 </div>
             </div>
         </div>
@@ -291,5 +263,8 @@
         </div>
     </div>
 </div>
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/admin/dashboard.js}"></script>
+</th:block>
 </body>
 </html>

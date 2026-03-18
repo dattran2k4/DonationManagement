@@ -21,7 +21,7 @@ public class SystemConfig {
     @Column(name = "config_key", unique = true)
     private String key;
 
-    @Column(name = "config_value")
+    @Column(name = "config_value", columnDefinition = "TEXT")
     private String value;
 
     @Column(name = "description")
