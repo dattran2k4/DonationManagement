@@ -1,7 +1,6 @@
 package com.chiaseyeuthuong.controller.admin;
 
 import com.chiaseyeuthuong.common.EActivityStatus;
-import com.chiaseyeuthuong.common.EEventStatus;
 import com.chiaseyeuthuong.dto.request.ActivityRequest;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.EventService;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -26,8 +26,13 @@ public class AdminActivityController {
     }
 
     @GetMapping("/form")
-    public String showAdminActivityCreateFormPage(Model model) {
-        model.addAttribute("activity", new ActivityRequest());
+    public String showAdminActivityCreateFormPage(@RequestParam(required = false) Long eventId, Model model) {
+        ActivityRequest activityRequest = new ActivityRequest();
+        if (eventId != null) {
+            activityRequest.setEventId(eventId);
+        }
+
+        model.addAttribute("activity", activityRequest);
         model.addAttribute("statuses", EActivityStatus.values());
         model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, null));
         return "pages/admin/activity-form";

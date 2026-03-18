@@ -273,7 +273,62 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+            <section
+                    class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <div class="mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Hoạt động thuộc sự kiện</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            Quản lý nhanh các hoạt động con gắn với sự kiện này.
+                        </p>
+                    </div>
+                </div>
+
+                <div th:if="${eventFormId != null}" class="mb-4">
+                    <a th:href="@{/admin/activities/form(eventId=${eventFormId})}"
+                       class="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Thêm hoạt động
+                    </a>
+                </div>
+
+                <div th:if="${eventFormId == null}"
+                     class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                    Hãy lưu sự kiện trước để thêm và quản lý các hoạt động con.
+                </div>
+
+                <div th:if="${eventFormId != null}" class="space-y-3">
+                    <div th:if="${eventActivities == null or #lists.isEmpty(eventActivities)}"
+                         class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                        Sự kiện này chưa có hoạt động nào.
+                    </div>
+
+                    <div th:each="activity : ${eventActivities}"
+                         class="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3">
+                        <div class="min-w-0">
+                            <a th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
+                               th:text="${activity.name}"
+                               class="block truncate text-sm font-semibold text-slate-900 transition-colors hover:text-primary">
+                                Tên hoạt động
+                            </a>
+                            <p class="mt-1 text-xs text-slate-500">
+                                <span th:text="${activity.status != null ? activity.status.value : 'Chưa có trạng thái'}">Trạng thái</span>
+                                <span class="mx-2">•</span>
+                                <span th:text="${activity.startDate}"></span>
+                                <span> - </span>
+                                <span th:text="${activity.endDate}"></span>
+                            </p>
+                        </div>
+                        <a th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
+                           class="inline-flex items-center justify-center rounded-lg p-2 text-slate-500 transition-colors hover:bg-primary/10 hover:text-primary"
+                           title="Chỉnh sửa hoạt động">
+                            <span class="material-symbols-outlined text-[20px]">open_in_new</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
         </div>
         <div id="categoryModal"
              class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
