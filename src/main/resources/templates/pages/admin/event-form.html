@@ -90,19 +90,34 @@
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                             Danh mục
                         </label>
-                        <div class="relative">
-                            <select id="eventCategory"
-                                    class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm appearance-none py-2.5 pl-3 pr-10">
-                                <option value="">-- Chọn danh mục --</option>
-                                <option th:each="cat : ${categories}"
-                                        th:value="${cat.id}"
-                                        th:text="${cat.name}"
-                                        th:selected="${event?.categoryId != null and event.categoryId == cat.id}">
-                                </option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                                <span class="material-symbols-outlined">expand_more</span>
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <select id="eventCategory"
+                                        class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm appearance-none py-2.5 pl-3 pr-10">
+                                    <option value="">-- Chọn danh mục --</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat.id}"
+                                            th:text="${cat.name}"
+                                            th:selected="${event?.categoryId != null and event.categoryId == cat.id}">
+                                    </option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
                             </div>
+                            <button type="button"
+                                    id="openCreateCategoryModalBtn"
+                                    class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm transition-colors hover:border-primary hover:text-primary"
+                                    title="Thêm danh mục mới">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                            </button>
+                            <button type="button"
+                                    id="openEditCategoryModalBtn"
+                                    class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                    title="Chỉnh sửa danh mục"
+                                    disabled>
+                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                            </button>
                         </div>
                     </div>
                     <div>
@@ -260,15 +275,70 @@
                 </div>
             </div>
         </div>
+        <div id="categoryModal"
+             class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="mb-5 flex items-start justify-between gap-4">
+                    <div>
+                        <h3 id="categoryModalTitle" class="text-lg font-bold text-slate-900">Thêm danh mục</h3>
+                        <p class="mt-1 text-sm text-slate-500">Nhập tên danh mục, slug sẽ được tạo tự động.</p>
+                    </div>
+                    <button type="button"
+                            id="closeCategoryModalBtn"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <input type="hidden" id="categoryModalId">
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Tên danh mục</label>
+                        <input id="categoryModalName"
+                               type="text"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary focus:ring-primary"
+                               placeholder="Ví dụ: Học bổng, Y tế, Cứu trợ..."/>
+                    </div>
+                    <p id="categoryModalError" class="hidden text-sm text-red-500"></p>
+                </div>
+
+                <div class="mt-6 flex items-center justify-end gap-3">
+                    <button type="button"
+                            id="cancelCategoryModalBtn"
+                            class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+                        Hủy
+                    </button>
+                    <button type="button"
+                            id="saveCategoryModalBtn"
+                            class="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-primary-dark">
+                        Lưu danh mục
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
 <th:block layout:fragment="scripts">
     <script type="module">
 
         import {eventApi} from "/js/apis/eventApi.js";
+        import {categoryApi} from "/js/apis/categoryApi.js";
 
         const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const categorySelect = document.getElementById('eventCategory');
+        const createCategoryBtn = document.getElementById('openCreateCategoryModalBtn');
+        const editCategoryBtn = document.getElementById('openEditCategoryModalBtn');
+        const categoryModal = document.getElementById('categoryModal');
+        const categoryModalTitle = document.getElementById('categoryModalTitle');
+        const categoryModalIdInput = document.getElementById('categoryModalId');
+        const categoryModalNameInput = document.getElementById('categoryModalName');
+        const categoryModalError = document.getElementById('categoryModalError');
+        const saveCategoryModalBtn = document.getElementById('saveCategoryModalBtn');
+        const closeCategoryModalBtn = document.getElementById('closeCategoryModalBtn');
+        const cancelCategoryModalBtn = document.getElementById('cancelCategoryModalBtn');
         let currentThumbnailUrl = "";
+        let categoryModalMode = 'create';
 
         if (thumbnailPreview && thumbnailPreview.style.backgroundImage) {
             const bgImage = thumbnailPreview.style.backgroundImage;
@@ -276,9 +346,6 @@
                 ? bgImage.slice(5, -2).replace(/["']/g, "")
                 : "";
         }
-
-        console.log(currentThumbnailUrl);
-
 
         window.previewThumbnail = async function (input) {
             const preview = document.getElementById('thumbnailPreview');
@@ -313,7 +380,6 @@
 
                     if (response.status === 201 || response.status === 200) {
                         currentThumbnailUrl = response.data;
-                        console.log("Ảnh đã lưu tại Server:", currentThumbnailUrl);
                     } else {
                         alert("Server báo lỗi: " + response.message);
                     }
@@ -365,8 +431,6 @@
                 thumbnailUrl: currentThumbnailUrl
             };
 
-            console.log("Payload:", eventData);
-
             // 2. Kiểm tra dữ liệu sơ bộ (Validation)
             if (!eventData.name) {
                 alert("Vui lòng nhập tên sự kiện!");
@@ -388,6 +452,111 @@
                 console.error("Save Error:", error);
                 alert(error || "Không thể kết nối tới máy chủ!");
             }
+        }
+
+        function toggleCategoryModal(show) {
+            categoryModal.classList.toggle('hidden', !show);
+            categoryModal.classList.toggle('flex', show);
+            if (show) {
+                categoryModalNameInput.focus();
+            }
+        }
+
+        function resetCategoryModal() {
+            categoryModalIdInput.value = '';
+            categoryModalNameInput.value = '';
+            categoryModalError.textContent = '';
+            categoryModalError.classList.add('hidden');
+        }
+
+        function openCreateCategoryModal() {
+            categoryModalMode = 'create';
+            resetCategoryModal();
+            categoryModalTitle.textContent = 'Thêm danh mục';
+            saveCategoryModalBtn.textContent = 'Lưu danh mục';
+            toggleCategoryModal(true);
+        }
+
+        function openEditCategoryModal() {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                return;
+            }
+
+            categoryModalMode = 'edit';
+            resetCategoryModal();
+            categoryModalTitle.textContent = 'Cập nhật danh mục';
+            saveCategoryModalBtn.textContent = 'Cập nhật danh mục';
+            categoryModalIdInput.value = selectedOption.value;
+            categoryModalNameInput.value = selectedOption.textContent.trim();
+            toggleCategoryModal(true);
+        }
+
+        async function refreshCategoryOptions(selectedId = '') {
+            const response = await categoryApi.getCategories();
+            const categories = response?.data || [];
+
+            categorySelect.innerHTML = [
+                '<option value="">-- Chọn danh mục --</option>',
+                ...categories.map((category) => `
+                    <option value="${category.id}" ${String(category.id) === String(selectedId) ? 'selected' : ''}>
+                        ${category.name}
+                    </option>
+                `)
+            ].join('');
+
+            updateEditCategoryButtonState();
+        }
+
+        function updateEditCategoryButtonState() {
+            editCategoryBtn.disabled = !categorySelect.value;
+        }
+
+        async function handleSaveCategory() {
+            const name = categoryModalNameInput.value.trim();
+            if (!name) {
+                categoryModalError.textContent = 'Tên danh mục không được để trống';
+                categoryModalError.classList.remove('hidden');
+                return;
+            }
+
+            categoryModalError.classList.add('hidden');
+
+            try {
+                const payload = {
+                    id: categoryModalMode === 'edit' ? Number(categoryModalIdInput.value) : null,
+                    name
+                };
+
+                const response = await categoryApi.saveCategory(payload);
+                const savedCategoryId = response?.data;
+
+                await refreshCategoryOptions(savedCategoryId);
+                toggleCategoryModal(false);
+            } catch (error) {
+                categoryModalError.textContent = error?.message || 'Không thể lưu danh mục';
+                categoryModalError.classList.remove('hidden');
+            }
+        }
+
+        if (createCategoryBtn && editCategoryBtn && categoryModal && saveCategoryModalBtn && closeCategoryModalBtn && cancelCategoryModalBtn && categorySelect) {
+            createCategoryBtn.addEventListener('click', openCreateCategoryModal);
+            editCategoryBtn.addEventListener('click', openEditCategoryModal);
+            saveCategoryModalBtn.addEventListener('click', handleSaveCategory);
+            closeCategoryModalBtn.addEventListener('click', () => toggleCategoryModal(false));
+            cancelCategoryModalBtn.addEventListener('click', () => toggleCategoryModal(false));
+            categorySelect.addEventListener('change', updateEditCategoryButtonState);
+            categoryModal.addEventListener('click', (event) => {
+                if (event.target === categoryModal) {
+                    toggleCategoryModal(false);
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !categoryModal.classList.contains('hidden')) {
+                    toggleCategoryModal(false);
+                }
+            });
+            updateEditCategoryButtonState();
         }
     </script>
 </th:block>
