@@ -6,26 +6,21 @@ const state = {
 
 const PERIOD_META = {
     WEEK: {
-        summary: 'Thống kê trong 7 ngày gần nhất',
-        activeLabel: '1 tuần'
+        summary: 'Thống kê trong 7 ngày gần nhất'
     },
     MONTH: {
-        summary: 'Thống kê trong 30 ngày gần nhất',
-        activeLabel: '1 tháng'
+        summary: 'Thống kê trong 30 ngày gần nhất'
     },
     QUARTER: {
-        summary: 'Thống kê trong 3 tháng gần nhất',
-        activeLabel: '1 quý'
+        summary: 'Thống kê trong 3 tháng gần nhất'
     },
     YEAR: {
-        summary: 'Thống kê trong 12 tháng gần nhất',
-        activeLabel: '1 năm'
+        summary: 'Thống kê trong 12 tháng gần nhất'
     }
 };
 
 const elements = {
     chartSummary: document.getElementById('donationTrendSummary'),
-    activePeriodLabel: document.getElementById('donationTrendActivePeriod'),
     chartGrid: document.getElementById('donationTrendGrid'),
     chartCanvas: document.getElementById('donationTrendCanvas'),
     chartBars: document.getElementById('donationTrendBars'),
@@ -126,7 +121,6 @@ const renderBars = (points, maxValue) => {
 const updatePeriodUI = () => {
     const meta = PERIOD_META[state.period] || PERIOD_META.WEEK;
     elements.chartSummary.textContent = meta.summary;
-    elements.activePeriodLabel.textContent = meta.activeLabel;
 
     elements.periodButtons.forEach((button) => {
         const isActive = button.dataset.dashboardPeriod === state.period;
