@@ -7,6 +7,7 @@ import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Donation;
+import vn.payos.model.webhooks.WebhookData;
 
 import java.math.BigDecimal;
 
@@ -17,6 +18,8 @@ public interface DonationService {
     void createStaffDonation(DonationRequest request, String username);
 
     void changeStatusDonation(EDonationStatus status, Long id);
+
+    void confirmDonation(Long id, WebhookData webhookData);
 
     PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target, EDonationType type, int page, int size);
 
