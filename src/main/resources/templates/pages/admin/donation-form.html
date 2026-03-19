@@ -23,21 +23,33 @@
             <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Thông Tin Nhà Hảo Tâm</h3>
-                    <p class="text-sm text-slate-500 mt-1">Nhập ID nhà hảo tâm đã có trong hệ thống.</p>
+                    <p class="text-sm text-slate-500 mt-1">Tìm kiếm và chọn nhà hảo tâm theo tên hoặc số điện thoại.</p>
                 </div>
                 <div class="md:col-span-2 space-y-4">
                     <div class="max-w-md">
-                        <label class="block text-sm font-medium mb-1.5" for="donorId">
-                            ID Nhà Hảo Tâm <span class="text-red-500">*</span>
+                        <label class="block text-sm font-medium mb-1.5" for="donorSearchInput">
+                            Chọn Nhà Hảo Tâm <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
+                        <div class="relative" id="donorSearchWrapper">
 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
 <span class="material-symbols-outlined text-[20px]">person</span>
 </span>
-                            <input class="block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm"
-                                   id="donorId" name="donorId" min="1" placeholder="Ví dụ: 10452" required type="number"/>
+                            <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm"
+                                   id="donorSearchInput" placeholder="Nhập tên hoặc số điện thoại..." type="text"/>
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
+<span class="material-symbols-outlined text-[20px]">arrow_drop_up</span>
+</span>
+                            <div id="donorDropdown"
+                                 class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
+                                 style="z-index: 9999;">
+                                <div class="grid grid-cols-2 gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    <span>Nhà hảo tâm</span>
+                                    <span>Số điện thoại</span>
+                                </div>
+                                <div id="donorDropdownList" class="max-h-64 overflow-y-auto"></div>
+                            </div>
                         </div>
-                        <p class="mt-2 text-xs text-slate-400 italic">Ví dụ: nhập số nguyên dương như 12, 55, 10452</p>
+                        <input id="donorId" name="donorId" type="hidden" required/>
                     </div>
                 </div>
             </section>
@@ -45,12 +57,14 @@
             <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Mục Tiêu Quyên Góp</h3>
-                    <p class="text-sm text-slate-500 mt-1">Chọn một trong ba lựa chọn: không gắn mục tiêu, sự kiện hoặc hoạt động.</p>
+                    <p class="text-sm text-slate-500 mt-1">Chọn một trong ba lựa chọn: không gắn mục tiêu, sự kiện hoặc
+                        hoạt động.</p>
                 </div>
                 <div class="md:col-span-2 space-y-6">
                     <div class="flex flex-wrap gap-4">
                         <label class="relative flex items-center gap-3 px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-white dark:bg-slate-900 hover:border-primary transition-all">
-                            <input checked class="text-primary focus:ring-primary h-4 w-4" id="targetNone" type="checkbox"/>
+                            <input checked class="text-primary focus:ring-primary h-4 w-4" id="targetNone"
+                                   type="checkbox"/>
                             <span class="text-sm font-medium">Không gắn mục tiêu</span>
                         </label>
                         <label class="relative flex items-center gap-3 px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-white dark:bg-slate-900 hover:border-primary transition-all">
@@ -63,14 +77,16 @@
                         </label>
                     </div>
                     <div id="eventTargetGroup" class="hidden max-w-xs">
-                        <label class="block text-sm font-medium mb-1.5" for="eventId">ID Sự Kiện <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium mb-1.5" for="eventId">ID Sự Kiện <span
+                                class="text-red-500">*</span></label>
                         <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                                id="eventId" name="eventId" min="1" placeholder="Nhập ID sự kiện" type="number"/>
                     </div>
                     <div id="activityTargetGroup" class="hidden max-w-xs">
-                        <label class="block text-sm font-medium mb-1.5" for="activityId">ID Hoạt Động <span class="text-red-500">*</span></label>
-                            <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                                   id="activityId" name="activityId" min="1" placeholder="Nhập ID hoạt động" type="number"/>
+                        <label class="block text-sm font-medium mb-1.5" for="activityId">ID Hoạt Động <span
+                                class="text-red-500">*</span></label>
+                        <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                               id="activityId" name="activityId" min="1" placeholder="Nhập ID hoạt động" type="number"/>
                     </div>
                 </div>
             </section>
@@ -88,7 +104,8 @@
                             </label>
                             <div class="relative">
                                 <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm pr-12"
-                                       id="amount" name="amount" min="1000" placeholder="0" required step="0.01" type="number"/>
+                                       id="amount" name="amount" min="1000" placeholder="0" required step="0.01"
+                                       type="number"/>
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <span class="text-slate-500 text-sm font-bold">VND</span>
                                 </div>
@@ -136,7 +153,8 @@
                                    id="receiptName" name="receiptName" placeholder="Họ tên/Tên tổ chức" type="text"/>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1.5" for="receiptEmail">Email nhận biên lai</label>
+                            <label class="block text-sm font-medium mb-1.5" for="receiptEmail">Email nhận biên
+                                lai</label>
                             <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                                    id="receiptEmail" name="receiptEmail" placeholder="example@domain.com" type="email"/>
                         </div>

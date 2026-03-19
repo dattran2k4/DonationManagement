@@ -48,8 +48,8 @@ spring:
 
 #PayOS
 payos:
-  client-id: 02745e9c-7c5a-4a1e-81d0-bb50281bec1f
-  api-key: a189d0aa-4443-4b62-b1ff-ae64b057a0eb
-  checksum-key: 5304c2338d683c8eb7d9734b2ccdecb52016e029d464946f11b8a653971eefc1
+  client-id: 967ec853-0047-4cec-bebc-1d8aea69d993
+  api-key: d250c5f7-358a-403f-a637-0a3ea0c8121a
+  checksum-key: d111fe080f69f53c6753bdbe65c3278e866cf2d44cbb934ffcca6b741d60b1c8
   return-url: ${app.base-url}/thanh-toan/thanh-cong
   cancel-url: ${app.base-url}/thanh-toan/that-bai

@@ -31,8 +31,8 @@ public class ApiWebhookController {
     )
     @PostMapping("/payos-ipn")
     public void processWebhook(@RequestBody Map<String, Object> body) {
-        log.info("PayOS return received: {}", body);
-        WebhookData data = payOS.webhooks().verify(body);
-        webhookService.processWebhookPayOS(data);
+//        log.info("PayOS return received: {}", body);
+//        WebhookData data = payOS.webhooks().verify(body);
+//        webhookService.processWebhookPayOS(data);
     }
 }

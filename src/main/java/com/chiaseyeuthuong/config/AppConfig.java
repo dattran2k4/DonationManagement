@@ -42,6 +42,8 @@ public class AppConfig {
                         // Public API docs
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
+                        .requestMatchers("/payments/**").permitAll()
+
                         // Spring Security default login page
                         .requestMatchers("/login").permitAll()
 

@@ -1,6 +1,12 @@
 import {donationApi} from '../../apis/donationApi.js';
+import {donorApi} from '../../apis/donorApi.js';
 
 const form = document.getElementById('donationForm');
+const donorSearchWrapper = document.getElementById('donorSearchWrapper');
+const donorSearchInput = document.getElementById('donorSearchInput');
+const donorDropdown = document.getElementById('donorDropdown');
+const donorDropdownList = document.getElementById('donorDropdownList');
+const donorIdInput = document.getElementById('donorId');
 const targetNoneCheckbox = document.getElementById('targetNone');
 const targetEventCheckbox = document.getElementById('targetEvent');
 const targetActivityCheckbox = document.getElementById('targetActivity');
@@ -23,6 +29,85 @@ const parseLongOrNull = (value) => {
     if (value === undefined || value === null || value === '') return null;
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
+};
+
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const escapeHtml = (value) => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const setDonorIdValue = (id) => {
+    if (!donorIdInput) return;
+    donorIdInput.value = id || '';
+};
+
+const showDonorDropdown = () => {
+    if (!donorDropdown) return;
+    donorDropdown.classList.remove('hidden');
+};
+
+const hideDonorDropdown = () => {
+    if (!donorDropdown) return;
+    donorDropdown.classList.add('hidden');
+};
+
+const selectDonor = (donor) => {
+    if (!donor) return;
+    setDonorIdValue(donor.id);
+    if (donorSearchInput) {
+        donorSearchInput.value = `${donor.fullName || 'Không rõ tên'} - ${donor.phone || '---'}`;
+    }
+    hideDonorDropdown();
+};
+
+const renderDonorDropdown = (donors) => {
+    if (!donorDropdownList) return;
+
+    if (!donors || donors.length === 0) {
+        donorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Không tìm thấy nhà hảo tâm phù hợp</div>';
+        return;
+    }
+
+    donorDropdownList.innerHTML = donors.map((donor) => `
+        <button type="button"
+                data-donor-id="${donor.id}"
+                class="grid w-full grid-cols-2 gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <span class="font-medium text-slate-900 dark:text-slate-100">${escapeHtml(donor.fullName || 'Không rõ tên')}</span>
+            <span class="text-slate-600 dark:text-slate-300">${escapeHtml(donor.phone || '---')}</span>
+        </button>
+    `).join('');
+};
+
+const loadDonorsForSelect = async (search = '') => {
+    if (!donorDropdownList) return;
+    donorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Đang tải danh sách nhà hảo tâm...</div>';
+
+    try {
+        const response = await donorApi.getAllDonors({
+            page: 1,
+            size: 20,
+            search: search.trim(),
+            type: ''
+        });
+        const pageData = response?.data || {};
+        const donors = pageData.data || [];
+        renderDonorDropdown(donors);
+        showDonorDropdown();
+    } catch (error) {
+        console.error('Lỗi tải danh sách nhà hảo tâm:', error);
+        donorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-red-500">Không thể tải danh sách nhà hảo tâm</div>';
+        showDonorDropdown();
+    }
 };
 
 const getSelectedTarget = () => {
@@ -58,7 +143,7 @@ const toggleReceiptFields = () => {
 
 const validatePayload = (payload, target) => {
     if (!payload.donorId || payload.donorId < 1) {
-        alert('Vui lòng nhập ID nhà hảo tâm hợp lệ.');
+        alert('Vui lòng chọn nhà hảo tâm hợp lệ.');
         return false;
     }
     if (!payload.amount || payload.amount < 1000) {
@@ -143,6 +228,38 @@ const init = () => {
     activateTarget('none');
     toggleReceiptFields();
     bindTargetEvents();
+
+    if (donorSearchInput) {
+        donorSearchInput.addEventListener('focus', () => {
+            loadDonorsForSelect(donorSearchInput.value || '');
+        });
+
+        donorSearchInput.addEventListener('input', debounce((event) => {
+            setDonorIdValue('');
+            loadDonorsForSelect(event.target.value || '');
+        }));
+    }
+
+    if (donorDropdownList) {
+        donorDropdownList.addEventListener('click', (event) => {
+            const optionButton = event.target.closest('[data-donor-id]');
+            if (!optionButton) return;
+
+            const donor = {
+                id: optionButton.getAttribute('data-donor-id'),
+                fullName: optionButton.children[0]?.textContent || '',
+                phone: optionButton.children[1]?.textContent || ''
+            };
+            selectDonor(donor);
+        });
+    }
+
+    document.addEventListener('click', (event) => {
+        if (!donorSearchWrapper) return;
+        if (!donorSearchWrapper.contains(event.target)) {
+            hideDonorDropdown();
+        }
+    });
 
     if (needReceiptCheckbox) {
         needReceiptCheckbox.addEventListener('change', toggleReceiptFields);
