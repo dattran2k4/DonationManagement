@@ -39,7 +39,8 @@
                 <h1
                         class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight"
                 >
-                    <span th:text="${systemConfig['HOME_HERO_TITLE'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_TITLE']) ? systemConfig['HOME_HERO_TITLE'] : 'Cùng nhau, chúng ta'}">Cùng nhau, chúng ta</span> <br/>
+                    <span th:text="${systemConfig['HOME_HERO_TITLE'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_TITLE']) ? systemConfig['HOME_HERO_TITLE'] : 'Cùng nhau, chúng ta'}">Cùng nhau, chúng ta</span>
+                    <br/>
                     <span
                             class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400"
                             th:text="${systemConfig['HOME_HERO_TITLE_HIGHLIGHT'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_TITLE_HIGHLIGHT']) ? systemConfig['HOME_HERO_TITLE_HIGHLIGHT'] : 'tạo nên hy vọng'}"
@@ -170,7 +171,7 @@
                                      th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'"></div>
                             </div>
                             <p class="text-right text-xs text-primary font-bold mt-1"
-                               th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '% đạt'">0%
+                               th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%
                                 đạt</p>
                         </div>
                         <a th:href="@{/events/{slug}(slug=${ev.slug})}"

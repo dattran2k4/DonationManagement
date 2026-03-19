@@ -20,28 +20,44 @@
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-        <div class="lg:col-span-2 space-y-12">
-        <div class="lg:hidden bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Ngày bắt đầu</p>
-                    <p class="font-semibold text-slate-900 dark:text-white"
-                       th:text="${#temporals.format(event.startDate, 'dd/MM/yyyy')}">June 15, 2024</p>
-                </div>
-                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
-                <div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Ngày kết thúc</p>
-                    <p class="font-semibold text-slate-900 dark:text-white"
-                       th:text="${#temporals.format(event.endDate, 'dd/MM/yyyy')}">Aug 20, 2024</p>
-                </div>
+        <div class="lg:col-span-2 space-y-8">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700">
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                      th:classappend="${event.status != null && event.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700'
+                        : (${event.status != null && event.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700'
+                        : (${event.status != null && event.status.name() == 'COMPLETED'} ? ' bg-slate-200 text-slate-700' : ' bg-slate-200 text-slate-700'))"
+                      th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">
+                    Đang diễn ra
+                </span>
+                <span class="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                    <span class="material-icons text-base">location_on</span>
+                    <span th:text="${#strings.isEmpty(event.location) ? 'Chưa có địa điểm cụ thể' : event.location}">
+                        Chưa có địa điểm cụ thể
+                    </span>
+                </span>
             </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight mb-4"
+                th:text="${event.name}">
+                Tên sự kiện
+            </h1>
+
+            <p class="text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed"
+               th:text="${#strings.isEmpty(event.shortDescription) ? 'Sự kiện hiện chưa có mô tả ngắn.' : event.shortDescription}">
+                Mô tả ngắn của sự kiện.
+            </p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <img class="w-full h-[260px] md:h-[380px] object-cover"
+                 th:src="${event.thumbnailUrl ?: '/images/default-event.png'}"
+                 th:alt="${event.name}"/>
         </div>
 
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-8 border border-slate-100 dark:border-slate-700">
             <div class="prose prose-slate dark:prose-invert max-w-none">
-                <h2 class="text-2xl font-bold mb-6 text-slate-900 dark:text-white" th:text="${event.name}">
-                    Nội dung sự kiện
-                </h2>
+                <h2 class="text-2xl font-bold mb-6 text-slate-900 dark:text-white">Về sự kiện này</h2>
 
                 <div class="text-slate-600 dark:text-slate-300 leading-relaxed mb-6 ck-content prose"
                      th:utext="${event.content}">
@@ -69,8 +85,9 @@
                     </div>
                     <div>
                         <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Địa điểm</p>
-                        <p class="text-slate-900 dark:text-white font-medium" th:text="${event.location}">
-                            Trung tâm cộng đồng
+                        <p class="text-slate-900 dark:text-white font-medium"
+                           th:text="${#strings.isEmpty(event.location) ? 'Chưa có địa điểm cụ thể' : event.location}">
+                            Chưa có địa điểm cụ thể
                         </p>
                     </div>
                 </div>
@@ -118,7 +135,7 @@
                        th:text="${act.shortDescription}">
                         Nội dung hoạt động đang được cập nhật.
                     </p>
-                    <a class="inline-flex items-center text-sm font-semibold text-primary hover:text-blue-700 transition-colors mt-auto"
+                    <a class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors mt-auto"
                        th:href="@{/activities/{slug}(slug=${act.slug})}">
                         Xem chi tiết
                         <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
@@ -131,35 +148,43 @@
         <div class="lg:col-span-1 space-y-8">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-slate-100 dark:border-slate-700 sticky top-24">
             <div class="mb-6">
-                <div class="flex justify-between items-baseline mb-2">
-                    <h3 class="text-3xl font-bold text-slate-900 dark:text-white"
-                        th:text="${#numbers.formatCurrency(event.currentAmount)}">
-                        $15,420
-                    </h3>
-                    <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">
-                        mục tiêu <span th:text="${#numbers.formatCurrency(event.targetAmount)}">$20,000</span>
-                    </span>
-                </div>
-
                 <div th:with="current=${event.currentAmount != null ? event.currentAmount : 0},
                               target=${event.targetAmount != null && event.targetAmount != 0 ? event.targetAmount : 1},
                               percent=${current * 100 / target}">
-                    <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-4 mb-2 overflow-hidden">
-                        <div class="bg-primary h-4 rounded-full transition-all duration-1000 ease-out relative"
+                    <div class="mb-3 flex items-center justify-between gap-4">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Mục tiêu gây quỹ</h3>
+                        <span class="text-2xl font-black text-primary"
+                              th:text="${#numbers.formatDecimal(percent, 0, 0)} + '%'">77%</span>
+                    </div>
+
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-5 mb-3 overflow-hidden">
+                        <div class="bg-primary h-5 rounded-full transition-all duration-1000 ease-out relative"
                              th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'">
                             <div class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_infinite]"></div>
                         </div>
                     </div>
 
-                    <div class="flex justify-between text-xs font-medium mt-2">
-                    <span class="text-primary"
-                          th:text="${percent + '%'}">77% đã đạt</span>
-                        <span class="text-slate-500 dark:text-slate-400"
-                              th:text="${event.numberOfDonors} + ' lượt ủng hộ'">432 lượt ủng hộ</span>
+                    <div class="flex items-start justify-between gap-6">
+                        <div class="min-w-0">
+                            <p class="text-base font-semibold text-slate-700 dark:text-slate-200"
+                               th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                0 VNĐ
+                            </p>
+                            <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Đã quyên góp</p>
+                        </div>
+                        <div class="min-w-0 text-right">
+                            <p class="text-base font-semibold text-slate-700 dark:text-slate-200"
+                               th:text="${#numbers.formatDecimal(event.targetAmount != null ? event.targetAmount : 0, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                0 VNĐ
+                            </p>
+                            <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Mục tiêu</p>
+                        </div>
                     </div>
                 </div>
-
-
+                <div class="mt-4 text-sm text-slate-500 dark:text-slate-400"
+                     th:text="${#numbers.formatInteger(event.numberOfDonors, 0, 'COMMA')} + ' lượt ủng hộ'">
+                    0 lượt ủng hộ
+                </div>
             </div>
 
             <!-- Form Donation -->
@@ -192,7 +217,7 @@
                     <label class="block text-xs font-medium text-slate-500 uppercase">Số tiền ủng hộ</label>
                     <div class="relative">
                         <input name="amount" id="donationAmount"
-                               class="block w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-lg font-bold text-primary shadow-sm transition-all"
+                               class="block w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-lg font-bold text-primary shadow-sm transition-all"
                                placeholder="Nhập số tiền..." type="number" min="1000" required/>
                         <span class="absolute inset-y-0 right-4 flex items-center text-slate-500 font-bold">VND</span>
                     </div>
@@ -214,7 +239,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Phương thức thanh toán</label>
                         <select name="paymentMethod"
-                                class="w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-primary/10 p-3 font-semibold focus:ring-primary focus:border-primary">
+                                class="w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-primary/10 p-3 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                             <option value="BANK_TRANSFER_ONLINE">Chuyển khoản ngân hàng (QR)</option>
                         </select>
                     </div>
@@ -228,14 +253,14 @@
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Họ và tên
                                 *</label>
                             <input type="text" name="fullName"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="Nguyễn Văn A" required>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên hiển
                                 thị trên Website *</label>
                             <input type="text" name="displayName"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="Anh A / Ẩn danh">
                         </div>
                     </div>
@@ -245,28 +270,28 @@
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tên tổ
                                 chức *</label>
                             <input type="text" name="name"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="Công ty TNHH Hy Vọng">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Mã số
                                 thuế *</label>
                             <input type="text" name="taxCode"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="0101234567">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Người đại
                                 diện *</label>
                             <input type="text" name="representative"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="Ông Nguyễn Văn B">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Địa chỉ
                                 xuất hóa đơn</label>
                             <input type="text" name="billingAddress"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="Số 1, Đường ABC, TP. HCM">
                         </div>
                     </div>
@@ -276,14 +301,14 @@
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Số điện
                                 thoại *</label>
                             <input type="tel" name="phone"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="0912..." required>
                         </div>
                         <div class="col-span-1">
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email
                                 *</label>
                             <input id="email" type="email" name="email"
-                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                   class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                    placeholder="email@gmail.com" required>
                         </div>
                     </div>
@@ -291,14 +316,14 @@
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Lời
                             nhắn</label>
                         <textarea name="note" rows="2"
-                                  class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary"
+                                  class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary"
                                   placeholder="Lời chúc gửi đến các em..."></textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Bạn biết đến
                             chúng tôi từ đâu?</label>
                         <select name="referralSource"
-                                class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:bg-white focus:outline-none dark:focus:border-primary">
+                                class="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white focus:outline-none dark:focus:border-primary">
                             <option value="Facebook">Facebook</option>
                             <option value="Website">Website</option>
                             <option value="Friends">Bạn bè giới thiệu</option>
@@ -307,7 +332,7 @@
                     </div>
                 </div>
                 <button id="submitDonation"
-                        class="w-full py-3.5 px-4 mt-2 rounded-lg bg-primary hover:bg-blue-700 text-white font-bold shadow-lg flex items-center justify-center gap-2">
+                        class="w-full py-3.5 px-4 mt-2 rounded-lg bg-primary hover:bg-primary/90 text-slate-900 font-bold shadow-lg flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary/25">
                     <span class="material-icons">volunteer_activism</span>
                     Quyên góp ngay
                 </button>
