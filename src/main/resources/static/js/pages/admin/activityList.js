@@ -1,5 +1,6 @@
 import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
+const isAdmin = window.__IS_ADMIN__ === true;
 
 const state = {page: 1, size: 2, search: '', status: ''};
 const elements = {
@@ -7,7 +8,8 @@ const elements = {
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('activitySearchInput'),
     statusFilter: document.getElementById('activityStatusFilter'),
-    resetFilterBtn: document.getElementById('activityResetFilterBtn')
+    resetFilterBtn: document.getElementById('activityResetFilterBtn'),
+    actionHeader: document.getElementById('activityActionHeader')
 };
 
 // 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
@@ -58,8 +60,9 @@ const renderActivityRow = (activity) => {
 
     return `
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
+        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">#${activity.id}</td>
         <td class="px-6 py-4 whitespace-nowrap">
-            <a href="/admin/activities/${activity.id}/form" class="text-sm text-orange-600 font-medium text-text-main dark:text-white">${activity.name}</a>
+            <div class="text-sm font-medium text-text-main dark:text-white">${activity.name}</div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm text-text-main dark:text-gray-300">${activity.event?.name || 'Không thuộc sự kiện'}</div>
@@ -94,17 +97,15 @@ const renderActivityRow = (activity) => {
         <td class="px-6 py-4 whitespace-nowrap">
             ${getStatusBadge(activity.status)}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-            <div class="flex items-center justify-center gap-3">
-                <button onclick="viewActivityDetail(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary-dark hover:bg-primary/10 transition-all duration-200" title="Xem chi tiết">
-                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                </button>
-                <div class="h-4 w-px bg-border-color"></div>
-                <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200" title="Cập nhật">
-                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                </button>
-            </div>
-        </td>
+        ${isAdmin ? `
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                <div class="flex items-center justify-center">
+                    <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Cập nhật">
+                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                    </button>
+                </div>
+            </td>
+        ` : ``}
     </tr>`;
 };
 
@@ -117,7 +118,7 @@ const loadActivities = async () => {
         const activities = pageData.data || [];
 
         if (activities.length === 0) {
-            elements.tableBody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-500">Không có hoạt động nào</td></tr>`;
+            elements.tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" class="p-10 text-center text-slate-500">Không có hoạt động nào</td></tr>`;
             return;
         }
 
@@ -173,10 +174,12 @@ const bindFilters = () => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
+    if (!isAdmin && elements.actionHeader) {
+        elements.actionHeader.remove();
+    }
     bindFilters();
     loadActivities();
 });
 
 // Các hàm toàn cục
-window.viewActivityDetail = (id) => window.location.href = `/admin/activities/${id}`;
 window.editActivity = (id) => window.location.href = `/admin/activities/${id}/form`;

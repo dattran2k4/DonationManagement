@@ -1,5 +1,6 @@
 import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
+const isAdmin = window.__IS_ADMIN__ === true;
 
 const state = {page: 1, size: 10, search: '', status: '', target: ''};
 
@@ -9,7 +10,8 @@ const elements = {
     searchInput: document.getElementById('donationSearchInput'),
     statusFilter: document.getElementById('donationStatusFilter'),
     targetFilter: document.getElementById('donationTargetFilter'),
-    resetFilterBtn: document.getElementById('donationResetFilterBtn')
+    resetFilterBtn: document.getElementById('donationResetFilterBtn'),
+    actionHeader: document.getElementById('donationActionHeader')
 };
 
 // 1. Hàm tiện ích format tiền tệ (Ví dụ: 5000000 -> 5.000.000 đ)
@@ -85,7 +87,7 @@ const getTargetLabel = (target) => {
 // 4. Hàm Render Bảng
 const renderTable = (donations) => {
     if (!donations || donations.length === 0) {
-        elements.tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>`;
+        elements.tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>`;
         return;
     }
 
@@ -126,22 +128,20 @@ const renderTable = (donations) => {
                     ${statusStyle.text}
                 </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end gap-2">
-                    ${item.status === 'PENDING_APPROVED' ? `
-                        <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
-                            <span class="material-symbols-outlined text-[20px]">close</span>
-                        </button>
-                        <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-slate-900 hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[16px]">check</span> Duyệt
-                        </button>
-                    ` : `
-                        <button onclick="viewDetail(${item.id})" class="text-slate-400 hover:text-primary p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">visibility</span>
-                        </button>
-                    `}
-                </div>
-            </td>
+            ${isAdmin ? `
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end gap-2">
+                        ${item.status === 'PENDING_APPROVED' ? `
+                            <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
+                                <span class="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-slate-900 hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">check</span> Duyệt
+                            </button>
+                        ` : ``}
+                    </div>
+                </td>
+            ` : ''}
         </tr>
         `;
     }).join('');
@@ -201,7 +201,6 @@ const loadDonations = async () => {
     try {
         const response = await donationApi.getDonations(state);
         const data = response.data
-        console.log(data)
         renderTable(data.data);
 
         // Gọi render phân trang
@@ -220,6 +219,7 @@ const loadDonations = async () => {
  * @param {string} action - 'CONFIRM' hoặc 'REJECT'
  */
 window.handleAction = async (id, action) => {
+    if (!isAdmin) return;
     const isConfirm = action === 'CONFIRM';
     const statusText = isConfirm ? 'duyệt' : 'từ chối';
     const statusEnum = isConfirm ? 'CONFIRMED' : 'REJECTED';
@@ -244,6 +244,9 @@ window.handleAction = async (id, action) => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
+    if (!isAdmin && elements.actionHeader) {
+        elements.actionHeader.remove();
+    }
     bindFilters();
     loadDonations();
 });

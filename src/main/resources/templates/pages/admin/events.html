@@ -110,18 +110,19 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-600 font-semibold tracking-wider">
+                    <th class="px-6 py-4 w-24">ID</th>
                     <th class="px-6 py-4 w-16">Ảnh</th>
                     <th class="px-6 py-4 min-w-[200px]">Tên sự kiện</th>
                     <th class="px-6 py-4 w-48">Trạng thái</th>
                     <th class="px-6 py-4 min-w-[200px]">Tiến độ gây quỹ</th>
                     <th class="px-6 py-4 min-w-[200px]">Thời gian</th>
-                    <th class="px-6 py-4 w-32 text-right">Thao tác</th>
+                    <th id="eventActionHeader" class="px-6 py-4 w-32 text-right">Thao tác</th>
                 </tr>
                 </thead>
                 <!-- Event Data -->
                 <tbody id="eventTableBody" class="bg-white divide-y divide-slate-200 text-sm">
                 <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">Đang tải dữ liệu...</td>
+                    <td colspan="7" class="px-6 py-8 text-center text-slate-500">Đang tải dữ liệu...</td>
                 </tr>
                 </tbody>
             </table>
@@ -131,6 +132,12 @@
     </div>
 </div>
 <th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__IS_ADMIN__ = false;
+    </script>
+    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
+        window.__IS_ADMIN__ = true;
+    </script>
     <script type="module" th:src="@{/js/pages/admin/eventList.js}"></script>
 </th:block>
 </body>
