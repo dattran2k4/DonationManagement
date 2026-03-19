@@ -47,15 +47,6 @@ CREATE TABLE `events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- donation.roles definition
-
-CREATE TABLE `roles` (
-                         `id` bigint NOT NULL AUTO_INCREMENT,
-                         `name` enum('ADMIN','STAFF','ACCOUNTING', 'DONOR') DEFAULT NULL,
-                         PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 -- donation.system_configs definition
 
 CREATE TABLE `system_configs` (
@@ -78,6 +69,7 @@ CREATE TABLE `users` (
                          `full_name` varchar(255) DEFAULT NULL,
                          `password` varchar(255) DEFAULT NULL,
                          `phone` varchar(255) DEFAULT NULL,
+                         `role` enum('ADMIN','STAFF','ACCOUNTING','DONOR') DEFAULT NULL,
                          `username` varchar(255) DEFAULT NULL,
                          PRIMARY KEY (`id`),
                          UNIQUE KEY `uk_users_email` (`email`),
@@ -146,18 +138,6 @@ CREATE TABLE `organizations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- donation.user_roles definition
-
-CREATE TABLE `user_roles` (
-                              `role_id` bigint NOT NULL,
-                              `user_id` bigint NOT NULL,
-                              PRIMARY KEY (`role_id`,`user_id`),
-                              KEY `FKhfh9dx7w3ubf1co1vdev94g3f` (`user_id`),
-                              CONSTRAINT `FKh8ciramu9cc9q3qcqiv4ue8a6` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
-                              CONSTRAINT `FKhfh9dx7w3ubf1co1vdev94g3f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 -- donation.donations definition
 
 CREATE TABLE donations (
@@ -214,32 +194,13 @@ CREATE TABLE `donation_transactions` (
                                          CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1) roles (4 dòng)
-INSERT INTO roles (id, name) VALUES
-                                 (1, 'ADMIN'),
-                                 (2, 'STAFF'),
-                                 (3, 'ACCOUNTING'),
-                                 (4, 'DONOR');
+-- 1) users (3 dòng)
+INSERT INTO users (id, created_at, updated_at, email, full_name, password, phone, role, username) VALUES
+                                                                                                       (1, '2026-02-01 08:10:00.000000', '2026-02-20 10:00:00.000000', 'admin@gms.local',    'Quản trị hệ thống', '$2a$10$s3go5e.GYivSMmrJXG6jceddjfSAbg6O832Sip8XIVNRRLIjXNP6G', '0905000001', 'ADMIN',      'admin'),
+                                                                                                       (2, '2026-02-02 09:00:00.000000', '2026-02-21 09:10:00.000000', 'staff@gms.local',    'Nhân viên tiếp nhận', '$2a$10$EeSehs49igNMz6Vuk69cDuaAGHFrWSjeOvMmNkaAr6ZwyZtltKStS', '0905000002', 'STAFF',      'staff'),
+                                                                                                       (3, '2026-02-02 09:05:00.000000', '2026-02-21 09:15:00.000000', 'accounting@gms.local','Kế toán từ thiện',   '$2a$10$llGgE5VlZzM0.pCzbOLGWev.cqdovrjSsq0lGM87wo0FVgATXsh12', '0905000003', 'ACCOUNTING', 'accounting');
 
--- 2) users (6 dòng)
-INSERT INTO users (id, created_at, updated_at, email, full_name, password, phone, username) VALUES
-                                                                                                (1, '2026-02-01 08:10:00.000000', '2026-02-20 10:00:00.000000', 'admin@gms.local',      'Quản trị hệ thống',  '$2y$demo_admin', '0905000001', 'admin'),
-                                                                                                (2, '2026-02-02 09:00:00.000000', '2026-02-21 09:10:00.000000', 'staff1@gms.local',     'Nguyễn Minh Anh',     '$2y$demo_staff', '0905000002', 'staff.minhanh'),
-                                                                                                (3, '2026-02-02 09:05:00.000000', '2026-02-21 09:15:00.000000', 'account1@gms.local',   'Trần Thu Hà',         '$2y$demo_acc',   '0905000003', 'acc.thuha'),
-                                                                                                (4, '2026-02-03 14:20:00.000000', '2026-02-21 09:20:00.000000', 'staff2@gms.local',     'Lê Quốc Bảo',         '$2y$demo_staff', '0905000004', 'staff.quocbao'),
-                                                                                                (5, '2026-02-03 15:00:00.000000', '2026-02-21 09:25:00.000000', 'account2@gms.local',   'Phạm Ngọc Linh',      '$2y$demo_acc',   '0905000005', 'acc.ngoclinh'),
-                                                                                                (6, '2026-02-05 08:30:00.000000', '2026-02-22 08:00:00.000000', 'donor.portal@gms.local','Tài khoản nhà hảo tâm','$2y$demo_donor', '0905000006', 'donor.portal');
-
--- 3) user_roles (6 dòng)
-INSERT INTO user_roles (role_id, user_id) VALUES
-                                              (1, 1), -- admin
-                                              (2, 2), -- staff
-                                              (3, 3), -- accounting
-                                              (2, 4), -- staff
-                                              (3, 5), -- accounting
-                                              (4, 6); -- donor portal user
-
--- 4) system_configs (25 dòng)
+-- 2) system_configs (25 dòng)
 INSERT INTO system_configs (id, config_key, config_value, description) VALUES
                                                                            (1, 'club_name', 'CLB Chia sẻ Yêu Thương', 'Tên hiển thị của câu lạc bộ'),
                                                                            (2, 'default_currency', 'VND', 'Đơn vị tiền tệ mặc định'),
@@ -465,10 +426,10 @@ INSERT INTO donors (
       (2, '2026-02-06 11:20:00.000000', '2026-02-22 09:05:00.000000', 2,
        'minh.nguyen@example.com', 'Nguyễn Văn Minh', '0907000002', 'Bạn bè giới thiệu', 'INDIVIDUAL', 'Anh Minh', 'Ưu tiên các chiến dịch giáo dục.'),
 
-      (3, '2026-02-07 08:45:00.000000', '2026-02-22 09:10:00.000000', 4,
+      (3, '2026-02-07 08:45:00.000000', '2026-02-22 09:10:00.000000', 2,
        'huong.tran@example.com', 'Trần Ngọc Hương', '0907000003', 'Sự kiện offline', 'INDIVIDUAL', 'Cô Hương', 'Thường xin biên nhận.'),
 
-      (4, '2026-02-08 14:10:00.000000', '2026-02-22 09:15:00.000000', 4,
+      (4, '2026-02-08 14:10:00.000000', '2026-02-22 09:15:00.000000', 2,
        'contact@anphat-co.local', 'Công ty TNHH An Phát', '0907000004', 'Đối tác', 'ORGANIZATION', 'An Phát Co.', 'Tài trợ theo chương trình cộng đồng.'),
 
       (5, '2026-02-09 09:30:00.000000', '2026-02-22 09:18:00.000000', 2,
@@ -519,7 +480,7 @@ INSERT INTO donations (
       (7, 1000000.00, 0, '2026-01-26 10:15:00.000000', '2026-01-26 09:50:00.000000', '2026-01-26 09:50:00.000000',
        'STAFF', 'GMS-20260126-0007', 'Đóng góp tại buổi gây quỹ offline.', 1, 202601260007, 'CASH',
        'minh.nguyen@example.com', 'Nguyễn Văn Minh', 'CONFIRMED', 'EVENT', 'MONEY', '2026-01-26 10:15:00.000000',
-       NULL, 5, 4, 2, 4),
+       NULL, 3, 2, 2, 4),
 
       (8, 5000000.00, 0, '2026-02-01 15:30:00.000000', '2026-02-01 15:00:00.000000', '2026-02-01 15:00:00.000000',
        'STAFF', 'GMS-20260201-0008', 'Hiện vật quy đổi theo giá trị hóa đơn.', 1, 202602010008, 'CASH',
@@ -544,7 +505,7 @@ INSERT INTO donations (
       (12, 4700000.00, 0, '2026-02-20 11:25:00.000000', '2026-02-20 11:05:00.000000', '2026-02-20 11:05:00.000000',
        'STAFF', 'GMS-20260220-0012', 'Ủng hộ tại bàn tiếp nhận trực tiếp.', 1, 202602200012, 'CASH',
        'lan.pham@example.com', 'Phạm Thị Lan', 'CONFIRMED', 'EVENT', 'MONEY', '2026-02-20 11:25:00.000000',
-       NULL, 5, 4, 1, 4),
+       NULL, 3, 2, 1, 4),
 
       (13, 1250000.00, 0, '2026-02-25 17:05:00.000000', '2026-02-25 16:50:00.000000', '2026-02-25 16:50:00.000000',
        'WEB', 'GMS-20260225-0013', 'Ủng hộ hoạt động mua sách.', 0, 202602250013, 'BANK_TRANSFER_ONLINE',

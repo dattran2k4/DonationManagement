@@ -1,6 +1,7 @@
 <!doctype html>
 <html
         xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layouts/admin/admin-layout}"
 >
@@ -16,6 +17,7 @@
                 <p class="text-text-secondary text-sm mt-1">Quản lý các hoạt động và theo dõi tiến độ gây quỹ</p>
             </div>
             <a th:href="@{/admin/activities/form}"
+               sec:authorize="hasRole('ADMIN')"
                class="flex items-center justify-center gap-2 bg-primary hover:bg-emerald-400 text-white dark:text-background-dark font-semibold px-5 py-2.5 rounded-lg shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
                 <span class="material-symbols-outlined text-[20px]">add</span>
                 <span>Thêm Hoạt động mới</span>
