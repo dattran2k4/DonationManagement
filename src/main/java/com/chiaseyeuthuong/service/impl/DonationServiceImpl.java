@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,6 @@ public class DonationServiceImpl implements DonationService {
     private final DonorRepository donorRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final @Lazy DonationService donationServiceProxy;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -130,7 +128,7 @@ public class DonationServiceImpl implements DonationService {
     @Transactional(rollbackFor = Exception.class)
     public void changeStatusDonation(EDonationStatus status, Long id) {
         if (status.equals(EDonationStatus.CONFIRMED)) {
-            donationServiceProxy.confirmDonation(id, null);
+            confirmDonation(id, null);
             return;
         }
 
@@ -141,7 +139,6 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void confirmDonation(Long id, WebhookData webhookData) {
         Donation donation = getDonation(id);
 
