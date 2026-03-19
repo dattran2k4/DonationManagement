@@ -61,8 +61,8 @@ const validatePayload = (payload, target) => {
         alert('Vui lòng nhập ID nhà hảo tâm hợp lệ.');
         return false;
     }
-    if (!payload.amount || payload.amount <= 0) {
-        alert('Vui lòng nhập số tiền hợp lệ.');
+    if (!payload.amount || payload.amount < 1000) {
+        alert('Số tiền tối thiểu là 1.000 đồng.');
         return false;
     }
     if (!payload.paymentMethod) {

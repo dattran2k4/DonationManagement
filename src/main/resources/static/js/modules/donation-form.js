@@ -80,7 +80,10 @@ const DonationFormHandler = {
     },
 
     validate(type, data) {
-        if (!parseFloat(data.amount) || parseFloat(data.amount) > 10000000) return alert("Số tiền không được để trống và tối đa 10tr");
+        const amount = parseFloat(data.amount);
+        if (!amount || amount < 1000 || amount > 10000000) {
+            return alert("Số tiền phải từ 1.000 đồng đến tối đa 10.000.000 đồng");
+        }
         return true;
     }
 };
