@@ -11,13 +11,14 @@
 <div layout:fragment="content">
     <!--  Breadcrumb  -->
     <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
-        <a th:hrer="@{/}" class="hover:text-primary flex items-center gap-1" href="#">
+        <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
             <span class="material-symbols-outlined text-base">home</span> Trang chủ
         </a>
         <span class="material-symbols-outlined text-xs">chevron_right</span>
-        <a class="hover:text-primary" th:href="@{/events/{slug}(slug=${activity.event.slug})}">Xây trường cho em</a>
+        <a class="hover:text-primary" th:href="@{/events/{slug}(slug=${activity.event.slug})}"
+           th:text="${activity.event.name}">Tên sự kiện</a>
         <span class="material-symbols-outlined text-xs">chevron_right</span>
-        <span class="text-primary font-medium">Hoạt động xây dựng điểm trường Nậm Pồ</span>
+        <span class="text-primary font-medium" th:text="${activity.name}">Tên hoạt động</span>
     </nav>
     <!--  Content  -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
@@ -29,25 +30,26 @@
                     <span class="px-3 py-1 bg-primary/20 text-primary text-xs font-bold uppercase rounded-full"
                           th:text="${activity.status.value}">Đang diễn ra</span>
                     <span class="flex items-center gap-1 text-slate-500 text-sm">
-                    <span class="material-symbols-outlined text-sm" th:text="${activity.location}">location_on</span>
-                        Huyện Nậm Pồ, Tỉnh Điện Biên
+                        <span class="material-symbols-outlined text-sm">location_on</span>
+                        <span th:text="${#strings.isEmpty(activity.location) ? 'Chưa có địa điểm cụ thể' : activity.location}">
+                            Chưa có địa điểm cụ thể
+                        </span>
                     </span>
                 </div>
                 <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight"
                     th:text="${activity.name}">
-                    Xây dựng điểm trường Nậm Pồ: Nâng bước tương lai vùng cao
+                    Tên hoạt động
                 </h1>
-                <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Cùng chung tay xây dựng 3 phòng học kiên cố và khu bán trú cho hơn 120 học sinh dân tộc thiểu số tại
-                    xã Nậm Pồ, giúp các em có môi trường học tập an toàn.
+                <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed"
+                   th:text="${activity.shortDescription}">
+                    Mô tả ngắn của hoạt động.
                 </p>
             </div>
             <!-- Featured Image -->
-            <div class="relative group rounded-2xl overflow-hidden shadow-2xl">
-                <img alt="Featured Activity Image" class="w-full aspect-[16/9] object-cover"
-                     data-alt="Children playing in front of a rural school building"
-                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBvbuwEPe3kBtHUWQjjHsT2iYM4JROVnA8R2OhM8X0f97A8lGcjLBRJhTHkVofLPDcJGyXsMPq2T0xlUcjJ3QUNV5G48rHXdvNtHVBL_gT2z1Hmi24inM7Cm7yN9t4diyi38pCAcZK1W58ZnY4yDH-J0qk8vk6aa3wWyR7D3mWJmwY4WYsvy-feqabXON4QipfpmO6Kc0VV_6T5qdIxLRzEbtCFRf-xIJKHSirkyh9-a_WH_flxmFHuLxdAFvHG8YVk_pwYEckVn0"/>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div class="relative group rounded-2xl overflow-hidden shadow-2xl border border-slate-100">
+                <img th:src="${activity.thumbnailUrl ?: '/images/default-event.png'}"
+                     th:alt="${activity.name}"
+                     class="w-full aspect-[16/9] object-cover"/>
             </div>
             <!-- Funding Progress Card -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -86,7 +88,8 @@
                         </div>
                         <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
                             <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Nhà hảo tâm</p>
-                            <p class="text-xl font-bold">1,248</p>
+                            <p class="text-xl font-bold"
+                               th:text="${#numbers.formatInteger(activity.numberOfDonors, 0, 'COMMA')}">0</p>
                         </div>
                         <div class="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-6">
                             <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Ngày bắt đầu</p>
