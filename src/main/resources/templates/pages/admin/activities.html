@@ -11,11 +11,11 @@
 <body>
 <div layout:fragment="content" class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-text-main dark:text-white tracking-tight">Quản lý Hoạt
-                động</h1>
-            <p class="text-text-secondary text-sm mt-1">Quản lý các hoạt động và theo dõi tiến độ gây quỹ</p>
-        </div>
+            <div>
+                <h1 class="text-2xl font-bold text-text-main dark:text-white tracking-tight">Quản lý Hoạt
+                    động</h1>
+                <p class="text-text-secondary text-sm mt-1">Quản lý các hoạt động và theo dõi tiến độ gây quỹ</p>
+            </div>
         <a th:href="@{/admin/activities/form}"
            sec:authorize="hasRole('ADMIN')"
            class="flex items-center justify-center gap-2 bg-primary hover:bg-emerald-400 text-white dark:text-background-dark font-semibold px-5 py-2.5 rounded-lg shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
@@ -23,7 +23,7 @@
             <span>Thêm Hoạt động mới</span>
         </a>
     </div>
-    <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-color p-4 md:p-5">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-4 md:p-5">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div class="md:col-span-5 lg:col-span-4">
                 <div class="relative">

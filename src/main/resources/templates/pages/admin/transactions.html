@@ -10,22 +10,12 @@
 <body>
 <div layout:fragment="content">
     <!-- Header Section -->
-    <header class="sticky top-0 z-10 bg-white/80 dark:bg-[#112119]/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 px-0 py-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Quản lý Giao dịch Ngân
-                    hàng</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Theo dõi giao dịch và đối soát với các đơn
-                    quyên góp.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <button class="p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors">
-                    <span class="material-symbols-outlined">help</span>
-                </button>
-            </div>
+    <header class="px-0 py-1">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Quản lý Giao dịch Ngân
+                hàng</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Theo dõi giao dịch và đối soát với các đơn
+                quyên góp.</p>
         </div>
     </header>
     <div class="flex flex-col gap-6">
@@ -66,7 +56,7 @@
             </div>
         </div>
         <!-- Filters and Search -->
-        <div class="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center bg-white dark:bg-[#1a2c24] p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
             <!-- Search -->
             <div class="relative w-full lg:w-96 group">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
