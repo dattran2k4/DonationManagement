@@ -16,8 +16,8 @@ public class IndividualDonorRequest {
 
     @NotBlank(message = "Số điện thoại không được để trống")
     @Pattern(
-            regexp = "^\\+?[0-9\\s\\-()]{7,20}$",
-            message = "Định dạng số điện thoại không hợp lệ"
+            regexp = "^\\+?\\d{10,11}$",
+            message = "Số điện thoại phải có 10 hoặc 11 chữ số"
     )
     private String phone;
 
