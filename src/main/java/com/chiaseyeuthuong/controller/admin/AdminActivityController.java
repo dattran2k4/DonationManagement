@@ -35,7 +35,7 @@ public class AdminActivityController {
 
         model.addAttribute("activity", activityRequest);
         model.addAttribute("statuses", EActivityStatus.values());
-        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, null));
+        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
         return "pages/admin/activity-form";
     }
 
@@ -43,7 +43,7 @@ public class AdminActivityController {
     public String showAdminActivityEditFormPage(@PathVariable Long id, Model model) {
         model.addAttribute("activity", activityService.getActivityById(id));
         model.addAttribute("statuses", EActivityStatus.values());
-        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, null));
+        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
         return "pages/admin/activity-form";
     }
 }

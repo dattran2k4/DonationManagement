@@ -22,11 +22,14 @@ public class ApiActivityController {
 
     @GetMapping
     public ApiResponse getAllActivities(@RequestParam(required = false, defaultValue = "0") int page,
-                                        @RequestParam(required = false, defaultValue = "20") int size, String search, EActivityStatus status) {
+                                        @RequestParam(required = false, defaultValue = "20") int size,
+                                        @RequestParam(required = false) String search,
+                                        @RequestParam(required = false) EActivityStatus status,
+                                        @RequestParam(required = false, defaultValue = "false") boolean excludeDraft) {
         return ApiResponse.builder()
                 .status(200)
                 .message("OK")
-                .data(activityService.getAllActivities(page, size, search, status))
+                .data(activityService.getAllActivities(page, size, search, status, excludeDraft))
                 .build();
     }
 

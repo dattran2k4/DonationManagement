@@ -30,11 +30,12 @@ public class ApiEventController {
                                     @RequestParam(required = false) String sortDir,
                                     @RequestParam(required = false) String search,
                                     @RequestParam(required = false) EEventStatus status,
+                                    @RequestParam(required = false, defaultValue = "false") boolean excludeDraft,
                                     @RequestParam(required = false) String... categoryIds) {
         return ApiResponse.builder()
                 .status(200)
                 .message("List events")
-                .data(eventService.getAllEvents(page, size, sortBy, sortDir, search, status, categoryIds))
+                .data(eventService.getAllEvents(page, size, sortBy, sortDir, search, status, excludeDraft, categoryIds))
                 .build();
     }
 

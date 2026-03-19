@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 public interface EventService {
 
-    PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, String... categoryIds);
+    PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, boolean excludeDraft, String... categoryIds);
 
     long saveEvent(EventRequest request);
 
@@ -20,6 +20,8 @@ public interface EventService {
     Event findEventById(Long id);
 
     EventResponse getEventBySlug(String slug);
+
+    EventResponse getPublicEventBySlug(String slug);
 
     void updateStatus(EEventStatus status, Long id);
 

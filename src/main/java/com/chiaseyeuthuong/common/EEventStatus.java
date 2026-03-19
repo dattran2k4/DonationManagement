@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum EEventStatus {
+    DRAFT("Bản nháp"),
     UPCOMING("Sắp diễn ra"),
     ONGOING("Đang diễn ra"),
     COMPLETED("Hoàn thành");

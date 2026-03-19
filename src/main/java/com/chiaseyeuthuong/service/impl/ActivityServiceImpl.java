@@ -48,13 +48,13 @@ public class ActivityServiceImpl implements ActivityService {
     private final DonorService donorService;
 
     @Override
-    public PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status) {
+    public PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft) {
 
         int pageNumber = (page > 0) ? page - 1 : 0;
 
         PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Specification<Activity> specification = ActivitySpecification.filterActivity(search, status);
+        Specification<Activity> specification = ActivitySpecification.filterActivity(search, status, excludeDraft);
 
         Page<Activity> pageActivities = activityRepository.findAll(specification, pageRequest);
 
@@ -71,7 +71,10 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public List<ActivityResponse> getAllActivitiesByEventId(Long eventId) {
-        return activityRepository.findAllByEventId(eventId).stream().map(this::toResponse).toList();
+        return activityRepository.findAllByEventId(eventId).stream()
+                .filter(activity -> !EActivityStatus.DRAFT.equals(activity.getStatus()))
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -116,6 +119,16 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityResponse getActivityBySlug(String slug) {
         Activity activity = activityRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Activity not found"));
+        return toResponse(activity);
+    }
+
+    @Override
+    public ActivityResponse getPublicActivityBySlug(String slug) {
+        Activity activity = activityRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Activity not found"));
+        if (EActivityStatus.DRAFT.equals(activity.getStatus())
+                || (activity.getEvent() != null && com.chiaseyeuthuong.common.EEventStatus.DRAFT.equals(activity.getEvent().getStatus()))) {
+            throw new ResourceNotFoundException("Activity not found");
+        }
         return toResponse(activity);
     }
 

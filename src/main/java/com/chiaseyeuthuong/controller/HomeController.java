@@ -25,7 +25,7 @@ public class HomeController {
         model.addAttribute("totalEvents", eventService.getEventCount(null));
         model.addAttribute("totalActivities", activityService.getActivityCount());
         model.addAttribute("ongoingEvents", eventService
-                .getAllEvents(1, 3, "id", "desc", null, EEventStatus.ONGOING)
+                .getAllEvents(1, 3, "id", "desc", null, EEventStatus.ONGOING, true)
                 .getData());
         return "pages/web/index";
     }

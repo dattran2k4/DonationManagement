@@ -55,7 +55,7 @@
                                     <span class="ml-2 text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tất cả</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer group"
-                                       th:each="status : ${statuses}">
+                                       th:each="status : ${publicEventStatuses}">
                                     <input th:value="${status}" class="form-radio text-primary" name="status"
                                            type="radio"/>
                                     <span class="ml-2 text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors"
@@ -192,6 +192,7 @@
                 const params = new URLSearchParams();
                 params.set("page", String(state.page));
                 params.set("size", String(state.size));
+                params.set("excludeDraft", "true");
                 if (state.search) params.set("search", state.search);
                 if (state.status) params.set("status", state.status);
                 state.categoryIds.forEach((id) => params.append("categoryIds", id));

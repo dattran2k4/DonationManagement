@@ -31,6 +31,7 @@ const formatDateRange = (start, end) => {
 // 3. Hàm xử lý Badge Trạng thái
 const getStatusBadge = (status) => {
     const config = {
+        'DRAFT': {text: 'Bản nháp', color: 'slate', dot: 'bg-slate-400'},
         'UPCOMING': {text: 'Sắp diễn ra', color: 'amber', dot: 'bg-amber-500'},
         'ONGOING': {text: 'Đang diễn ra', color: 'emerald', dot: 'bg-primary animate-pulse'},
         'COMPLETED': {text: 'Đã kết thúc', color: 'gray', dot: 'bg-gray-500'},
@@ -113,7 +114,6 @@ const loadActivities = async () => {
         const response = await activityApi.getAllActivities(state);
 
         const pageData = response.data;
-        console.log(pageData)
         const activities = pageData.data || [];
 
         if (activities.length === 0) {

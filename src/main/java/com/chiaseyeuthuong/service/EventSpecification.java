@@ -14,7 +14,7 @@ public class EventSpecification {
     private EventSpecification() {
     }
 
-    public static Specification<Event> filterEvent(String search, EEventStatus status, String... categoryIds) {
+    public static Specification<Event> filterEvent(String search, EEventStatus status, boolean excludeDraft, String... categoryIds) {
 
         return (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 
@@ -22,6 +22,8 @@ public class EventSpecification {
 
             if (status != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("status"), status));
+            } else if (excludeDraft) {
+                predicate = cb.and(predicate, cb.notEqual(root.get("status"), EEventStatus.DRAFT));
             }
 
             if (categoryIds != null && categoryIds.length > 0) {

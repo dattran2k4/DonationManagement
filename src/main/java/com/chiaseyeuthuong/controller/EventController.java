@@ -25,7 +25,7 @@ public class EventController {
 
     @GetMapping("/{slug}")
     public String showEventDetailPage(@PathVariable("slug") String slug, Model model) {
-        model.addAttribute("event", eventService.getEventBySlug(slug));
+        model.addAttribute("event", eventService.getPublicEventBySlug(slug));
         return "pages/web/event-detail";
     }
 

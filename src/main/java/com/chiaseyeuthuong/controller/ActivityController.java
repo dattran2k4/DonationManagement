@@ -16,7 +16,7 @@ public class ActivityController {
     @GetMapping("/activities/{slug}")
     public String showActivityDetailPage(@PathVariable String slug, Model model) {
 
-        model.addAttribute("activity", activityService.getActivityBySlug(slug));
+        model.addAttribute("activity", activityService.getPublicActivityBySlug(slug));
         return "pages/web/activity-detail";
     }
 

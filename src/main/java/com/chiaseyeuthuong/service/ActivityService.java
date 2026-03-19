@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface ActivityService {
-    PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status);
+    PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft);
 
     List<ActivityResponse> getAllActivitiesByEventId(Long eventId);
 
@@ -23,6 +23,8 @@ public interface ActivityService {
     ActivityResponse getActivityById(Long id);
 
     ActivityResponse getActivityBySlug(String slug);
+
+    ActivityResponse getPublicActivityBySlug(String slug);
 
     void updateCurrentAmount(Activity activity, BigDecimal amount);
 

@@ -19,6 +19,11 @@ public class GlobalControllerAdvice {
     public void addCommonData(Model model) {
         model.addAttribute("hello", "world");
         model.addAttribute("statuses", EEventStatus.values());
+        model.addAttribute("publicEventStatuses", new EEventStatus[]{
+                EEventStatus.UPCOMING,
+                EEventStatus.ONGOING,
+                EEventStatus.COMPLETED
+        });
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("systemConfig", systemConfigService.getAllSystemConfigMap());
     }

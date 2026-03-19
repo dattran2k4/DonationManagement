@@ -54,7 +54,7 @@ public class EventServiceImpl implements EventService {
     public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
     @Override
-    public PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, String... categoryIds) {
+    public PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, boolean excludeDraft, String... categoryIds) {
         int pageNumber = (page > 0) ? page - 1 : 0;
 
         Sort.Direction sortDirection = ("asc".equals(sortDir)) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -63,11 +63,13 @@ public class EventServiceImpl implements EventService {
 
         PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(sortDirection, sortField));
 
-        Specification<Event> specification = EventSpecification.filterEvent(search, status, categoryIds);
+        Specification<Event> specification = EventSpecification.filterEvent(search, status, excludeDraft, categoryIds);
 
         Page<Event> eventPage = eventRepository.findAll(specification, pageRequest);
 
-        List<EventResponse> eventResponses = eventPage.getContent().stream().map(this::toResponse).toList();
+        List<EventResponse> eventResponses = eventPage.getContent().stream()
+                .map(event -> toResponse(event, false))
+                .toList();
 
         return PageResponse.<EventResponse>builder()
                 .page(page)
@@ -118,6 +120,8 @@ public class EventServiceImpl implements EventService {
         }
 
         switch (status) {
+            case DRAFT -> {
+            }
             case UPCOMING -> {
                 if (startDate.isBefore(today)) {
                     throw new BusinessException("Sự kiện sắp diễn ra không được có thời gian bắt đầu trong quá khứ");
@@ -155,7 +159,16 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse getEventBySlug(String slug) {
         Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
-        return toResponse(event);
+        return toResponse(event, false);
+    }
+
+    @Override
+    public EventResponse getPublicEventBySlug(String slug) {
+        Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        if (EEventStatus.DRAFT.equals(event.getStatus())) {
+            throw new ResourceNotFoundException("Event not found");
+        }
+        return toResponse(event, true);
     }
 
     @Override
@@ -234,6 +247,10 @@ public class EventServiceImpl implements EventService {
     }
 
     private EventResponse toResponse(Event event) {
+        return toResponse(event, false);
+    }
+
+    private EventResponse toResponse(Event event, boolean excludeDraftActivities) {
         EventResponse eventResponse = new EventResponse();
         BeanUtils.copyProperties(event, eventResponse);
         eventResponse.setNumberOfDonors(donorService.getDorCountByObjectId(event.getId(), EEntityType.EVENT));
@@ -245,6 +262,7 @@ public class EventServiceImpl implements EventService {
 
         List<ActivityResponse> activities = event.getActivities()
                 .stream()
+                .filter(activity -> !excludeDraftActivities || !com.chiaseyeuthuong.common.EActivityStatus.DRAFT.equals(activity.getStatus()))
                 .map(activity -> {
                     ActivityResponse ar = new ActivityResponse();
                     BeanUtils.copyProperties(activity, ar);

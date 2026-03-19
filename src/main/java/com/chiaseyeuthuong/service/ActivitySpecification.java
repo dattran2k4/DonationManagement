@@ -13,12 +13,14 @@ public class ActivitySpecification {
     private ActivitySpecification() {
     }
 
-    public static Specification<Activity> filterActivity(String search, EActivityStatus status) {
+    public static Specification<Activity> filterActivity(String search, EActivityStatus status, boolean excludeDraft) {
         return (Root<Activity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction();
 
             if (status != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("status"), status));
+            } else if (excludeDraft) {
+                predicate = cb.and(predicate, cb.notEqual(root.get("status"), EActivityStatus.DRAFT));
             }
 
             if (StringUtils.hasLength(search)) {
