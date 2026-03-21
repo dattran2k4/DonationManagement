@@ -26,15 +26,15 @@ function updateTabUI(selectedValue) {
     if (selectedValue === "INDIVIDUAL") {
         individualSection.classList.remove("hidden");
         organizationSection.classList.add("hidden");
-        personalLabel.classList.add("bg-primary", "text-slate-900", "font-bold");
-        orgLabel.classList.remove("bg-primary", "text-slate-900", "font-bold");
+        personalLabel.classList.add("bg-primary", "text-white", "font-bold");
+        orgLabel.classList.remove("bg-primary", "text-white", "font-bold");
         toggleRequired(individualSection, true);
         toggleRequired(organizationSection, false);
     } else {
         individualSection.classList.add("hidden");
         organizationSection.classList.remove("hidden");
-        orgLabel.classList.add("bg-primary", "text-slate-900", "font-bold");
-        personalLabel.classList.remove("bg-primary", "text-slate-900", "font-bold");
+        orgLabel.classList.add("bg-primary", "text-white", "font-bold");
+        personalLabel.classList.remove("bg-primary", "text-white", "font-bold");
         toggleRequired(individualSection, false);
         toggleRequired(organizationSection, true);
     }

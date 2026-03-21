@@ -34,7 +34,7 @@ const renderTransactionRow = (txn) => {
     // CSS Class cho hàng Unlinked
     const rowClass = isUnlinked
         ? 'bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-l-4 border-l-amber-500'
-        : 'hover:bg-slate-50 dark:hover:bg-[#14241d]';
+        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50';
 
     return `
     <tr class="${rowClass} transition-colors group">

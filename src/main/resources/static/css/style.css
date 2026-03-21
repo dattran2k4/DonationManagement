@@ -33,34 +33,34 @@
     --color-yellow-700: oklch(55.4% 0.135 66.442);
     --color-yellow-800: oklch(47.6% 0.114 61.907);
     --color-yellow-900: oklch(42.1% 0.095 57.708);
-    --color-green-50: oklch(98.2% 0.018 155.826);
-    --color-green-100: oklch(96.2% 0.044 156.743);
-    --color-green-200: oklch(92.5% 0.084 155.995);
-    --color-green-400: oklch(79.2% 0.209 151.711);
-    --color-green-500: oklch(72.3% 0.219 149.579);
-    --color-green-600: oklch(62.7% 0.194 149.214);
-    --color-green-700: oklch(52.7% 0.154 150.069);
-    --color-green-800: oklch(44.8% 0.119 151.328);
-    --color-green-900: oklch(39.3% 0.095 152.535);
-    --color-emerald-50: oklch(97.9% 0.021 166.113);
-    --color-emerald-100: oklch(95% 0.052 163.051);
-    --color-emerald-200: oklch(90.5% 0.093 164.15);
-    --color-emerald-300: oklch(84.5% 0.143 164.978);
-    --color-emerald-400: oklch(76.5% 0.177 163.223);
-    --color-emerald-500: oklch(69.6% 0.17 162.48);
-    --color-emerald-600: oklch(59.6% 0.145 163.225);
-    --color-emerald-700: oklch(50.8% 0.118 165.612);
-    --color-emerald-800: oklch(43.2% 0.095 166.913);
-    --color-emerald-900: oklch(37.8% 0.077 168.94);
-    --color-blue-50: oklch(97% 0.014 254.604);
-    --color-blue-100: oklch(93.2% 0.032 255.585);
-    --color-blue-300: oklch(80.9% 0.105 251.813);
-    --color-blue-400: oklch(70.7% 0.165 254.624);
-    --color-blue-500: oklch(62.3% 0.214 259.815);
-    --color-blue-600: oklch(54.6% 0.245 262.881);
-    --color-blue-700: oklch(48.8% 0.243 264.376);
-    --color-blue-800: oklch(42.4% 0.199 265.638);
-    --color-blue-900: oklch(37.9% 0.146 265.522);
+    --color-green-50: #f3fbf6;
+    --color-green-100: #e0f1e6;
+    --color-green-200: #c2e2cf;
+    --color-green-400: #62ae83;
+    --color-green-500: #389663;
+    --color-green-600: #2f7e54;
+    --color-green-700: #266847;
+    --color-green-800: #1d5238;
+    --color-green-900: #163d2a;
+    --color-emerald-50: #f3fbf6;
+    --color-emerald-100: #e0f1e6;
+    --color-emerald-200: #c2e2cf;
+    --color-emerald-300: #95c9aa;
+    --color-emerald-400: #62ae83;
+    --color-emerald-500: #389663;
+    --color-emerald-600: #2f7e54;
+    --color-emerald-700: #266847;
+    --color-emerald-800: #1d5238;
+    --color-emerald-900: #163d2a;
+    --color-blue-50: #f3fbf6;
+    --color-blue-100: #e0f1e6;
+    --color-blue-300: #95c9aa;
+    --color-blue-400: #62ae83;
+    --color-blue-500: #389663;
+    --color-blue-600: #2f7e54;
+    --color-blue-700: #266847;
+    --color-blue-800: #1d5238;
+    --color-blue-900: #163d2a;
     --color-indigo-100: oklch(93% 0.034 272.788);
     --color-indigo-400: oklch(67.3% 0.182 276.935);
     --color-indigo-600: oklch(51.1% 0.262 276.966);
@@ -148,13 +148,13 @@
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
-    --color-primary: #13ec5b;
-    --color-primary-light: #e0eaff;
-    --color-background-light: #f8fcf9;
-    --color-background-dark: #101622;
-    --color-surface-light: "#ffffff";
-    --color-surface-dark: "#1a3324";
-    --color-border-light: "#e2e8f0";
+    --color-primary: #389663;
+    --color-primary-light: #e0f1e6;
+    --color-background-light: #f4faf6;
+    --color-background-dark: #102117;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #183326;
+    --color-border-light: #d7e7dd;
   }
 }
 @layer base {
@@ -1163,25 +1163,25 @@
     border-color: var(--color-primary);
   }
   .border-primary\/10 {
-    border-color: color-mix(in srgb, #13ec5b 10%, transparent);
+    border-color: color-mix(in srgb, #389663 10%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
     }
   }
   .border-primary\/15 {
-    border-color: color-mix(in srgb, #13ec5b 15%, transparent);
+    border-color: color-mix(in srgb, #389663 15%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-primary) 15%, transparent);
     }
   }
   .border-primary\/20 {
-    border-color: color-mix(in srgb, #13ec5b 20%, transparent);
+    border-color: color-mix(in srgb, #389663 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
     }
   }
   .border-primary\/30 {
-    border-color: color-mix(in srgb, #13ec5b 30%, transparent);
+    border-color: color-mix(in srgb, #389663 30%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
     }
@@ -1232,13 +1232,13 @@
     background-color: var(--color-background-light);
   }
   .bg-background-light\/50 {
-    background-color: color-mix(in srgb, #f8fcf9 50%, transparent);
+    background-color: color-mix(in srgb, #f4faf6 50%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-background-light) 50%, transparent);
     }
   }
   .bg-background-light\/80 {
-    background-color: color-mix(in srgb, #f8fcf9 80%, transparent);
+    background-color: color-mix(in srgb, #f4faf6 80%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-background-light) 80%, transparent);
     }
@@ -1298,31 +1298,31 @@
     background-color: var(--color-primary-light);
   }
   .bg-primary-light\/50 {
-    background-color: color-mix(in srgb, #e0eaff 50%, transparent);
+    background-color: color-mix(in srgb, #e0f1e6 50%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-primary-light) 50%, transparent);
     }
   }
   .bg-primary\/5 {
-    background-color: color-mix(in srgb, #13ec5b 5%, transparent);
+    background-color: color-mix(in srgb, #389663 5%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-primary) 5%, transparent);
     }
   }
   .bg-primary\/10 {
-    background-color: color-mix(in srgb, #13ec5b 10%, transparent);
+    background-color: color-mix(in srgb, #389663 10%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
     }
   }
   .bg-primary\/20 {
-    background-color: color-mix(in srgb, #13ec5b 20%, transparent);
+    background-color: color-mix(in srgb, #389663 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
     }
   }
   .bg-primary\/30 {
-    background-color: color-mix(in srgb, #13ec5b 30%, transparent);
+    background-color: color-mix(in srgb, #389663 30%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
     }
@@ -1442,7 +1442,7 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .from-primary\/20 {
-    --tw-gradient-from: color-mix(in srgb, #13ec5b 20%, transparent);
+    --tw-gradient-from: color-mix(in srgb, #389663 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       --tw-gradient-from: color-mix(in oklab, var(--color-primary) 20%, transparent);
     }
@@ -1957,19 +1957,19 @@
     }
   }
   .shadow-primary\/10 {
-    --tw-shadow-color: color-mix(in srgb, #13ec5b 10%, transparent);
+    --tw-shadow-color: color-mix(in srgb, #389663 10%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 10%, transparent) var(--tw-shadow-alpha), transparent);
     }
   }
   .shadow-primary\/20 {
-    --tw-shadow-color: color-mix(in srgb, #13ec5b 20%, transparent);
+    --tw-shadow-color: color-mix(in srgb, #389663 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 20%, transparent) var(--tw-shadow-alpha), transparent);
     }
   }
   .shadow-primary\/30 {
-    --tw-shadow-color: color-mix(in srgb, #13ec5b 30%, transparent);
+    --tw-shadow-color: color-mix(in srgb, #389663 30%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 30%, transparent) var(--tw-shadow-alpha), transparent);
     }
@@ -1981,7 +1981,7 @@
     }
   }
   .ring-primary\/20 {
-    --tw-ring-color: color-mix(in srgb, #13ec5b 20%, transparent);
+    --tw-ring-color: color-mix(in srgb, #389663 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       --tw-ring-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
     }
@@ -2162,7 +2162,7 @@
   }
   .peer-focus\:ring-primary\/20 {
     &:is(:where(.peer):focus ~ *) {
-      --tw-ring-color: color-mix(in srgb, #13ec5b 20%, transparent);
+      --tw-ring-color: color-mix(in srgb, #389663 20%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-ring-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
       }
@@ -2278,7 +2278,7 @@
   .hover\:border-primary\/30 {
     &:hover {
       @media (hover: hover) {
-        border-color: color-mix(in srgb, #13ec5b 30%, transparent);
+        border-color: color-mix(in srgb, #389663 30%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           border-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
         }
@@ -2375,7 +2375,7 @@
   .hover\:bg-primary\/10 {
     &:hover {
       @media (hover: hover) {
-        background-color: color-mix(in srgb, #13ec5b 10%, transparent);
+        background-color: color-mix(in srgb, #389663 10%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
         }
@@ -2385,7 +2385,7 @@
   .hover\:bg-primary\/20 {
     &:hover {
       @media (hover: hover) {
-        background-color: color-mix(in srgb, #13ec5b 20%, transparent);
+        background-color: color-mix(in srgb, #389663 20%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
         }
@@ -2395,7 +2395,7 @@
   .hover\:bg-primary\/90 {
     &:hover {
       @media (hover: hover) {
-        background-color: color-mix(in srgb, #13ec5b 90%, transparent);
+        background-color: color-mix(in srgb, #389663 90%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           background-color: color-mix(in oklab, var(--color-primary) 90%, transparent);
         }
@@ -2485,7 +2485,7 @@
   .hover\:text-primary\/80 {
     &:hover {
       @media (hover: hover) {
-        color: color-mix(in srgb, #13ec5b 80%, transparent);
+        color: color-mix(in srgb, #389663 80%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           color: color-mix(in oklab, var(--color-primary) 80%, transparent);
         }
@@ -2554,7 +2554,7 @@
   .hover\:shadow-primary\/20 {
     &:hover {
       @media (hover: hover) {
-        --tw-shadow-color: color-mix(in srgb, #13ec5b 20%, transparent);
+        --tw-shadow-color: color-mix(in srgb, #389663 20%, transparent);
         @supports (color: color-mix(in lab, red, red)) {
           --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 20%, transparent) var(--tw-shadow-alpha), transparent);
         }
@@ -2624,7 +2624,7 @@
   }
   .focus\:ring-primary\/20 {
     &:focus {
-      --tw-ring-color: color-mix(in srgb, #13ec5b 20%, transparent);
+      --tw-ring-color: color-mix(in srgb, #389663 20%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-ring-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
       }
@@ -2632,7 +2632,7 @@
   }
   .focus\:ring-primary\/25 {
     &:focus {
-      --tw-ring-color: color-mix(in srgb, #13ec5b 25%, transparent);
+      --tw-ring-color: color-mix(in srgb, #389663 25%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-ring-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
       }
@@ -2640,7 +2640,7 @@
   }
   .focus\:ring-primary\/30 {
     &:focus {
-      --tw-ring-color: color-mix(in srgb, #13ec5b 30%, transparent);
+      --tw-ring-color: color-mix(in srgb, #389663 30%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-ring-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
       }
@@ -2903,7 +2903,7 @@
   }
   .md\:via-background-light\/20 {
     @media (width >= 48rem) {
-      --tw-gradient-via: color-mix(in srgb, #f8fcf9 20%, transparent);
+      --tw-gradient-via: color-mix(in srgb, #f4faf6 20%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-gradient-via: color-mix(in oklab, var(--color-background-light) 20%, transparent);
       }
@@ -3232,7 +3232,7 @@
   }
   .dark\:bg-background-dark\/50 {
     @media (prefers-color-scheme: dark) {
-      background-color: color-mix(in srgb, #101622 50%, transparent);
+      background-color: color-mix(in srgb, #102117 50%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         background-color: color-mix(in oklab, var(--color-background-dark) 50%, transparent);
       }
@@ -3240,7 +3240,7 @@
   }
   .dark\:bg-background-dark\/80 {
     @media (prefers-color-scheme: dark) {
-      background-color: color-mix(in srgb, #101622 80%, transparent);
+      background-color: color-mix(in srgb, #102117 80%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         background-color: color-mix(in oklab, var(--color-background-dark) 80%, transparent);
       }
@@ -3306,7 +3306,7 @@
   }
   .dark\:bg-primary\/20 {
     @media (prefers-color-scheme: dark) {
-      background-color: color-mix(in srgb, #13ec5b 20%, transparent);
+      background-color: color-mix(in srgb, #389663 20%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
       }
@@ -3314,7 +3314,7 @@
   }
   .dark\:bg-primary\/30 {
     @media (prefers-color-scheme: dark) {
-      background-color: color-mix(in srgb, #13ec5b 30%, transparent);
+      background-color: color-mix(in srgb, #389663 30%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         background-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
       }
@@ -3412,7 +3412,7 @@
   }
   .dark\:from-primary\/10 {
     @media (prefers-color-scheme: dark) {
-      --tw-gradient-from: color-mix(in srgb, #13ec5b 10%, transparent);
+      --tw-gradient-from: color-mix(in srgb, #389663 10%, transparent);
       @supports (color: color-mix(in lab, red, red)) {
         --tw-gradient-from: color-mix(in oklab, var(--color-primary) 10%, transparent);
       }

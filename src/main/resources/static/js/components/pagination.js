@@ -12,7 +12,7 @@ export const renderPagination = (pageResponse, container, onPageChange) => {
     // Class Tailwind cấu hình sẵn
     const baseBtnClass = "px-3 py-1.5 text-sm font-medium rounded-md transition-colors";
     const inactiveClass = `${baseBtnClass} text-slate-600 dark:text-slate-300 bg-white dark:bg-white/5 border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10`;
-    const activeClass = `${baseBtnClass} text-primary-content bg-primary hover:bg-primary/90`;
+    const activeClass = `${baseBtnClass} text-white bg-primary hover:bg-primary/90`;
     const disabledClass = `${inactiveClass} opacity-50 cursor-not-allowed`;
 
     // Wrapper của Footer

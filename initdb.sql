@@ -194,11 +194,14 @@ CREATE TABLE `donation_transactions` (
                                          CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1) users (3 dòng)
+-- 1) users (6 dòng)
 INSERT INTO users (id, created_at, updated_at, email, full_name, password, phone, role, username) VALUES
                                                                                                        (1, '2026-02-01 08:10:00.000000', '2026-02-20 10:00:00.000000', 'admin@gms.local',    'Quản trị hệ thống', '$2a$10$s3go5e.GYivSMmrJXG6jceddjfSAbg6O832Sip8XIVNRRLIjXNP6G', '0905000001', 'ADMIN',      'admin'),
                                                                                                        (2, '2026-02-02 09:00:00.000000', '2026-02-21 09:10:00.000000', 'staff@gms.local',    'Nhân viên tiếp nhận', '$2a$10$EeSehs49igNMz6Vuk69cDuaAGHFrWSjeOvMmNkaAr6ZwyZtltKStS', '0905000002', 'STAFF',      'staff'),
-                                                                                                       (3, '2026-02-02 09:05:00.000000', '2026-02-21 09:15:00.000000', 'accounting@gms.local','Kế toán từ thiện',   '$2a$10$llGgE5VlZzM0.pCzbOLGWev.cqdovrjSsq0lGM87wo0FVgATXsh12', '0905000003', 'ACCOUNTING', 'accounting');
+                                                                                                       (3, '2026-02-02 09:05:00.000000', '2026-02-21 09:15:00.000000', 'accounting@gms.local','Kế toán từ thiện',   '$2a$10$llGgE5VlZzM0.pCzbOLGWev.cqdovrjSsq0lGM87wo0FVgATXsh12', '0905000003', 'ACCOUNTING', 'accounting'),
+                                                                                                       (7, '2026-03-21 18:00:00.000000', '2026-03-21 18:00:00.000000', 'thuylinh@gms.local',  'Nguyen Thuy Linh',   '$2y$10$tXhj/qUr.E9dlxuDE6yQ4ejRBDLz9gM0QvfXAvttvguP3melfqbzO', '0905000007', 'STAFF',      'thuylinh'),
+                                                                                                       (8, '2026-03-21 18:00:00.000000', '2026-03-21 18:00:00.000000', 'camtu@gms.local',     'Tran Cam Tu',        '$2y$10$tXhj/qUr.E9dlxuDE6yQ4ejRBDLz9gM0QvfXAvttvguP3melfqbzO', '0905000008', 'ACCOUNTING', 'camtu'),
+                                                                                                       (9, '2026-03-21 18:00:00.000000', '2026-03-21 18:00:00.000000', 'ngothinh@gms.local',  'Ngo Thinh',          '$2y$10$tXhj/qUr.E9dlxuDE6yQ4ejRBDLz9gM0QvfXAvttvguP3melfqbzO', '0905000009', 'DONOR',      'ngothinh');
 
 -- 2) system_configs (25 dòng)
 INSERT INTO system_configs (id, config_key, config_value, description) VALUES

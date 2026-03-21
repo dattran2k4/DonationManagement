@@ -8,170 +8,202 @@
     <title>Tạo Đơn Quyên Góp</title>
 </head>
 <body>
-<div layout:fragment="content">
-    <div class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-0 py-6 border-b border-slate-200 dark:border-slate-800">
-        <nav class="flex text-sm text-slate-500 dark:text-slate-400 mb-2">
-            <a class="hover:text-primary" th:href="@{/admin/donations}">Quyên góp</a>
-            <span class="mx-2 text-slate-300">/</span>
-            <span class="text-slate-900 dark:text-white font-medium">Tạo mới</span>
-        </nav>
-        <h2 class="text-2xl font-bold">Tạo Đơn Quyên Góp</h2>
-        <p class="text-sm text-slate-500 mt-1">Nhập thông tin khoản quyên góp để lưu vào hệ thống quản lý.</p>
-    </div>
-    <div class="max-w-4xl py-6">
-        <form id="donationForm" class="space-y-12">
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Thông Tin Nhà Hảo Tâm</h3>
-                    <p class="text-sm text-slate-500 mt-1">Tìm kiếm và chọn nhà hảo tâm theo tên hoặc số điện thoại.</p>
-                </div>
-                <div class="md:col-span-2 space-y-4">
-                    <div class="max-w-md">
-                        <label class="block text-sm font-medium mb-1.5" for="donorSearchInput">
-                            Chọn Nhà Hảo Tâm <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative" id="donorSearchWrapper">
-<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-<span class="material-symbols-outlined text-[20px]">person</span>
-</span>
-                            <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm"
-                                   id="donorSearchInput" placeholder="Nhập tên hoặc số điện thoại..." type="text"/>
-                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
-<span class="material-symbols-outlined text-[20px]">arrow_drop_up</span>
-</span>
-                            <div id="donorDropdown"
-                                 class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
-                                 style="z-index: 9999;">
-                                <div class="grid grid-cols-2 gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    <span>Nhà hảo tâm</span>
-                                    <span>Số điện thoại</span>
-                                </div>
-                                <div id="donorDropdownList" class="max-h-64 overflow-y-auto"></div>
+<div layout:fragment="content" class="flex flex-col overflow-hidden">
+    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="text-slate-400">Quyên góp</span>
+            <span class="material-icons text-sm text-slate-400">chevron_right</span>
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Tạo mới quyên góp</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin/donations}"
+               class="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">
+                Hủy bỏ
+            </a>
+            <button id="submitDonation"
+                    form="donationForm"
+                    type="submit"
+                    class="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2">
+                <span class="material-icons text-sm font-bold">save</span>
+                Tạo đơn quyên góp
+            </button>
+        </div>
+    </header>
+    <div class="flex-1 overflow-y-auto py-2">
+        <div class="max-w-6xl">
+            <form id="donationForm" class="grid grid-cols-1 lg:grid-cols-3 gap-8 py-6">
+                <div class="lg:col-span-2 space-y-8">
+                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <div class="flex items-start justify-between gap-4 mb-6">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="material-icons text-primary">volunteer_activism</span>
+                                    Thông tin nhà hảo tâm
+                                </h2>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                                    Tìm kiếm và chọn đúng nhà hảo tâm theo tên hoặc số điện thoại trước khi tạo khoản quyên góp.
+                                </p>
                             </div>
                         </div>
-                        <input id="donorId" name="donorId" type="hidden" required/>
-                    </div>
-                </div>
-            </section>
-            <hr class="border-slate-200 dark:border-slate-800"/>
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Mục Tiêu Quyên Góp</h3>
-                    <p class="text-sm text-slate-500 mt-1">Chọn một trong ba lựa chọn: không gắn mục tiêu, sự kiện hoặc
-                        hoạt động.</p>
-                </div>
-                <div class="md:col-span-2 space-y-6">
-                    <div class="flex flex-wrap gap-4">
-                        <label class="relative flex items-center gap-3 px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-white dark:bg-slate-900 hover:border-primary transition-all">
-                            <input checked class="text-primary focus:ring-primary h-4 w-4" id="targetNone"
-                                   type="checkbox"/>
-                            <span class="text-sm font-medium">Không gắn mục tiêu</span>
-                        </label>
-                        <label class="relative flex items-center gap-3 px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-white dark:bg-slate-900 hover:border-primary transition-all">
-                            <input class="text-primary focus:ring-primary h-4 w-4" id="targetEvent" type="checkbox"/>
-                            <span class="text-sm font-medium">Sự kiện</span>
-                        </label>
-                        <label class="relative flex items-center gap-3 px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer bg-white dark:bg-slate-900 hover:border-primary transition-all">
-                            <input class="text-primary focus:ring-primary h-4 w-4" id="targetActivity" type="checkbox"/>
-                            <span class="text-sm font-medium">Hoạt động</span>
-                        </label>
-                    </div>
-                    <div id="eventTargetGroup" class="hidden max-w-xs">
-                        <label class="block text-sm font-medium mb-1.5" for="eventId">ID Sự Kiện <span
-                                class="text-red-500">*</span></label>
-                        <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                               id="eventId" name="eventId" min="1" placeholder="Nhập ID sự kiện" type="number"/>
-                    </div>
-                    <div id="activityTargetGroup" class="hidden max-w-xs">
-                        <label class="block text-sm font-medium mb-1.5" for="activityId">ID Hoạt Động <span
-                                class="text-red-500">*</span></label>
-                        <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                               id="activityId" name="activityId" min="1" placeholder="Nhập ID hoạt động" type="number"/>
-                    </div>
-                </div>
-            </section>
-            <hr class="border-slate-200 dark:border-slate-800"/>
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Thông Tin Quyên Góp</h3>
-                    <p class="text-sm text-slate-500 mt-1">Số tiền, phương thức thanh toán và nội dung ghi chú.</p>
-                </div>
-                <div class="md:col-span-2 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium mb-1.5" for="amount">
-                                Số Tiền <span class="text-red-500">*</span>
+                        <div class="max-w-xl">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="donorSearchInput">
+                                Chọn nhà hảo tâm <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm pr-12"
-                                       id="amount" name="amount" min="1000" placeholder="0" required step="0.01"
-                                       type="number"/>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-slate-500 text-sm font-bold">VND</span>
+                            <div class="relative" id="donorSearchWrapper">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <span class="material-symbols-outlined text-[20px]">person_search</span>
+                                </span>
+                                <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary transition-all text-sm"
+                                       id="donorSearchInput" placeholder="Nhập tên hoặc số điện thoại..." type="text"/>
+                                <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
+                                    <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                                </span>
+                                <div id="donorDropdown"
+                                     class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
+                                     style="z-index: 9999;">
+                                    <div class="grid grid-cols-2 gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                        <span>Nhà hảo tâm</span>
+                                        <span>Số điện thoại</span>
+                                    </div>
+                                    <div id="donorDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                </div>
+                            </div>
+                            <input id="donorId" name="donorId" type="hidden" required/>
+                        </div>
+                    </section>
+
+                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                            <span class="material-icons text-primary">payments</span>
+                            Thông tin quyên góp
+                        </h2>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="amount">
+                                        Số tiền <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm pr-12"
+                                               id="amount" name="amount" min="1000" placeholder="0" required step="0.01"
+                                               type="number"/>
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-slate-500 text-sm font-bold">VND</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="paymentMethod">
+                                        Phương thức thanh toán <span class="text-red-500">*</span>
+                                    </label>
+                                    <select class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                            id="paymentMethod" name="paymentMethod" required>
+                                        <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
+                                        <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
+                                        <option value="CASH">Tiền mặt</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="message">
+                                    Lời nhắn/Ghi chú
+                                </label>
+                                <textarea
+                                        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                        id="message" name="message" placeholder="Nhập nội dung lời nhắn hoặc ghi chú..."
+                                        rows="5"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="space-y-8">
+                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                            <span class="material-icons text-primary">flag</span>
+                            Mục tiêu quyên góp
+                        </h2>
+                        <div class="space-y-4">
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Chọn một mục tiêu phù hợp cho khoản đóng góp này. Bạn có thể để độc lập hoặc gắn vào sự kiện, hoạt động cụ thể.
+                            </p>
+                            <div class="space-y-3">
+                                <label class="block cursor-pointer">
+                                    <input checked class="peer sr-only" id="targetNone" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Không gắn mục tiêu</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Khoản quyên góp được lưu độc lập trong hệ thống.</span>
+                                    </div>
+                                </label>
+                                <label class="block cursor-pointer">
+                                    <input class="peer sr-only" id="targetEvent" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Sự kiện</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Liên kết khoản quyên góp với một chiến dịch cấp sự kiện.</span>
+                                    </div>
+                                </label>
+                                <label class="block cursor-pointer">
+                                    <input class="peer sr-only" id="targetActivity" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Hoạt động</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Gắn khoản quyên góp trực tiếp vào một hoạt động cụ thể.</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="eventTargetGroup" class="hidden">
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="eventId">
+                                    ID sự kiện <span class="text-red-500">*</span>
+                                </label>
+                                <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                       id="eventId" name="eventId" min="1" placeholder="Nhập ID sự kiện" type="number"/>
+                            </div>
+                            <div id="activityTargetGroup" class="hidden">
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="activityId">
+                                    ID hoạt động <span class="text-red-500">*</span>
+                                </label>
+                                <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                       id="activityId" name="activityId" min="1" placeholder="Nhập ID hoạt động" type="number"/>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                            <span class="material-icons text-primary">receipt_long</span>
+                            Yêu cầu biên lai
+                        </h2>
+                        <div class="space-y-6">
+                            <div class="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-4">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input class="sr-only peer" id="needReceipt" name="needReceipt" type="checkbox"/>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    <span class="ms-3 text-sm font-semibold text-slate-900 dark:text-slate-300">Nhận biên lai điện tử</span>
+                                </label>
+                                <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                                    Bật tùy chọn này nếu nhà hảo tâm cần nhận biên lai qua email sau khi lưu khoản quyên góp.
+                                </p>
+                            </div>
+                            <div class="hidden grid grid-cols-1 gap-6" id="receiptFields">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="receiptName">
+                                        Tên trên biên lai
+                                    </label>
+                                    <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                           id="receiptName" name="receiptName" placeholder="Họ tên/Tên tổ chức" type="text"/>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="receiptEmail">
+                                        Email nhận biên lai
+                                    </label>
+                                    <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                           id="receiptEmail" name="receiptEmail" placeholder="example@domain.com" type="email"/>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1.5" for="paymentMethod">
-                                Phương Thức Thanh Toán <span class="text-red-500">*</span>
-                            </label>
-                            <select class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                                    id="paymentMethod" name="paymentMethod" required>
-                                <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
-                                <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
-                                <option value="CASH">Tiền mặt</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1.5" for="message">Lời nhắn/Ghi chú</label>
-                        <textarea
-                                class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                                id="message" name="message" placeholder="Nhập nội dung lời nhắn hoặc ghi chú..."
-                                rows="4"></textarea>
-                    </div>
+                    </section>
                 </div>
-            </section>
-            <hr class="border-slate-200 dark:border-slate-800"/>
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Yêu Cầu Biên Lai</h3>
-                    <p class="text-sm text-slate-500 mt-1">Bật tùy chọn này nếu cần gửi biên lai điện tử.</p>
-                </div>
-                <div class="md:col-span-2 space-y-6">
-                    <div class="flex items-center gap-4 py-2">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input class="sr-only peer" id="needReceipt" name="needReceipt" type="checkbox"/>
-                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            <span class="ms-3 text-sm font-medium text-slate-900 dark:text-slate-300">Nhận biên lai</span>
-                        </label>
-                    </div>
-                    <div class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pt-2" id="receiptFields">
-                        <div>
-                            <label class="block text-sm font-medium mb-1.5" for="receiptName">Tên trên biên lai</label>
-                            <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                                   id="receiptName" name="receiptName" placeholder="Họ tên/Tên tổ chức" type="text"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1.5" for="receiptEmail">Email nhận biên
-                                lai</label>
-                            <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                                   id="receiptEmail" name="receiptEmail" placeholder="example@domain.com" type="email"/>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <div class="flex items-center justify-end gap-4 pt-8 border-t border-slate-200 dark:border-slate-800">
-                <a class="px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                   th:href="@{/admin/donations}">Hủy</a>
-                <button class="px-6 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-primary/30 transition-all flex items-center gap-2"
-                        id="submitDonation"
-                        type="submit">
-                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                    Tạo Đơn Quyên Góp
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 <th:block layout:fragment="scripts">
