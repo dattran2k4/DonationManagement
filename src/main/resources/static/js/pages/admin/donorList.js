@@ -89,9 +89,6 @@ const renderDonorRow = (donor) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.5)] transition-colors">
             <div class="flex items-center justify-center gap-2">
-                <button onclick="viewDonorProfile(${donor.id})" class="text-slate-400 hover:text-primary p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem hồ sơ">
-                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                </button>
                 <button onclick="editDonor(${donor.id})" class="text-slate-400 hover:text-blue-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
                     <span class="material-symbols-outlined text-[20px]">edit</span>
                 </button>
@@ -160,6 +157,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Gắn các hàm hành động vào window để HTML onclick gọi được
-window.viewDonorProfile = (id) => console.log('Xem hồ sơ:', id);
-window.editDonor = (id) => console.log('Sửa:', id);
-window.viewDonationHistory = (id) => console.log('Lịch sử:', id);
+window.editDonor = (id) => window.location.href = `/admin/donors/${id}/form`;
+window.viewDonationHistory = (id) => window.location.href = `/admin/donors/${id}/donations`;

@@ -1,8 +1,11 @@
 import {createDonor} from "./donor-submit.js";
+import {donorApi} from "../apis/donorApi.js";
 
 const form = document.getElementById("donorForm");
 const headerSaveBtn = document.getElementById("saveDonorHeaderBtn");
 const footerSaveBtn = document.getElementById("saveDonorBtn");
+const donorIdInput = document.getElementById("donorId");
+const donorFormHeaderTitle = document.getElementById("donorFormHeaderTitle");
 
 const individualSection = document.getElementById("individual-section");
 const organizationSection = document.getElementById("organization-section");
@@ -40,6 +43,57 @@ function updateTabUI(selectedValue) {
     }
 }
 
+function fillIndividualForm(donor) {
+    document.getElementById("fullName").value = donor.fullName || "";
+    document.getElementById("displayName").value = donor.displayName || donor.fullName || "";
+    document.getElementById("phone").value = donor.phone || "";
+    document.getElementById("email").value = donor.email || "";
+    document.getElementById("referralSource").value = donor.referralSource || "";
+    document.getElementById("note").value = donor.note || "";
+}
+
+function fillOrganizationForm(donor) {
+    const organization = donor.organization || {};
+    document.getElementById("orgName").value = organization.name || donor.fullName || "";
+    document.getElementById("taxCode").value = organization.taxCode || "";
+    document.getElementById("representative").value = organization.representative || "";
+    document.getElementById("billingAddress").value = organization.billingAddress || "";
+    document.getElementById("phone").value = donor.phone || "";
+    document.getElementById("email").value = donor.email || "";
+    document.getElementById("referralSource").value = donor.referralSource || "";
+    document.getElementById("note").value = donor.note || "";
+}
+
+async function loadDonorDetailForEdit() {
+    const donorId = donorIdInput?.value;
+    if (!donorId) return;
+
+    try {
+        const response = await donorApi.getDonorById(donorId);
+        const donor = response?.data;
+        if (!donor) return;
+
+        if (String(donor.type) === "ORGANIZATION") {
+            const orgRadio = document.getElementById("donor_org");
+            if (orgRadio) orgRadio.checked = true;
+            updateTabUI("ORGANIZATION");
+            fillOrganizationForm(donor);
+        } else {
+            const individualRadio = document.getElementById("donor_personal");
+            if (individualRadio) individualRadio.checked = true;
+            updateTabUI("INDIVIDUAL");
+            fillIndividualForm(donor);
+        }
+
+        if (donorFormHeaderTitle) {
+            donorFormHeaderTitle.textContent = "Chỉnh sửa Nhà hảo tâm";
+        }
+    } catch (error) {
+        console.error("Lỗi tải chi tiết donor:", error);
+        alert(error?.message || "Không thể tải thông tin nhà hảo tâm");
+    }
+}
+
 async function handleSaveDonor() {
     if (!form) return;
 
@@ -50,7 +104,7 @@ async function handleSaveDonor() {
     try {
         const donorId = await createDonor(donorType, rawData);
         if (donorId) {
-            alert("Lưu nhà hảo tâm thành công");
+            alert(rawData.id ? "Cập nhật nhà hảo tâm thành công" : "Lưu nhà hảo tâm thành công");
             window.location.href = "/admin/donors";
         }
     } catch (error) {
@@ -71,6 +125,8 @@ function init() {
     if (checkedRadio) {
         updateTabUI(checkedRadio.value);
     }
+
+    loadDonorDetailForEdit();
 
     headerSaveBtn?.addEventListener("click", handleSaveDonor);
     footerSaveBtn?.addEventListener("click", handleSaveDonor);

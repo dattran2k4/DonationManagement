@@ -6,6 +6,9 @@ import com.chiaseyeuthuong.model.Donation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -44,4 +47,7 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
     List<Donation> findAllByStatusAndTargetAndEventIsNotNull(EDonationStatus status, EDonationTarget target);
 
     List<Donation> findAllByStatusAndTargetAndEventIdIn(EDonationStatus status, EDonationTarget target, Collection<Long> eventIds);
+
+    @EntityGraph(attributePaths = {"event", "activity"})
+    Page<Donation> findByDonorId(Long donorId, Pageable pageable);
 }

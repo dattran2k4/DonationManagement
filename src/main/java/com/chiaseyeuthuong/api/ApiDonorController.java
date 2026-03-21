@@ -32,6 +32,26 @@ public class ApiDonorController {
                 .build();
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse getDonorById(@PathVariable Long id) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Get donor detail successfully")
+                .data(donorService.getDonorById(id))
+                .build();
+    }
+
+    @GetMapping("/{id}/donations")
+    public ApiResponse getDonorDonations(@PathVariable Long id,
+                                         @RequestParam(required = false, defaultValue = "1") int page,
+                                         @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Get donor donation history successfully")
+                .data(donorService.getDonorDonations(id, page, size))
+                .build();
+    }
+
     @PostMapping("/individuals")
     public ApiResponse saveIndividualDonor(@Valid @RequestBody IndividualDonorRequest request) {
         return ApiResponse.builder()
@@ -41,12 +61,30 @@ public class ApiDonorController {
                 .build();
     }
 
+    @PutMapping("/{id}/individuals")
+    public ApiResponse updateIndividualDonor(@PathVariable Long id, @Valid @RequestBody IndividualDonorRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Donor updated successfully")
+                .data(donorService.updateIndividualDonor(id, request))
+                .build();
+    }
+
     @PostMapping("/organizations")
     public ApiResponse createOrganizeDonor(@Valid @RequestBody OrganizeDonorRequest request) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Donation saved successfully")
                 .data(donorService.saveOrganizeDonor(request))
+                .build();
+    }
+
+    @PutMapping("/{id}/organizations")
+    public ApiResponse updateOrganizeDonor(@PathVariable Long id, @Valid @RequestBody OrganizeDonorRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Donor updated successfully")
+                .data(donorService.updateOrganizeDonor(id, request))
                 .build();
     }
 }

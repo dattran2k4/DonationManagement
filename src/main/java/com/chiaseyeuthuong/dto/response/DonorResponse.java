@@ -15,6 +15,8 @@ public class DonorResponse {
 
     private String fullName;
 
+    private String displayName;
+
     private String phone;
 
     private String email;

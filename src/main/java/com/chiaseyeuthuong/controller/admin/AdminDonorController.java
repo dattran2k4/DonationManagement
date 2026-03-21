@@ -22,11 +22,20 @@ public class AdminDonorController {
 
     @GetMapping("/form")
     public String showCreateDonorPage(Model model) {
+        model.addAttribute("donorId", null);
         return "pages/admin/donor-form";
     }
 
     @GetMapping("/{id}/form")
     public String showEditDonorPage(@PathVariable Long id, Model model) {
+        model.addAttribute("donorId", id);
         return "pages/admin/donor-form";
+    }
+
+    @GetMapping("/{id}/donations")
+    public String showDonorDonationHistoryPage(@PathVariable Long id, Model model) {
+        model.addAttribute("donorId", id);
+        model.addAttribute("donor", donorService.getDonorById(id));
+        return "pages/admin/donor-donations";
     }
 }
