@@ -135,7 +135,7 @@ const renderTable = (donations) => {
                             <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
                                 <span class="material-symbols-outlined text-[20px]">close</span>
                             </button>
-                            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-slate-900 hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
+                            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-white hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[16px]">check</span> Duyệt
                             </button>
                         ` : ``}

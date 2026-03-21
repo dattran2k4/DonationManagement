@@ -6,8 +6,8 @@
     <title>Đăng nhập quản trị</title>
     <style>
         :root {
-            --primary: #2edb83;
-            --primary-dark: #22c46f;
+            --primary: #389663;
+            --primary-dark: #2f7e54;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --line: #e2e8f0;
@@ -20,7 +20,7 @@
             margin: 0;
             min-height: 100vh;
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 35%, #f8fafc 100%);
+            background: linear-gradient(180deg, #eef8f1 0%, #f4faf6 35%, #f7fbf8 100%);
             display: grid;
             place-items: center;
             padding: 20px;
@@ -50,16 +50,23 @@
         }
 
         .hero-badge {
-            width: 44px;
-            height: 44px;
-            border-radius: 999px;
-            background: var(--primary);
+            width: 68px;
+            height: 68px;
+            border-radius: 22px;
+            background: #ffffff;
+            border: 4px solid rgba(255, 255, 255, 0.82);
+            padding: 6px;
             display: grid;
             place-items: center;
-            color: white;
-            font-size: 22px;
-            font-weight: 700;
-            box-shadow: 0 8px 22px rgba(46, 219, 131, 0.45);
+            overflow: hidden;
+            box-shadow: 0 12px 28px rgba(56, 150, 99, 0.28);
+        }
+
+        .hero-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
         }
 
         .content {
@@ -122,7 +129,7 @@
 
         .input-wrap:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(46, 219, 131, 0.18);
+            box-shadow: 0 0 0 4px rgba(56, 150, 99, 0.18);
         }
 
         .input-wrap .icon {
@@ -138,6 +145,17 @@
             font-size: 24px;
             color: #0f172a;
             background: transparent;
+        }
+
+        .toggle-password {
+            border: 0;
+            background: transparent;
+            color: var(--primary);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0;
+            flex: 0 0 auto;
         }
 
         .remember {
@@ -160,13 +178,13 @@
             border: 0;
             border-radius: 12px;
             background: var(--primary);
-            color: #042312;
+            color: #ffffff;
             height: 64px;
             font-size: 32px;
             font-weight: 800;
             cursor: pointer;
             transition: transform .08s ease, background-color .2s ease, box-shadow .2s ease;
-            box-shadow: 0 12px 22px rgba(46, 219, 131, 0.30);
+            box-shadow: 0 12px 22px rgba(56, 150, 99, 0.30);
         }
 
         .btn:hover {
@@ -203,6 +221,7 @@
             .subtitle { font-size: 18px; }
             .label { font-size: 22px; }
             .input-wrap input { font-size: 18px; }
+            .hero-badge { width: 60px; height: 60px; }
             .btn { font-size: 24px; height: 56px; }
         }
     </style>
@@ -210,11 +229,13 @@
 <body>
 <main class="login-card">
     <div class="hero">
-            <div class="hero-badge">L</div>
+        <div class="hero-badge">
+            <img th:src="@{/images/logo.jpg}" alt="Logo câu lạc bộ">
+        </div>
     </div>
     <section class="content">
-        <h1>Welcome back</h1>
-        <p class="subtitle">Administrative Access Portal</p>
+        <h1>Chào mừng trở lại</h1>
+        <p class="subtitle">Cổng đăng nhập quản trị</p>
 
         <div class="alert alert-error" th:if="${param.error}">
             Sai tên đăng nhập hoặc mật khẩu.
@@ -225,31 +246,47 @@
 
         <form class="form" method="post" th:action="@{/login}">
             <div class="row-head">
-                <label class="label" for="username">Admin Email</label>
+                <label class="label" for="username">Tên đăng nhập</label>
             </div>
             <div class="input-wrap">
                 <span class="icon">@</span>
-                <input id="username" name="username" type="text" placeholder="admin@charityhope.org" required autofocus>
+                <input id="username" name="username" type="text" placeholder="admin" required autofocus>
             </div>
 
             <div class="row-head">
-                <label class="label" for="password">Password</label>
-                <a class="link" href="#">Forgot password?</a>
+                <label class="label" for="password">Mật khẩu</label>
+                <a class="link" href="mailto:contact@chiaseyeuthuong.org?subject=Ho%20tro%20khoi%20phuc%20mat%20khau">Quên mật khẩu?</a>
             </div>
             <div class="input-wrap">
                 <span class="icon">🔒</span>
                 <input id="password" name="password" type="password" placeholder="********" required>
-                <span class="icon" aria-hidden="true">O</span>
+                <button class="toggle-password" type="button" data-toggle-password aria-controls="password">Hiện</button>
             </div>
 
             <label class="remember">
                 <input type="checkbox" name="remember-me">
-                <span>Keep me logged in</span>
+                <span>Ghi nhớ đăng nhập</span>
             </label>
 
-            <button class="btn" type="submit">> Secure Login</button>
+            <button class="btn" type="submit">Đăng nhập</button>
         </form>
     </section>
 </main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleButton = document.querySelector('[data-toggle-password]');
+        const passwordInput = document.getElementById('password');
+
+        if (!toggleButton || !passwordInput) {
+            return;
+        }
+
+        toggleButton.addEventListener('click', function () {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            toggleButton.textContent = isPassword ? 'Ẩn' : 'Hiện';
+        });
+    });
+</script>
 </body>
 </html>
