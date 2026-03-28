@@ -1,13 +1,54 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
+import {bindExcelActions} from '../../utils/excelTransfer.js';
+const canManageDonors = window.__CAN_MANAGE_DONORS__ === true;
 
-const state = {page: 1, size: 10, search: '', type: ''};
+const state = {
+    page: 1,
+    size: 50,
+    search: '',
+    type: '',
+    sortBy: 'id',
+    sortDir: 'desc'
+};
 
 const elements = {
     tableBody: document.getElementById('donorTableBody'),
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('donorSearchInput'),
-    typeFilter: document.getElementById('donorTypeFilter')
+    typeFilter: document.getElementById('donorTypeFilter'),
+    sortButtons: document.querySelectorAll('[data-donor-sort]'),
+    exportBtn: document.getElementById('donorExportBtn'),
+    importBtn: document.getElementById('donorImportBtn'),
+    importInput: document.getElementById('donorImportInput')
+};
+
+const getDefaultSortDirection = (field) => {
+    if (['createdAt', 'numberOfDonations', 'totalDonationAmount'].includes(field)) {
+        return 'desc';
+    }
+
+    return 'asc';
+};
+
+const getSortIcon = (field) => {
+    if (state.sortBy !== field) return 'unfold_more';
+    return state.sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward';
+};
+
+const updateSortIndicators = () => {
+    elements.sortButtons.forEach((button) => {
+        const field = button.dataset.donorSort;
+        const icon = button.querySelector('[data-sort-icon]');
+        const isActive = state.sortBy === field;
+
+        button.classList.toggle('text-primary', isActive);
+        button.classList.toggle('font-bold', isActive);
+
+        if (icon) {
+            icon.textContent = getSortIcon(field);
+        }
+    });
 };
 
 // 1. Hàm helper lấy chữ cái đầu của tên (Avatar cá nhân)
@@ -46,20 +87,20 @@ const renderDonorRow = (donor) => {
            </div>`;
 
     return `
-    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+    <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="flex items-center">
                 <div class="h-10 w-10 shrink-0">${avatarHtml}</div>
                     <div class="ml-4">
                         ${isOrg && orgInfo ? `
-                            <div class="text-sm font-semibold text-slate-900 dark:text-white">
+                            <div class="text-sm font-semibold text-text-main dark:text-white">
                                 ${orgInfo.name}
                             </div>
-                            <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center">
+                            <div class="text-xs text-text-secondary mt-0.5 flex items-center">
                                 <span class="material-symbols-outlined text-[12px] mr-1">person_pin</span>
                                 Đại diện: ${orgInfo.representative || '---'}
                             </div>
-                    ` : `<div class="text-sm font-semibold text-slate-900 dark:text-white">${donor.fullName}</div>`}
+                    ` : `<div class="text-sm font-semibold text-text-main dark:text-white">${donor.fullName}</div>`}
                     </div>
             </div>
         </td>
@@ -68,33 +109,35 @@ const renderDonorRow = (donor) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="flex flex-col gap-1">
-                <div class="flex items-center text-sm text-slate-900 dark:text-slate-200">
+                <div class="flex items-center text-sm text-text-main dark:text-slate-200">
                     <span class="material-symbols-outlined text-[16px] mr-1.5 text-slate-400">call</span>
                     ${donor.phone || '---'}
                 </div>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                <div class="flex items-center text-sm text-text-secondary">
                     <span class="material-symbols-outlined text-[16px] mr-1.5 text-slate-400">mail</span>
                     ${donor.email || '---'}
                 </div>
             </div>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
             ${joinDate}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-200 text-center">
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-main dark:text-slate-200 text-center">
             ${donor.numberOfDonations || 0}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-slate-900 dark:text-white">
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-text-main dark:text-white">
             ${formatCurrency(donor.totalDonationAmount)}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium sticky right-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.5)] transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium sticky right-0 bg-surface-light dark:bg-surface-dark group-hover:bg-slate-50 dark:group-hover:bg-white/5 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.45)] transition-colors">
             <div class="flex items-center justify-center gap-2">
                 <button onclick="viewDonorProfile(${donor.id})" class="text-slate-400 hover:text-primary p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem hồ sơ">
                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                 </button>
-                <button onclick="editDonor(${donor.id})" class="text-slate-400 hover:text-blue-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
-                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                </button>
+                ${canManageDonors ? `
+                    <button onclick="editDonor(${donor.id})" class="text-slate-400 hover:text-blue-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
+                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                    </button>
+                ` : ''}
                 <button onclick="viewDonationHistory(${donor.id})" class="text-slate-400 hover:text-orange-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Lịch sử quyên góp">
                     <span class="material-symbols-outlined text-[20px]">history</span>
                 </button>
@@ -112,7 +155,7 @@ const loadDonors = async () => {
         const donors = pageData.data || [];
 
         if (donors.length === 0) {
-            elements.tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">Không tìm thấy nhà hảo tâm nào</td></tr>`;
+            elements.tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-text-secondary">Không tìm thấy nhà hảo tâm nào</td></tr>`;
         } else {
             elements.tableBody.innerHTML = donors.map(d => renderDonorRow(d)).join('');
         }
@@ -151,15 +194,55 @@ const bindFilters = () => {
         });
     }
 
+    elements.sortButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const field = button.dataset.donorSort;
+
+            if (state.sortBy === field) {
+                state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortBy = field;
+                state.sortDir = getDefaultSortDirection(field);
+            }
+
+            state.page = 1;
+            updateSortIndicators();
+            loadDonors();
+        });
+    });
 };
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
     bindFilters();
+    updateSortIndicators();
+    bindExcelActions({
+        exportButton: elements.exportBtn,
+        importButton: elements.importBtn,
+        importInput: elements.importInput,
+        exportUrl: '/api/admin/excel/donors/export',
+        importUrl: '/api/admin/excel/donors/import',
+        getExportParams: () => ({
+            search: state.search,
+            type: state.type,
+            sortBy: state.sortBy,
+            sortDir: state.sortDir
+        }),
+        fallbackFilename: 'nha-hao-tam.xlsx',
+        successExportMessage: 'Xuất Excel nhà hảo tâm thành công.',
+        onImportSuccess: () => {
+            state.page = 1;
+            loadDonors();
+        }
+    });
     loadDonors();
 });
 
 // Gắn các hàm hành động vào window để HTML onclick gọi được
-window.viewDonorProfile = (id) => console.log('Xem hồ sơ:', id);
-window.editDonor = (id) => console.log('Sửa:', id);
+window.viewDonorProfile = (id) => {
+    window.location.href = `/admin/donors/${id}`;
+};
+window.editDonor = (id) => {
+    window.location.href = `/admin/donors/${id}/form`;
+};
 window.viewDonationHistory = (id) => console.log('Lịch sử:', id);

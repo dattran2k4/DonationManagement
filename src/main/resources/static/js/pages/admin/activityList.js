@@ -1,15 +1,20 @@
 import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
-const isAdmin = window.__IS_ADMIN__ === true;
+import {bindExcelActions} from '../../utils/excelTransfer.js';
+const canManageActivities = window.__CAN_MANAGE_ACTIVITIES__ === true;
 
-const state = {page: 1, size: 2, search: '', status: ''};
+const state = {page: 1, size: 50, search: '', status: ''};
+let latestRequestId = 0;
 const elements = {
     tableBody: document.getElementById('activityTableBody'),
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('activitySearchInput'),
     statusFilter: document.getElementById('activityStatusFilter'),
     resetFilterBtn: document.getElementById('activityResetFilterBtn'),
-    actionHeader: document.getElementById('activityActionHeader')
+    actionHeader: document.getElementById('activityActionHeader'),
+    exportBtn: document.getElementById('activityExportBtn'),
+    importBtn: document.getElementById('activityImportBtn'),
+    importInput: document.getElementById('activityImportInput')
 };
 
 // 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
@@ -30,13 +35,28 @@ const formatDateRange = (start, end) => {
     return `${startStr} - ${endStr}`;
 };
 
+const getColumnCount = () => canManageActivities ? 8 : 7;
+
+const setTableMessage = (message) => {
+    elements.tableBody.innerHTML = `
+        <tr>
+            <td colspan="${getColumnCount()}" class="p-10 text-center text-slate-500">${message}</td>
+        </tr>
+    `;
+};
+
+const syncStateFromFilters = () => {
+    state.search = elements.searchInput?.value?.trim() || '';
+    state.status = elements.statusFilter?.value || '';
+};
+
 // 3. Hàm xử lý Badge Trạng thái
 const getStatusBadge = (status) => {
     const config = {
         'DRAFT': {text: 'Bản nháp', color: 'slate', dot: 'bg-slate-400'},
         'UPCOMING': {text: 'Sắp diễn ra', color: 'amber', dot: 'bg-amber-500'},
         'ONGOING': {text: 'Đang diễn ra', color: 'emerald', dot: 'bg-primary animate-pulse'},
-        'COMPLETED': {text: 'Đã kết thúc', color: 'gray', dot: 'bg-gray-500'},
+        'COMPLETED': {text: 'Hoàn thành', color: 'slate', dot: 'bg-slate-400'},
         'CANCELLED': {text: 'Đã hủy', color: 'red', dot: 'bg-red-500'}
     };
 
@@ -97,7 +117,7 @@ const renderActivityRow = (activity) => {
         <td class="px-6 py-4 whitespace-nowrap">
             ${getStatusBadge(activity.status)}
         </td>
-        ${isAdmin ? `
+        ${canManageActivities ? `
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                 <div class="flex items-center justify-center">
                     <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Cập nhật">
@@ -111,14 +131,21 @@ const renderActivityRow = (activity) => {
 
 // 5. Hàm tải dữ liệu
 const loadActivities = async () => {
+    const requestId = ++latestRequestId;
+
     try {
+        setTableMessage('Đang tải dữ liệu...');
+        elements.paginationContainer.innerHTML = '';
+
         const response = await activityApi.getAllActivities(state);
+        if (requestId !== latestRequestId) return;
 
         const pageData = response.data;
         const activities = pageData.data || [];
 
         if (activities.length === 0) {
-            elements.tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" class="p-10 text-center text-slate-500">Không có hoạt động nào</td></tr>`;
+            setTableMessage('Không có hoạt động nào');
+            elements.paginationContainer.innerHTML = '';
             return;
         }
 
@@ -129,6 +156,9 @@ const loadActivities = async () => {
             loadActivities();
         });
     } catch (error) {
+        if (requestId !== latestRequestId) return;
+        setTableMessage('Không thể tải danh sách hoạt động');
+        elements.paginationContainer.innerHTML = '';
         console.error("Lỗi khi tải Activities:", error);
     }
 };
@@ -174,10 +204,39 @@ const bindFilters = () => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
-    if (!isAdmin && elements.actionHeader) {
+    if (!canManageActivities && elements.actionHeader) {
         elements.actionHeader.remove();
     }
     bindFilters();
+    syncStateFromFilters();
+    bindExcelActions({
+        exportButton: elements.exportBtn,
+        importButton: elements.importBtn,
+        importInput: elements.importInput,
+        exportUrl: '/api/admin/excel/activities/export',
+        importUrl: '/api/admin/excel/activities/import',
+        getExportParams: () => ({
+            search: state.search,
+            status: state.status
+        }),
+        fallbackFilename: 'hoat-dong.xlsx',
+        successExportMessage: 'Xuất Excel hoạt động thành công.',
+        onImportSuccess: () => {
+            state.page = 1;
+            loadActivities();
+        }
+    });
+    loadActivities();
+});
+
+window.addEventListener('pageshow', (event) => {
+    const navigationEntry = performance.getEntriesByType('navigation')[0];
+    const isBackForwardNavigation = event.persisted || navigationEntry?.type === 'back_forward';
+
+    if (!isBackForwardNavigation) return;
+
+    syncStateFromFilters();
+    state.page = 1;
     loadActivities();
 });
 

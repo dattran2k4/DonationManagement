@@ -5,6 +5,7 @@ import com.chiaseyeuthuong.common.EDonationTarget;
 import com.chiaseyeuthuong.model.Donation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +41,8 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
             Long donorId,
             EDonationStatus status
     );
+
+    List<Donation> findByDonorIdOrderByCreatedAtDesc(Long donorId, Pageable pageable);
 
     List<Donation> findAllByStatusAndTargetAndEventIsNotNull(EDonationStatus status, EDonationTarget target);
 

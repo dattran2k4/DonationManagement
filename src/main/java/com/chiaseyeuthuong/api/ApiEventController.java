@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +59,7 @@ public class ApiEventController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse saveEvent(@RequestBody @Valid EventRequest request) {
         return ApiResponse.builder()
                 .status(200)
@@ -67,6 +69,7 @@ public class ApiEventController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse updateStatus(@Min(1) @PathVariable Long id, @RequestParam EEventStatus status) {
         eventService.updateStatus(status, id);
         return ApiResponse.builder()
@@ -76,6 +79,7 @@ public class ApiEventController {
     }
 
     @PostMapping({"/upload", "/{id}/upload"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse uploadThumbnail(@PathVariable(required = false) Long id, @RequestParam("file") MultipartFile file) {
         return ApiResponse.builder()
                 .status(201)

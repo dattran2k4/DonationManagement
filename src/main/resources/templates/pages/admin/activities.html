@@ -16,12 +16,28 @@
                     động</h1>
                 <p class="text-text-secondary text-sm mt-1">Quản lý các hoạt động và theo dõi tiến độ gây quỹ</p>
             </div>
-        <a th:href="@{/admin/activities/form}"
-           sec:authorize="hasRole('ADMIN')"
-           class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold px-5 py-2.5 rounded-lg shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
-            <span class="material-symbols-outlined text-[20px]">add</span>
-            <span>Thêm Hoạt động mới</span>
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <button id="activityExportBtn"
+                    type="button"
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">
+                <span class="material-symbols-outlined text-[18px]">file_download</span>
+                Xuất Excel
+            </button>
+            <input id="activityImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
+            <button id="activityImportBtn"
+                    type="button"
+                    sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">
+                <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                Nhập Excel
+            </button>
+            <a th:href="@{/admin/activities/form}"
+               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold px-5 py-2.5 rounded-lg shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span>Thêm Hoạt động mới</span>
+            </a>
+        </div>
     </div>
         <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-4 md:p-5">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -67,7 +83,7 @@
                     <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-[90px]"
                         scope="col">ID
                     </th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-[240px]"
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-[240px] whitespace-nowrap"
                         scope="col">Tên hoạt động
                     </th>
                     <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
@@ -100,10 +116,10 @@
 </div>
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
-        window.__IS_ADMIN__ = false;
+        window.__CAN_MANAGE_ACTIVITIES__ = false;
     </script>
-    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
-        window.__IS_ADMIN__ = true;
+    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
+        window.__CAN_MANAGE_ACTIVITIES__ = true;
     </script>
     <script type="module" th:src="@{/js/pages/admin/activityList.js}"></script>
 </th:block>

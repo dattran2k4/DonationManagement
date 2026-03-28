@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -47,8 +48,8 @@ public class AppConfig {
                         // Spring Security default login page
                         .requestMatchers("/login").permitAll()
 
-                        // Admin pages must be authenticated
-                        .requestMatchers("/admin/**").authenticated()
+                        // Admin pages are only for back-office roles
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "ACCOUNTING", "STAFF")
 
                         // The rest is public
                         .anyRequest().permitAll()
@@ -58,7 +59,10 @@ public class AppConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .failureUrl("/login?error")
-                        .defaultSuccessUrl("/admin/dashboard", true)
+                        .successHandler((request, response, authentication) -> {
+                            String targetUrl = isBackOfficeUser(authentication) ? "/admin/dashboard" : "/";
+                            response.sendRedirect(targetUrl);
+                        })
                         .permitAll()
                 )
 
@@ -93,5 +97,13 @@ public class AppConfig {
                         .maxAge(3600);
             }
         };
+    }
+
+    private boolean isBackOfficeUser(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .anyMatch(role -> role.equals("ROLE_ADMIN")
+                        || role.equals("ROLE_ACCOUNTING")
+                        || role.equals("ROLE_STAFF"));
     }
 }

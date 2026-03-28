@@ -17,7 +17,13 @@ public interface DonorService {
 
     long saveOrganizeDonor(OrganizeDonorRequest request);
 
-    PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type);
+    long updateIndividualDonor(Long donorId, IndividualDonorRequest request);
+
+    long updateOrganizeDonor(Long donorId, OrganizeDonorRequest request);
+
+    PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type, String sortBy, String sortDir);
+
+    DonorResponse getDonorById(Long donorId);
 
     long getDorCountByObjectId(Long objectId, EEntityType type);
 

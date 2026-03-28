@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.controller;
 
 import com.chiaseyeuthuong.model.Donation;
+import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.DonorService;
@@ -24,12 +25,17 @@ public class PaymentController {
 
     @GetMapping("/thanh-toan/thanh-cong")
     public String showSuccessPaymentPage(@RequestParam("orderCode") long orderCode, Model model) {
-        Donation donation = donationService.getDonationByOrderCode(orderCode);
+        try {
+            Donation donation = donationService.getDonationByOrderCode(orderCode);
 
-        model.addAttribute("donor", donation.getDonor());
-        model.addAttribute("donation", donation);
+            model.addAttribute("donor", donation.getDonor());
+            model.addAttribute("donation", donation);
 
-        return "pages/web/payment-success";
+            return "pages/web/payment-success";
+        } catch (ResourceNotFoundException e) {
+            log.warn("Donation not found for success page orderCode={}", orderCode);
+            return "redirect:/thanh-toan/that-bai";
+        }
     }
 
     @GetMapping("/thanh-toan/that-bai")

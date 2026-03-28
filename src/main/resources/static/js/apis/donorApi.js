@@ -17,5 +17,11 @@ export const donorApi = {
     },
     saveOrganization: async (body) => {
         return await apiClient.post(`${BASE_URL}/organizations`, body);
+    },
+    updateIndividual: async (id, body) => {
+        return await apiClient.put(`${BASE_URL}/${id}/individuals`, body);
+    },
+    updateOrganization: async (id, body) => {
+        return await apiClient.put(`${BASE_URL}/${id}/organizations`, body);
     }
 };

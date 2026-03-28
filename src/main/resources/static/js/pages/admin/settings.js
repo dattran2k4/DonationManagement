@@ -1,4 +1,5 @@
 import {systemConfigApi} from '../../apis/systemConfigApi.js';
+const canEditSettings = window.__CAN_EDIT_SETTINGS__ === true;
 
 const elements = {
     form: document.getElementById('systemSettingsForm'),
@@ -6,6 +7,15 @@ const elements = {
     tabButtons: document.querySelectorAll('.settings-tab-btn'),
     tabPanels: document.querySelectorAll('.settings-panel'),
     imageFileInputs: document.querySelectorAll('input[type="file"][data-path-target]')
+};
+
+const applyReadOnlyMode = () => {
+    if (canEditSettings || !elements.form) return;
+
+    const fields = elements.form.querySelectorAll('input, select, textarea');
+    fields.forEach((field) => {
+        field.disabled = true;
+    });
 };
 
 const setActiveTab = (tabKey) => {
@@ -182,6 +192,7 @@ const init = () => {
     setActiveTab('general');
     bindEvents();
     loadSettings();
+    applyReadOnlyMode();
 };
 
 document.addEventListener('DOMContentLoaded', init);

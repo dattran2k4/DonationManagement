@@ -14,16 +14,27 @@
             <!-- Header Section -->
             <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Quản lý Quyên góp</h1>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Quản lý quyên góp</h1>
                     <p class="text-slate-500 dark:text-slate-400 mt-1">Theo dõi, kiểm tra và phê duyệt các khoản đóng
                         góp từ nhà hảo tâm.</p>
                 </div>
-                <div class="flex gap-2">
-                    <button class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <div class="flex flex-wrap gap-2">
+                    <button id="donationExportBtn"
+                            type="button"
+                            class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                         <span class="material-symbols-outlined text-[18px]">file_download</span>
                         Xuất Excel
                     </button>
+                    <input id="donationImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
+                    <button id="donationImportBtn"
+                            type="button"
+                            sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+                            class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                        Nhập Excel
+                    </button>
                     <a th:href="@{/admin/donations/form}"
+                       sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
                        class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors">
                         <span class="material-symbols-outlined text-[18px]">add</span>
                         Tạo mới quyên góp
@@ -100,11 +111,67 @@
                             <option value="ACTIVITY">Hoạt động thường niên</option>
                             <option value="NONE">Không gắn mục tiêu</option>
                         </select>
+                        <select id="donationPaymentMethodFilter"
+                                class="block w-full sm:w-48 pl-3 pr-10 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
+                            <option value="">Tất cả phương thức</option>
+                            <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
+                            <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
+                            <option value="CASH">Tiền mặt</option>
+                        </select>
+                        <button id="donationAmountRangeToggle"
+                                type="button"
+                                class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-800 text-sm font-medium">
+                            <span class="material-symbols-outlined text-[18px]">tune</span>
+                            Lọc số tiền
+                        </button>
                         <button id="donationResetFilterBtn"
                                 class="flex items-center justify-center px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-800"
                                 title="Reset Filters">
                             <span class="material-symbols-outlined text-[20px]">restart_alt</span>
                         </button>
+                    </div>
+                </div>
+                <div id="donationAmountRangePanel"
+                     class="mt-4 hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-4">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-end">
+                        <div class="w-full md:w-56">
+                            <label for="donationMinAmountFilter"
+                                   class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Số tiền từ
+                            </label>
+                            <input id="donationMinAmountFilter"
+                                   type="number"
+                                   min="0"
+                                   step="1"
+                                   inputmode="numeric"
+                                   placeholder="Ví dụ: 100000"
+                                   class="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="w-full md:w-56">
+                            <label for="donationMaxAmountFilter"
+                                   class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Đến
+                            </label>
+                            <input id="donationMaxAmountFilter"
+                                   type="number"
+                                   min="0"
+                                   step="1"
+                                   inputmode="numeric"
+                                   placeholder="Ví dụ: 1000000"
+                                   class="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="donationApplyAmountFilterBtn"
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">
+                                Áp dụng
+                            </button>
+                            <button id="donationClearAmountFilterBtn"
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                Xóa khoảng tiền
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -149,10 +216,14 @@
 </div>
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
-        window.__IS_ADMIN__ = false;
+        window.__CAN_APPROVE_DONATIONS__ = false;
+        window.__CAN_MANAGE_DONATIONS__ = false;
     </script>
-    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
-        window.__IS_ADMIN__ = true;
+    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
+        window.__CAN_APPROVE_DONATIONS__ = true;
+    </script>
+    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+        window.__CAN_MANAGE_DONATIONS__ = true;
     </script>
     <script type="module" th:src="@{/js/pages/admin/donationList.js}"></script>
 </th:block>

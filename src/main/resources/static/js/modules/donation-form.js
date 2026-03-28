@@ -6,6 +6,8 @@ const form = document.getElementById('donationForm');
 const btnSubmit = document.getElementById('submitDonation');
 const receiptCheckbox = document.getElementById('needReceipt');
 const receiptFields = document.getElementById('receipt-fields');
+const amountInput = document.getElementById('donationAmount');
+const WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
 
 if (receiptCheckbox && receiptFields) {
     receiptCheckbox.addEventListener('change', (e) => {
@@ -25,7 +27,24 @@ if (receiptCheckbox && receiptFields) {
 const DonationFormHandler = {
     init() {
         if (!form) return;
+        if (amountInput) {
+            amountInput.addEventListener('change', () => this.handleAmountChange());
+        }
         btnSubmit.addEventListener('click', (e) => this.handleSubmit(e));
+    },
+
+    handleAmountChange() {
+        if (!amountInput) return;
+
+        const rawAmount = String(amountInput.value ?? '').trim();
+        if (!rawAmount) return;
+
+        const amount = Number(rawAmount);
+        if (!Number.isFinite(amount) || Number.isInteger(amount)) return;
+
+        alert(WHOLE_AMOUNT_MESSAGE);
+        amountInput.value = '';
+        amountInput.focus();
     },
 
     async handleSubmit(e) {
@@ -80,7 +99,13 @@ const DonationFormHandler = {
     },
 
     validate(type, data) {
-        const amount = parseFloat(data.amount);
+        const amount = Number(data.amount);
+        if (!Number.isFinite(amount)) {
+            return alert("Số tiền phải từ 1.000 đồng đến tối đa 10.000.000 đồng");
+        }
+        if (!Number.isInteger(amount)) {
+            return alert(WHOLE_AMOUNT_MESSAGE);
+        }
         if (!amount || amount < 1000 || amount > 10000000) {
             return alert("Số tiền phải từ 1.000 đồng đến tối đa 10.000.000 đồng");
         }

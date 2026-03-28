@@ -1,6 +1,7 @@
 <!doctype html>
 <html
         xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layouts/admin/admin-layout}"
 >
@@ -13,6 +14,10 @@
         <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Cài đặt hệ thống</h1>
         <p class="text-slate-500 dark:text-slate-400 mt-1">Quản lý thông tin và cấu hình tổ chức từ thiện</p>
     </header>
+    <div sec:authorize="!hasRole('ADMIN')"
+         class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200">
+        Bạn đang ở chế độ chỉ xem. Theo Access Matrix, chỉ Quản trị viên mới được phép cập nhật cấu hình hệ thống.
+    </div>
     <div class="border-b border-slate-200 dark:border-slate-800 mb-8">
         <div class="flex flex-wrap gap-8">
             <button id="settingsTabGeneral"
@@ -58,10 +63,10 @@
                                 <img id="ORG_LOGO_URL_preview" class="w-full h-full object-cover"
                                      th:src="@{/images/logo.jpg}" alt="Xem trước logo">
                             </div>
-                            <label for="ORG_LOGO_URL_file"
-                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                                <span class="material-symbols-outlined text-base">upload_file</span>
-                                Chọn logo từ máy tính
+                        <label sec:authorize="hasRole('ADMIN')" for="ORG_LOGO_URL_file"
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
+                            <span class="material-symbols-outlined text-base">upload_file</span>
+                            Chọn logo từ máy tính
                             </label>
                         </div>
                         <input id="ORG_LOGO_URL_file" type="file" accept="image/*" class="hidden"
@@ -121,7 +126,7 @@
                                 Chưa chọn ảnh banner trang chủ
                             </div>
                         </div>
-                        <label for="HOME_BANNER_URL_file"
+                        <label sec:authorize="hasRole('ADMIN')" for="HOME_BANNER_URL_file"
                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
                             <span class="material-symbols-outlined text-base">upload_file</span>
                             Chọn banner từ máy tính
@@ -146,7 +151,7 @@
                                 Chưa chọn ảnh banner giới thiệu
                             </div>
                         </div>
-                        <label for="ABOUT_BANNER_URL_file"
+                        <label sec:authorize="hasRole('ADMIN')" for="ABOUT_BANNER_URL_file"
                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40">
                             <span class="material-symbols-outlined text-base">upload_file</span>
                             Chọn banner từ máy tính
@@ -205,7 +210,7 @@
                 </div>
             </div>
         </section>
-        <div class="flex justify-end gap-4 py-8">
+        <div sec:authorize="hasRole('ADMIN')" class="flex justify-end gap-4 py-8">
             <button id="resetSettingsBtn" type="button"
                     class="px-6 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
                 Hủy thay đổi
@@ -218,6 +223,12 @@
     </form>
 </div>
 <th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__CAN_EDIT_SETTINGS__ = false;
+    </script>
+    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
+        window.__CAN_EDIT_SETTINGS__ = true;
+    </script>
     <script type="module" th:src="@{/js/pages/admin/settings.js}"></script>
 </th:block>
 </body>

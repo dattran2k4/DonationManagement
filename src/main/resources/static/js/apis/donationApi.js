@@ -8,6 +8,9 @@ export const donationApi = {
         const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}/list?${queryString}`);
     },
+    getDonationById: async (id) => {
+        return await apiClient.get(`${BASE_URL}/${id}`);
+    },
     changeStatus: async (id, status) => {
         // status truyền vào phải là 'CONFIRMED' hoặc 'REJECTED'
         return await apiClient.patch(`${BASE_URL}/${id}/change-status?status=${status}`);
@@ -17,5 +20,8 @@ export const donationApi = {
     },
     createStaffDonation: async (data) => {
         return await apiClient.post(`${BASE_URL}/staff-create`, data);
+    },
+    updateStaffDonation: async (id, data) => {
+        return await apiClient.put(`${BASE_URL}/${id}/staff-update`, data);
     },
 };

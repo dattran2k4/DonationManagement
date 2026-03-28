@@ -1,6 +1,7 @@
 <!doctype html>
 <html
         xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layouts/admin/admin-layout}"
 >
@@ -8,11 +9,11 @@
     <title>Admin Dashboard</title>
 </head>
 <body>
-<div layout:fragment="content">
+<div layout:fragment="content" class="space-y-6">
     <div class="space-y-6">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Quản lý Nhà hảo tâm</h1>
-                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Theo dõi thông tin và lịch sử đóng góp của nhà hảo tâm.</p>
+                <h1 class="text-2xl font-bold text-text-main dark:text-white tracking-tight">Quản lý Nhà hảo tâm</h1>
+                <p class="text-text-secondary text-sm mt-1">Theo dõi thông tin và lịch sử đóng góp của nhà hảo tâm.</p>
             </div>
             <!-- Action Bar & Filters -->
             <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-border-light dark:border-border-dark shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
@@ -41,51 +42,97 @@
                         </div>
                     </div>
                 </div>
-                <!-- Add Button -->
-                <a th:href="@{/admin/donors/form}"
-                   class="bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm shadow-primary/20 dark:shadow-none flex items-center gap-2 transition-all active:scale-95 shrink-0 w-full sm:w-auto justify-center">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm Nhà hảo tâm</span>
-                </a>
+                <div class="flex flex-wrap gap-2 shrink-0 w-full sm:w-auto">
+                    <button id="donorExportBtn"
+                            type="button"
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-lg shadow-sm flex items-center gap-2 transition-all w-full sm:w-auto justify-center hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <span class="material-symbols-outlined text-[18px]">file_download</span>
+                        <span>Xuất Excel</span>
+                    </button>
+                    <input id="donorImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
+                    <button id="donorImportBtn"
+                            type="button"
+                            sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-lg shadow-sm flex items-center gap-2 transition-all w-full sm:w-auto justify-center hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                        <span>Nhập Excel</span>
+                    </button>
+                    <a th:href="@{/admin/donors/form}"
+                       sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+                       class="bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm shadow-primary/20 dark:shadow-none flex items-center gap-2 transition-all active:scale-95 shrink-0 w-full sm:w-auto justify-center">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                        <span>Thêm Nhà hảo tâm</span>
+                    </a>
+                </div>
             </div>
             <!-- Data Table -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden flex flex-col">
                 <div class="overflow-x-auto custom-scrollbar">
-                    <table class="min-w-full divide-y divide-slate-200">
-                        <thead class="bg-slate-50">
+                    <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                        <thead class="bg-slate-50 dark:bg-white/5">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Tên nhà hảo tâm
+                                <button type="button"
+                                        data-donor-sort="name"
+                                        class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Tên nhà hảo tâm</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Loại
+                                <button type="button"
+                                        data-donor-sort="type"
+                                        class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Loại</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Thông tin liên hệ
+                                <button type="button"
+                                        data-donor-sort="contact"
+                                        class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Thông tin liên hệ</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Ngày tham gia
+                                <button type="button"
+                                        data-donor-sort="createdAt"
+                                        class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Ngày tham gia</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Số lần đóng góp
+                                <button type="button"
+                                        data-donor-sort="numberOfDonations"
+                                        class="inline-flex items-center justify-center gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Số lần đóng góp</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                                 scope="col">
-                                Tổng tiền
+                                <button type="button"
+                                        data-donor-sort="totalDonationAmount"
+                                        class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 font-sans text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                    <span>Tổng tiền</span>
+                                    <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
                             </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider sticky right-0 bg-slate-50 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)]"
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider sticky right-0 bg-slate-50 dark:bg-white/5 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.45)]"
                                 scope="col">
                                 Hành động
                             </th>
                         </tr>
                         </thead>
                         <tbody id="donorTableBody"
-                               class="bg-white divide-y divide-slate-200">
+                               class="bg-surface-light dark:bg-surface-dark divide-y divide-border-light dark:divide-border-dark">
                         </tbody>
                     </table>
                 </div>
@@ -95,6 +142,12 @@
     </div>
 </div>
 <th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__CAN_MANAGE_DONORS__ = false;
+    </script>
+    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+        window.__CAN_MANAGE_DONORS__ = true;
+    </script>
     <script type="module" th:src="@{/js/pages/admin/donorList.js}"></script>
 </th:block>
 </body>

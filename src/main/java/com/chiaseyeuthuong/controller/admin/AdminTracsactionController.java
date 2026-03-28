@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.controller.admin;
 
 import com.chiaseyeuthuong.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +17,13 @@ public class AdminTracsactionController {
     private final TransactionService transactionService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public String showAdminTransactionPage(Model model) {
         return "pages/admin/transactions";
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public String showAdminTransactionDetailPage(@PathVariable Long id, Model model) {
         model.addAttribute("transaction", transactionService.getTransactionById(id));
         return "pages/admin/transaction-detail";

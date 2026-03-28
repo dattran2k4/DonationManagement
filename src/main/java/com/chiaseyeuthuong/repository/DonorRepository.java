@@ -16,6 +16,8 @@ public interface DonorRepository extends JpaRepository<Donor, Long>, JpaSpecific
 
     Optional<Donor> findByPhone(String phone);
 
+    Optional<Donor> findByEmailIgnoreCase(String email);
+
 
     @Query("SELECT COUNT(DISTINCT d.donor.id) FROM Donation d " +
             "WHERE d.activity.id = :activityId " +

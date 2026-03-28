@@ -1,14 +1,18 @@
 import {transactionApi} from '../../apis/transactionApi.js';
 import {renderPagination} from '../../components/pagination.js';
+import {bindExcelActions} from '../../utils/excelTransfer.js';
 
-const state = {page: 1, size: 10, search: '', method: ''};
+const state = {page: 1, size: 50, search: '', method: ''};
 
 const elements = {
     tableBody: document.getElementById('transactionTableBody'),
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('transactionSearchInput'),
     methodFilter: document.getElementById('transactionMethodFilter'),
-    resetFilterBtn: document.getElementById('transactionResetFilterBtn')
+    resetFilterBtn: document.getElementById('transactionResetFilterBtn'),
+    exportBtn: document.getElementById('transactionExportBtn'),
+    importBtn: document.getElementById('transactionImportBtn'),
+    importInput: document.getElementById('transactionImportInput')
 };
 
 // 1. Format tiền tệ
@@ -139,5 +143,22 @@ const bindFilters = () => {
 // Khởi chạy khi load trang
 document.addEventListener('DOMContentLoaded', () => {
     bindFilters();
+    bindExcelActions({
+        exportButton: elements.exportBtn,
+        importButton: elements.importBtn,
+        importInput: elements.importInput,
+        exportUrl: '/api/admin/excel/transactions/export',
+        importUrl: '/api/admin/excel/transactions/import',
+        getExportParams: () => ({
+            search: state.search,
+            method: state.method
+        }),
+        fallbackFilename: 'giao-dich.xlsx',
+        successExportMessage: 'Xuất Excel giao dịch thành công.',
+        onImportSuccess: () => {
+            state.page = 1;
+            loadTransactions();
+        }
+    });
     loadTransactions();
 });

@@ -216,7 +216,7 @@ INSERT INTO system_configs (id, config_key, config_value, description) VALUES
                                                                            (9, 'ORG_PHONE', '+84 982 746 462', 'Số điện thoại liên hệ'),
                                                                            (10, 'ORG_EMAIL', 'contact@chiaseyeuthuong.vn', 'Email liên hệ'),
                                                                            (11, 'ORG_FACEBOOK_URL', 'https://facebook.com/chiaseyeuthuong', 'Link fanpage Facebook'),
-                                                                           (12, 'HOME_BANNER_URL', 'https://scontent.fdad1-1.fna.fbcdn.net/v/t39.30808-6/621779722_3290008547826693_5413700251492346147_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=WTbVdjBR5l4Q7kNvwHawjP9&_nc_oc=Adn0fUZZEf1JrNbWhH-3qFp4e9MhbyLpiGvLvNC426421Aa3agTLbL99ImAU7ob7v8Kwpk-2h5wKrWjxlmeiRDtZ&_nc_zt=23&_nc_ht=scontent.fdad1-1.fna&_nc_gid=aoSewykwudscGY0Pr39-yA&_nc_ss=8&oh=00_Afwydh8bda3VGS7KnaDcRg4QdV3zgNew2JIbaupxcJXG_Q&oe=69BBAE69', 'Ảnh banner hero trang chủ'),
+                                                                           (12, 'HOME_BANNER_URL', '/images/default-event.png', 'Ảnh banner hero trang chủ'),
                                                                            (13, 'HOME_HERO_BADGE', 'Tổ chức phi lợi nhuận', 'Nhãn hero trang chủ'),
                                                                            (14, 'HOME_HERO_TITLE', 'Cùng nhau, chúng ta', 'Dòng tiêu đề chính trang chủ'),
                                                                            (15, 'HOME_HERO_TITLE_HIGHLIGHT', 'tạo nên hy vọng', 'Dòng tiêu đề nhấn mạnh trang chủ'),

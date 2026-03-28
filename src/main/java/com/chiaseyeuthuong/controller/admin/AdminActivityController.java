@@ -5,6 +5,7 @@ import com.chiaseyeuthuong.dto.request.ActivityRequest;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,13 @@ public class AdminActivityController {
     private final EventService eventService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public String showAdminActivityPage(Model model) {
         return "pages/admin/activities";
     }
 
     @GetMapping("/form")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showAdminActivityCreateFormPage(@RequestParam(required = false) Long eventId, Model model) {
         ActivityRequest activityRequest = new ActivityRequest();
         if (eventId != null) {
@@ -40,6 +43,7 @@ public class AdminActivityController {
     }
 
     @GetMapping("/{id}/form")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showAdminActivityEditFormPage(@PathVariable Long id, Model model) {
         model.addAttribute("activity", activityService.getActivityById(id));
         model.addAttribute("statuses", EActivityStatus.values());
