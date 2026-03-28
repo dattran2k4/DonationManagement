@@ -1,6 +1,7 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+
 const canManageDonors = window.__CAN_MANAGE_DONORS__ === true;
 
 const state = {
@@ -51,17 +52,14 @@ const updateSortIndicators = () => {
     });
 };
 
-// 1. Hàm helper lấy chữ cái đầu của tên (Avatar cá nhân)
 const getInitials = (name) => {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'NA';
 };
 
-// 2. Hàm helper định dạng tiền tệ
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
 };
 
-// 3. Render Badge cho loại nhà hảo tâm
 const getTypeBadge = (type) => {
     const isOrg = type === 'ORGANIZATION';
     const config = isOrg
@@ -71,13 +69,11 @@ const getTypeBadge = (type) => {
     return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.class}">${config.text}</span>`;
 };
 
-// 4. Hàm Render Row
 const renderDonorRow = (donor) => {
     const isOrg = donor.type === 'ORGANIZATION';
     const orgInfo = donor.organization;
     const joinDate = donor.createdAt ? new Date(donor.createdAt).toLocaleDateString('vi-VN') : '---';
 
-    // Avatar Logic: Nếu là tổ chức hiện icon tòa nhà, cá nhân hiện chữ cái đầu
     const avatarHtml = isOrg
         ? `<div class="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
              <span class="material-symbols-outlined text-[20px]">apartment</span>
@@ -146,7 +142,6 @@ const renderDonorRow = (donor) => {
     </tr>`;
 };
 
-// 5. Hàm Load dữ liệu
 const loadDonors = async () => {
     try {
         const response = await donorApi.getAllDonors(state);
@@ -212,7 +207,6 @@ const bindFilters = () => {
     });
 };
 
-// Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
     bindFilters();
     updateSortIndicators();
@@ -238,11 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDonors();
 });
 
-// Gắn các hàm hành động vào window để HTML onclick gọi được
 window.viewDonorProfile = (id) => {
     window.location.href = `/admin/donors/${id}`;
 };
 window.editDonor = (id) => {
     window.location.href = `/admin/donors/${id}/form`;
 };
-window.viewDonationHistory = (id) => console.log('Lịch sử:', id);
+window.viewDonationHistory = (id) => {
+    window.location.href = `/admin/donors/${id}/donations`;
+};

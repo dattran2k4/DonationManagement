@@ -45,4 +45,11 @@ public class AdminDonorController {
         model.addAttribute("donorId", id);
         return "pages/admin/donor-form";
     }
+
+    @GetMapping("/{id}/donations")
+    public String showDonorDonationHistoryPage(@PathVariable Long id, Model model) {
+        model.addAttribute("donorId", id);
+        model.addAttribute("donor", donorService.getDonorById(id));
+        return "pages/admin/donor-donations";
+    }
 }

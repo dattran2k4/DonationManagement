@@ -5,11 +5,11 @@ import com.chiaseyeuthuong.common.EDonorType;
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
 import com.chiaseyeuthuong.dto.request.OrganizeDonorRequest;
+import com.chiaseyeuthuong.dto.response.DonorDonationHistoryResponse;
 import com.chiaseyeuthuong.dto.response.DonorResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public interface DonorService {
 
@@ -24,6 +24,8 @@ public interface DonorService {
     PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type, String sortBy, String sortDir);
 
     DonorResponse getDonorById(Long donorId);
+
+    PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size);
 
     long getDorCountByObjectId(Long objectId, EEntityType type);
 

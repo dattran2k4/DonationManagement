@@ -1,15 +1,18 @@
 package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EDonationStatus;
+import com.chiaseyeuthuong.common.EDonationTarget;
 import com.chiaseyeuthuong.common.EDonorType;
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
 import com.chiaseyeuthuong.dto.request.OrganizeDonorRequest;
+import com.chiaseyeuthuong.dto.response.DonorDonationHistoryResponse;
 import com.chiaseyeuthuong.dto.response.DonorResponse;
 import com.chiaseyeuthuong.dto.response.OrganizationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.exception.InvalidDataException;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
+import com.chiaseyeuthuong.model.Donation;
 import com.chiaseyeuthuong.model.Donor;
 import com.chiaseyeuthuong.model.Organization;
 import com.chiaseyeuthuong.repository.DonationRepository;
@@ -19,6 +22,9 @@ import com.chiaseyeuthuong.service.DonorSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +44,8 @@ public class DonorServiceImpl implements DonorService {
 
     private final DonorRepository donorRepository;
     private final DonationRepository donationRepository;
+
+    private static final String DONOR_NOT_FOUND_MESSAGE = "Không tìm thấy nhà hảo tâm";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -69,7 +77,6 @@ public class DonorServiceImpl implements DonorService {
         String email = normalizeEmail(request.getEmail());
 
         Donor donor = resolveDonor(phone, email);
-
         Organization organization = (donor.getOrganization() != null) ? donor.getOrganization() : new Organization();
 
         donor.setType(EDonorType.ORGANIZATION);
@@ -84,11 +91,9 @@ public class DonorServiceImpl implements DonorService {
         organization.setTaxCode(request.getTaxCode());
         organization.setRepresentative(request.getRepresentative());
         organization.setBillingAddress(request.getBillingAddress());
-
         donor.setOrganization(organization);
 
         Donor result = donorRepository.save(donor);
-
         log.info("Organization Donor saved successfully with id={}", result.getId());
         return result.getId();
     }
@@ -110,6 +115,7 @@ public class DonorServiceImpl implements DonorService {
         donor.setEmail(email);
         donor.setReferralSource(request.getReferralSource());
         donor.setNote(request.getNote());
+        donor.setOrganization(null);
 
         Donor result = donorRepository.save(donor);
         log.info("Individual Donor updated successfully with id={}", result.getId());
@@ -150,6 +156,8 @@ public class DonorServiceImpl implements DonorService {
     @Override
     public PageResponse<DonorResponse> getAllDonor(int page, int size, String search, EDonorType type, String sortBy, String sortDir) {
         int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 50;
+
         Specification<Donor> specification = DonorSpecification.filterDonor(search, type);
         List<DonorResponse> filteredDonors = donorRepository.findAll(specification)
                 .stream()
@@ -157,7 +165,6 @@ public class DonorServiceImpl implements DonorService {
                 .sorted(buildDonorComparator(sortBy, sortDir))
                 .toList();
 
-        int safeSize = size > 0 ? size : 50;
         int totalItems = filteredDonors.size();
         int totalPages = totalItems == 0 ? 0 : (int) Math.ceil((double) totalItems / safeSize);
         int startIndex = Math.min(pageNumber * safeSize, totalItems);
@@ -176,6 +183,28 @@ public class DonorServiceImpl implements DonorService {
     @Override
     public DonorResponse getDonorById(Long donorId) {
         return toResponse(getExistingDonor(donorId));
+    }
+
+    @Override
+    public PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size) {
+        getExistingDonor(donorId);
+
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 10;
+        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Donation> donationPage = donationRepository.findByDonorId(donorId, pageRequest);
+
+        List<DonorDonationHistoryResponse> data = donationPage.stream()
+                .map(this::toDonorDonationHistoryResponse)
+                .toList();
+
+        return PageResponse.<DonorDonationHistoryResponse>builder()
+                .page(pageNumber + 1)
+                .pageSize(safeSize)
+                .totalItems(donationPage.getTotalElements())
+                .totalPages(donationPage.getTotalPages())
+                .data(data)
+                .build();
     }
 
     @Override
@@ -218,7 +247,7 @@ public class DonorServiceImpl implements DonorService {
 
     private Donor getExistingDonor(Long donorId) {
         return donorRepository.findById(donorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhà hảo tâm"));
+                .orElseThrow(() -> new ResourceNotFoundException(DONOR_NOT_FOUND_MESSAGE));
     }
 
     private void validateUniqueContactForUpdate(Long donorId, String phone, String email) {
@@ -324,5 +353,44 @@ public class DonorServiceImpl implements DonorService {
         response.setNumberOfDonations(getConfirmedDonationCount(donor.getId(), EDonationStatus.CONFIRMED));
         response.setTotalDonationAmount(getConfirmedDonationTotalAmount(donor.getId(), EDonationStatus.CONFIRMED));
         return response;
+    }
+
+    private DonorDonationHistoryResponse toDonorDonationHistoryResponse(Donation donation) {
+        DonorDonationHistoryResponse response = new DonorDonationHistoryResponse();
+        response.setDonationId(donation.getId());
+        response.setDonationCode(donation.getMemoCode());
+        response.setAmount(donation.getAmount());
+        response.setStatus(donation.getStatus());
+        response.setStatusLabel(getStatusLabel(donation.getStatus()));
+        response.setTarget(donation.getTarget());
+        response.setTargetLabel(donation.getTarget() != null ? donation.getTarget().getValue() : null);
+        response.setDonatedAt(donation.getDonatedAt() != null ? donation.getDonatedAt() : donation.getCreatedAt());
+
+        if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
+            response.setTargetTitle(donation.getEvent().getName());
+            response.setTargetUrl(donation.getEvent().getSlug() != null ? "/events/" + donation.getEvent().getSlug() : null);
+        } else if (EDonationTarget.ACTIVITY.equals(donation.getTarget()) && donation.getActivity() != null) {
+            response.setTargetTitle(donation.getActivity().getName());
+            response.setTargetUrl(donation.getActivity().getSlug() != null ? "/activities/" + donation.getActivity().getSlug() : null);
+        } else {
+            response.setTargetTitle("Không gắn mục tiêu");
+            response.setTargetUrl(null);
+        }
+
+        return response;
+    }
+
+    private String getStatusLabel(EDonationStatus status) {
+        if (status == null) {
+            return "Chưa xác định";
+        }
+        return switch (status) {
+            case PENDING_PAYMENT -> "Chờ thanh toán";
+            case PENDING_APPROVED -> "Chờ duyệt";
+            case CONFIRMED -> "Đã xác nhận";
+            case CANCELLED -> "Đã hủy";
+            case REJECTED -> "Đã từ chối";
+            case FAILED -> "Thất bại";
+        };
     }
 }

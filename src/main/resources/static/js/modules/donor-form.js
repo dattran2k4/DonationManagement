@@ -13,7 +13,6 @@ const headerSaveText = document.getElementById("saveDonorHeaderText");
 
 const individualSection = document.getElementById("individual-section");
 const organizationSection = document.getElementById("organization-section");
-
 const referralSourceSelect = document.getElementById("referralSource");
 
 const getDonorId = () => {
@@ -56,26 +55,6 @@ function updateTabUI(selectedValue) {
     }
 }
 
-async function handleSaveDonor() {
-    if (!form) return;
-
-    const donorType = document.querySelector('input[name="donor_type"]:checked')?.value;
-    const formData = new FormData(form);
-    const rawData = Object.fromEntries(formData.entries());
-    const donorId = getDonorId();
-
-    try {
-        const savedDonorId = await createDonor(donorType, rawData, {donorId});
-        if (savedDonorId) {
-            alert(donorId ? "Cập nhật nhà hảo tâm thành công" : "Lưu nhà hảo tâm thành công");
-            window.location.href = "/admin/donors";
-        }
-    } catch (error) {
-        console.error("Lỗi khi lưu donor:", error);
-        alert(error.message || "Không thể lưu nhà hảo tâm");
-    }
-}
-
 function updatePageCopy() {
     const editMode = isEditMode();
     const title = editMode ? "Chỉnh sửa Nhà hảo tâm" : "Thêm Nhà hảo tâm mới";
@@ -86,7 +65,7 @@ function updatePageCopy() {
     const confirmText = editMode ? "Xác nhận cập nhật" : "Xác nhận lưu";
 
     if (headerTitle) headerTitle.textContent = title;
-    if (pageTitle) pageTitle.textContent = editMode ? "Thông tin Nhà hảo tâm" : "Thông tin Nhà hảo tâm";
+    if (pageTitle) pageTitle.textContent = "Thông tin Nhà hảo tâm";
     if (pageDescription) pageDescription.textContent = subtitle;
     if (headerSaveText) headerSaveText.textContent = saveText;
     if (footerSaveBtn) footerSaveBtn.textContent = confirmText;
@@ -146,6 +125,26 @@ async function loadDonorDetail() {
         console.error("Lỗi khi tải chi tiết donor:", error);
         alert(error.message || "Không thể tải thông tin nhà hảo tâm");
         window.location.href = "/admin/donors";
+    }
+}
+
+async function handleSaveDonor() {
+    if (!form) return;
+
+    const donorType = document.querySelector('input[name="donor_type"]:checked')?.value;
+    const formData = new FormData(form);
+    const rawData = Object.fromEntries(formData.entries());
+    const donorId = getDonorId();
+
+    try {
+        const savedDonorId = await createDonor(donorType, rawData, {donorId});
+        if (savedDonorId) {
+            alert(donorId ? "Cập nhật nhà hảo tâm thành công" : "Lưu nhà hảo tâm thành công");
+            window.location.href = "/admin/donors";
+        }
+    } catch (error) {
+        console.error("Lỗi khi lưu donor:", error);
+        alert(error.message || "Không thể lưu nhà hảo tâm");
     }
 }
 

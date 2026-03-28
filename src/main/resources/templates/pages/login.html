@@ -6,6 +6,9 @@
     <title th:text="${(systemConfig['ORG_NAME'] != null and !#strings.isEmpty(systemConfig['ORG_NAME']) ? systemConfig['ORG_NAME'] : 'Chia Sẻ Yêu Thương') + ' | Đăng nhập quản trị'}">
         Chia Sẻ Yêu Thương | Đăng nhập quản trị
     </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #389663;
@@ -26,7 +29,7 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-main);
             background:
                     radial-gradient(circle at top right, rgba(56, 150, 99, 0.14), transparent 28%),

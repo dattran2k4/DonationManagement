@@ -15,4 +15,9 @@ public class DonationController {
     public String showDonationPage(Model model) {
         return "pages/web/donation";
     }
+
+    @GetMapping({"/lookup", "/tra-cuu"})
+    public String showDonationLookupPage() {
+        return "pages/web/donation-lookup";
+    }
 }

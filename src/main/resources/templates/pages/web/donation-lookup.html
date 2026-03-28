@@ -1,0 +1,125 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/web/main-layout}"
+>
+<head>
+    <title>Tra cứu lịch sử quyên góp</title>
+</head>
+<body>
+<div layout:fragment="content" class="max-w-4xl mx-auto space-y-6">
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-2 overflow-x-auto whitespace-nowrap pb-2">
+        <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">home</span> Trang chủ
+        </a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-primary font-medium">Tra cứu lịch sử quyên góp</span>
+    </nav>
+
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 space-y-6">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Tra cứu lịch sử quyên góp</h1>
+            <p class="text-slate-600 mt-2">
+                Nhập email đã dùng khi quyên góp. Hệ thống sẽ gửi mã xác thực để bạn xem danh sách giao dịch.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3 text-sm">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-semibold">1</span>
+            <span class="text-slate-700">Nhập email</span>
+            <span class="text-slate-300">-</span>
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">2</span>
+            <span class="text-slate-500">Nhập mã xác thực</span>
+            <span class="text-slate-300">-</span>
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">3</span>
+            <span class="text-slate-500">Xem lịch sử</span>
+        </div>
+
+        <form id="emailLookupForm" class="space-y-4">
+            <div>
+                <label for="lookupEmail" class="block text-sm font-semibold text-slate-700 mb-1">Email nhận mã xác thực</label>
+                <input
+                        id="lookupEmail"
+                        name="email"
+                        type="email"
+                        required
+                        autocomplete="email"
+                        placeholder="vd: donor@email.com"
+                        class="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                >
+            </div>
+            <button
+                    id="sendCodeBtn"
+                    type="submit"
+                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold"
+            >
+                Gửi mã xác thực
+            </button>
+        </form>
+
+        <form id="verifyCodeForm" class="space-y-4 hidden">
+            <div>
+                <label for="lookupCode" class="block text-sm font-semibold text-slate-700 mb-1">Mã xác thực</label>
+                <input
+                        id="lookupCode"
+                        name="code"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="6"
+                        placeholder="Nhập mã 6 số"
+                        class="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                >
+            </div>
+            <div class="flex items-center gap-3">
+                <button
+                        id="verifyCodeBtn"
+                        type="submit"
+                        class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold"
+                >
+                    Xác thực
+                </button>
+                <button
+                        id="resendCodeBtn"
+                        type="button"
+                        class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50"
+                >
+                    Gửi lại mã
+                </button>
+            </div>
+        </form>
+
+        <div id="lookupFeedback" class="hidden text-sm rounded-lg border px-3 py-2"></div>
+    </section>
+
+    <section id="donationHistorySection" class="hidden bg-white rounded-2xl border border-slate-200 p-6 md:p-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-slate-900">Lịch sử quyên góp</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-slate-700">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Mã đơn</th>
+                    <th class="text-left px-4 py-3 font-semibold">Mục tiêu</th>
+                    <th class="text-right px-4 py-3 font-semibold">Số tiền</th>
+                    <th class="text-center px-4 py-3 font-semibold">Trạng thái</th>
+                    <th class="text-right px-4 py-3 font-semibold">Thời gian</th>
+                </tr>
+                </thead>
+                <tbody id="donationHistoryBody"></tbody>
+            </table>
+        </div>
+
+        <div id="emptyDonationHistory" class="hidden mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600 text-sm">
+            Chưa có dữ liệu quyên góp cho email này.
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/pages/web/donationLookup.js}"></script>
+</th:block>
+</body>
+</html>
