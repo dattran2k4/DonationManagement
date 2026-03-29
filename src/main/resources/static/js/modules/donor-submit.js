@@ -105,14 +105,14 @@ export async function createDonor(donorType, rawData, options = {}) {
     }
 
     const payload = buildDonorPayload(donorType, rawData);
-    const donorId = rawData?.id ? Number(rawData.id) : null;
+    const donorId = options.donorId ? Number(options.donorId) : null;
 
     const response = donorType === "INDIVIDUAL"
         ? (donorId ? await donorApi.updateIndividual(donorId, payload) : await donorApi.saveIndividual(payload))
         : (donorId ? await donorApi.updateOrganization(donorId, payload) : await donorApi.saveOrganization(payload));
 
     if (!response || response.status !== 200 || response.data == null) {
-        throw new Error(response?.message || "Không thể lưu nhà hảo tâm");
+        throw new Error(response?.message || (donorId ? "Không thể cập nhật nhà hảo tâm" : "Không thể tạo nhà hảo tâm"));
     }
 
     return response.data;

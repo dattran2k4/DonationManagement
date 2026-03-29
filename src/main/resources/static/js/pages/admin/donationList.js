@@ -1,8 +1,20 @@
 import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
-const isAdmin = window.__IS_ADMIN__ === true;
+import {bindExcelActions} from '../../utils/excelTransfer.js';
 
-const state = {page: 1, size: 10, search: '', status: '', target: ''};
+const canApproveDonations = window.__CAN_APPROVE_DONATIONS__ === true;
+const canManageDonations = window.__CAN_MANAGE_DONATIONS__ === true;
+
+const state = {
+    page: 1,
+    size: 50,
+    search: '',
+    status: '',
+    target: '',
+    paymentMethod: '',
+    minAmount: '',
+    maxAmount: ''
+};
 
 const elements = {
     tableBody: document.getElementById('donationTableBody'),
@@ -10,67 +22,114 @@ const elements = {
     searchInput: document.getElementById('donationSearchInput'),
     statusFilter: document.getElementById('donationStatusFilter'),
     targetFilter: document.getElementById('donationTargetFilter'),
+    paymentMethodFilter: document.getElementById('donationPaymentMethodFilter'),
+    amountRangeToggle: document.getElementById('donationAmountRangeToggle'),
+    amountRangePanel: document.getElementById('donationAmountRangePanel'),
+    minAmountFilter: document.getElementById('donationMinAmountFilter'),
+    maxAmountFilter: document.getElementById('donationMaxAmountFilter'),
+    applyAmountFilterBtn: document.getElementById('donationApplyAmountFilterBtn'),
+    clearAmountFilterBtn: document.getElementById('donationClearAmountFilterBtn'),
     resetFilterBtn: document.getElementById('donationResetFilterBtn'),
-    actionHeader: document.getElementById('donationActionHeader')
+    exportBtn: document.getElementById('donationExportBtn'),
+    importBtn: document.getElementById('donationImportBtn'),
+    importInput: document.getElementById('donationImportInput')
 };
 
-// 1. Hàm tiện ích format tiền tệ (Ví dụ: 5000000 -> 5.000.000 đ)
+const updateAmountRangeButtonState = () => {
+    if (!elements.amountRangeToggle) return;
+
+    const hasAmountFilter = state.minAmount !== '' || state.maxAmount !== '';
+    elements.amountRangeToggle.classList.toggle('border-primary', hasAmountFilter);
+    elements.amountRangeToggle.classList.toggle('text-primary', hasAmountFilter);
+    elements.amountRangeToggle.classList.toggle('bg-primary/5', hasAmountFilter);
+};
+
+const toggleAmountRangePanel = () => {
+    if (!elements.amountRangePanel) return;
+    elements.amountRangePanel.classList.toggle('hidden');
+};
+
+const applyAmountFilter = () => {
+    const minAmountValue = elements.minAmountFilter?.value?.trim() || '';
+    const maxAmountValue = elements.maxAmountFilter?.value?.trim() || '';
+
+    if (minAmountValue && Number(minAmountValue) < 0) {
+        alert('Số tiền tối thiểu phải lớn hơn hoặc bằng 0.');
+        return;
+    }
+
+    if (maxAmountValue && Number(maxAmountValue) < 0) {
+        alert('Số tiền tối đa phải lớn hơn hoặc bằng 0.');
+        return;
+    }
+
+    if (minAmountValue && maxAmountValue && Number(minAmountValue) > Number(maxAmountValue)) {
+        alert('Khoảng số tiền không hợp lệ. Vui lòng nhập "từ" nhỏ hơn hoặc bằng "đến".');
+        return;
+    }
+
+    state.minAmount = minAmountValue;
+    state.maxAmount = maxAmountValue;
+    state.page = 1;
+    updateAmountRangeButtonState();
+    loadDonations();
+};
+
+const clearAmountFilter = () => {
+    state.minAmount = '';
+    state.maxAmount = '';
+    if (elements.minAmountFilter) elements.minAmountFilter.value = '';
+    if (elements.maxAmountFilter) elements.maxAmountFilter.value = '';
+    state.page = 1;
+    updateAmountRangeButtonState();
+    loadDonations();
+};
+
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
 };
 
-// 2. Hàm tiện ích lấy Badge Trạng thái theo giao diện
 const getStatusBadge = (status) => {
     const styles = {
-        'PENDING_APPROVED': {
+        PENDING_APPROVED: {
             text: 'Chờ duyệt',
             class: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800',
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>',
             rowClass: 'bg-amber-50/50 dark:bg-amber-900/10'
         },
-        'PENDING_PAYMENT': {
+        PENDING_PAYMENT: {
             text: 'Chờ thanh toán',
             class: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>',
             rowClass: ''
         },
-        'CONFIRMED': {
+        CONFIRMED: {
             text: 'Đã xác nhận',
             class: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
             dot: '',
             rowClass: ''
         },
-        'REJECTED': {
+        REJECTED: {
             text: 'Đã từ chối',
             class: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
             dot: '',
             rowClass: 'opacity-75'
         },
-        'FAILED': {
+        FAILED: {
             text: 'Thất bại',
             class: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
             dot: '',
             rowClass: 'opacity-75'
         }
     };
-    return styles[status] || styles['PENDING_APPROVED'];
+    return styles[status] || styles.PENDING_APPROVED;
 };
 
-// 3. Hàm lấy Icon cho Phương thức thanh toán
 const getPaymentMethodIcon = (method) => {
     const icons = {
-        'CASH': {
-            icon: 'payments',
-            label: 'Tiền mặt'
-        },
-        'BANK_TRANSFER_ONLINE': {
-            icon: 'account_balance',
-            label: 'CK Online'
-        },
-        'BANK_TRANSFER_OFFLINE': {
-            icon: 'receipt_long',
-            label: 'Offline'
-        }
+        CASH: {icon: 'payments', label: 'Tiền mặt'},
+        BANK_TRANSFER_ONLINE: {icon: 'account_balance', label: 'CK Online'},
+        BANK_TRANSFER_OFFLINE: {icon: 'receipt_long', label: 'Offline'}
     };
     return icons[method] || {icon: 'help_outline', label: method};
 };
@@ -84,19 +143,66 @@ const getTargetLabel = (target) => {
     return labels[target] || '---';
 };
 
-// 4. Hàm Render Bảng
+const getViaLabel = (donationVia) => {
+    return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
+};
+
+const canEditDonation = (item) => {
+    return canManageDonations && item.donationVia === 'STAFF' && item.status !== 'CONFIRMED';
+};
+
+const getActionButtons = (item) => {
+    const actions = [
+        `
+            <button onclick="viewDonation(${item.id})" class="text-slate-400 hover:text-primary p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem chi tiết">
+                <span class="material-symbols-outlined text-[20px]">visibility</span>
+            </button>
+        `
+    ];
+
+    if (canEditDonation(item)) {
+        actions.push(`
+            <button onclick="editDonation(${item.id})" class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
+                <span class="material-symbols-outlined text-[20px]">edit</span>
+            </button>
+        `);
+    }
+
+    if (canApproveDonations && item.status === 'PENDING_APPROVED') {
+        actions.push(`
+            <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        `);
+        actions.push(`
+            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-white hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1" title="Duyệt">
+                <span class="material-symbols-outlined text-[16px]">check</span>
+                Duyệt
+            </button>
+        `);
+    }
+
+    return actions.join('');
+};
+
 const renderTable = (donations) => {
     if (!donations || donations.length === 0) {
-        elements.tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>`;
+        elements.tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
         return;
     }
 
-    elements.tableBody.innerHTML = donations.map(item => {
+    elements.tableBody.innerHTML = donations.map((item) => {
         const statusStyle = getStatusBadge(item.status);
         const payment = getPaymentMethodIcon(item.paymentMethod);
-        const donatedAt = item.donatedAt ? new Date(item.donatedAt).toLocaleString('vi-VN', {
-            hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
-        }) : '---';
+        const donatedAt = item.donatedAt
+            ? new Date(item.donatedAt).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+            : '---';
 
         return `
         <tr class="${statusStyle.rowClass} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -106,6 +212,7 @@ const renderTable = (donations) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-slate-900 dark:text-white">${item.donorName || 'Ẩn danh'}</div>
+                <div class="text-xs text-slate-500">${getViaLabel(item.donationVia)}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="text-sm font-bold ${item.status === 'REJECTED' ? 'text-slate-500 line-through' : 'text-slate-900 dark:text-white'}">
@@ -128,20 +235,11 @@ const renderTable = (donations) => {
                     ${statusStyle.text}
                 </span>
             </td>
-            ${isAdmin ? `
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex items-center justify-end gap-2">
-                        ${item.status === 'PENDING_APPROVED' ? `
-                            <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
-                                <span class="material-symbols-outlined text-[20px]">close</span>
-                            </button>
-                            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-white hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[16px]">check</span> Duyệt
-                            </button>
-                        ` : ``}
-                    </div>
-                </td>
-            ` : ''}
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-2">
+                    ${getActionButtons(item)}
+                </div>
+            </td>
         </tr>
         `;
     }).join('');
@@ -180,50 +278,87 @@ const bindFilters = () => {
         });
     }
 
+    if (elements.paymentMethodFilter) {
+        elements.paymentMethodFilter.addEventListener('change', (event) => {
+            state.paymentMethod = event.target.value;
+            state.page = 1;
+            loadDonations();
+        });
+    }
+
+    if (elements.amountRangeToggle) {
+        elements.amountRangeToggle.addEventListener('click', toggleAmountRangePanel);
+    }
+
+    if (elements.applyAmountFilterBtn) {
+        elements.applyAmountFilterBtn.addEventListener('click', applyAmountFilter);
+    }
+
+    if (elements.clearAmountFilterBtn) {
+        elements.clearAmountFilterBtn.addEventListener('click', clearAmountFilter);
+    }
+
+    if (elements.minAmountFilter) {
+        elements.minAmountFilter.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyAmountFilter();
+            }
+        });
+    }
+
+    if (elements.maxAmountFilter) {
+        elements.maxAmountFilter.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyAmountFilter();
+            }
+        });
+    }
+
     if (elements.resetFilterBtn) {
         elements.resetFilterBtn.addEventListener('click', () => {
             state.search = '';
             state.status = '';
             state.target = '';
+            state.paymentMethod = '';
+            state.minAmount = '';
+            state.maxAmount = '';
             state.page = 1;
 
             if (elements.searchInput) elements.searchInput.value = '';
             if (elements.statusFilter) elements.statusFilter.value = '';
             if (elements.targetFilter) elements.targetFilter.value = '';
+            if (elements.paymentMethodFilter) elements.paymentMethodFilter.value = '';
+            if (elements.minAmountFilter) elements.minAmountFilter.value = '';
+            if (elements.maxAmountFilter) elements.maxAmountFilter.value = '';
+            updateAmountRangeButtonState();
 
             loadDonations();
         });
     }
 };
 
-// 5. Hàm Load dữ liệu chính
 const loadDonations = async () => {
     try {
         const response = await donationApi.getDonations(state);
-        const data = response.data
+        const data = response.data;
         renderTable(data.data);
 
-        // Gọi render phân trang
         renderPagination(data, elements.paginationContainer, (newPage) => {
             state.page = newPage;
             loadDonations();
         });
     } catch (error) {
-        console.error("Lỗi khi tải danh sách quyên góp:", error);
+        console.error('Lỗi khi tải danh sách quyên góp:', error);
     }
 };
 
-/**
- * Xử lý thay đổi trạng thái quyên góp (Duyệt/Từ chối)
- * @param {number} id - ID của khoản quyên góp
- * @param {string} action - 'CONFIRM' hoặc 'REJECT'
- */
 window.handleAction = async (id, action) => {
-    if (!isAdmin) return;
+    if (!canApproveDonations) return;
     const isConfirm = action === 'CONFIRM';
     const statusText = isConfirm ? 'duyệt' : 'từ chối';
     const statusEnum = isConfirm ? 'CONFIRMED' : 'REJECTED';
-    const confirmColor = isConfirm ? '#10b981' : '#ef4444'; // Xanh emerald hoặc Đỏ rose
 
     const message = `Bạn có chắc chắn muốn ${statusText} khoản quyên góp này không?`;
     if (!confirm(message)) return;
@@ -233,20 +368,46 @@ window.handleAction = async (id, action) => {
 
         if (response.status === 200) {
             alert(response.message || 'Cập nhật thành công!');
-
             loadDonations();
         }
     } catch (error) {
-        console.error("Lỗi cập nhật trạng thái:", error);
-        alert(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
+        console.error('Lỗi cập nhật trạng thái:', error);
+        alert(error.message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
     }
 };
 
-// Khởi chạy
+window.viewDonation = (id) => {
+    window.location.href = `/admin/donations/${id}`;
+};
+
+window.editDonation = (id) => {
+    if (!canManageDonations) return;
+    window.location.href = `/admin/donations/${id}/form`;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (!isAdmin && elements.actionHeader) {
-        elements.actionHeader.remove();
-    }
+    updateAmountRangeButtonState();
     bindFilters();
+    bindExcelActions({
+        exportButton: elements.exportBtn,
+        importButton: elements.importBtn,
+        importInput: elements.importInput,
+        exportUrl: '/api/admin/excel/donations/export',
+        importUrl: '/api/admin/excel/donations/import',
+        getExportParams: () => ({
+            search: state.search,
+            status: state.status,
+            target: state.target,
+            paymentMethod: state.paymentMethod,
+            minAmount: state.minAmount,
+            maxAmount: state.maxAmount
+        }),
+        fallbackFilename: 'quyen-gop.xlsx',
+        successExportMessage: 'Xuất Excel quyên góp thành công.',
+        onImportSuccess: () => {
+            state.page = 1;
+            loadDonations();
+        }
+    });
     loadDonations();
 });

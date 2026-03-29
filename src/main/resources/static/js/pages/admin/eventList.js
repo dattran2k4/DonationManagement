@@ -1,10 +1,11 @@
 import {eventApi} from '../../apis/eventApi.js';
 import {renderPagination} from '../../components/pagination.js';
-const isAdmin = window.__IS_ADMIN__ === true;
+import {bindExcelActions} from '../../utils/excelTransfer.js';
+const canManageEvents = window.__CAN_MANAGE_EVENTS__ === true;
 
 const state = {
     page: 1,
-    size: 5,
+    size: 50,
     search: '',
     status: '',
     categoryId: '',
@@ -19,7 +20,10 @@ const elements = {
     statusSelect: document.getElementById('statusFilter'),
     categorySelect: document.getElementById('categoryFilter'),
     sortSelect: document.getElementById('sortFilter'),
-    actionHeader: document.getElementById('eventActionHeader')
+    actionHeader: document.getElementById('eventActionHeader'),
+    exportBtn: document.getElementById('eventExportBtn'),
+    importBtn: document.getElementById('eventImportBtn'),
+    importInput: document.getElementById('eventImportInput')
 };
 
 let searchDebounceId = null;
@@ -45,9 +49,9 @@ const getStatusBadge = (status) => {
             dotClass: 'bg-slate-400'
         },
         'COMPLETED': {
-            text: 'Đã kết thúc',
-            colorClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-            dotClass: 'bg-blue-500'
+            text: 'Hoàn thành',
+            colorClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+            dotClass: 'bg-slate-400'
         },
         'UPCOMING': {
             text: 'Sắp diễn ra',
@@ -65,7 +69,7 @@ const getStatusBadge = (status) => {
 
 // Hàm Render Bảng
 const renderTable = (data) => {
-    const colspan = isAdmin ? 7 : 6;
+    const colspan = 7;
     if (!data || data.length === 0) {
         elements.tableBody.innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-8 text-center text-slate-500">Không tìm thấy sự kiện nào.</td></tr>`;
         return;
@@ -76,20 +80,24 @@ const renderTable = (data) => {
         const percent = item.targetAmount > 0 ? Math.min(Math.round((item.currentAmount / item.targetAmount) * 100), 100) : 0;
         const isCompleted = percent >= 100;
         const isLocked = item.status === 'COMPLETED';
-        const actionHtml = (!isAdmin || isLocked)
+        const actionHtml = `
+                <a href="/admin/events/${item.id}" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Xem chi tiết">
+                    <span class="material-symbols-outlined text-[20px]">visibility</span>
+                </a>
+            ${(!canManageEvents || isLocked)
             ? ''
             : `
                 <a href="/admin/events/${item.id}/form" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Cập nhật">
                     <span class="material-symbols-outlined text-[20px]">edit</span>
                 </a>
-            `;
+            `}`;
 
         return `
         <tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             <td class="px-6 py-4 font-mono text-sm text-slate-700 dark:text-slate-300">#${item.id}</td>
             <td class="px-6 py-4">
                 <div class="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" 
-                     style="background-image: url('${item.thumbnailUrl || '/static/images/default-event.png'}')"></div>
+                     style="background-image: url('${item.thumbnailUrl || '/images/default-event.png'}')"></div>
             </td>
             <td class="px-6 py-4">
                 <div class="font-semibold text-slate-900 dark:text-slate-100">${item.name}</div>
@@ -113,13 +121,11 @@ const renderTable = (data) => {
             <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
                 ${item.startDate} - ${item.endDate}
             </td>
-            ${isAdmin ? `
-                <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                        ${actionHtml}
-                    </div>
-                </td>
-            ` : ``}
+            <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                    ${actionHtml}
+                </div>
+            </td>
         </tr>
         `;
     }).join('');
@@ -137,7 +143,7 @@ const loadEvents = async () => {
         });
     } catch (error) {
         console.error("Lỗi tải danh sách sự kiện:", error);
-        elements.tableBody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}" class="px-6 py-8 text-center text-red-500">Không thể tải dữ liệu sự kiện.</td></tr>`;
+        elements.tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Không thể tải dữ liệu sự kiện.</td></tr>`;
     }
 };
 
@@ -193,9 +199,20 @@ function bindFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!isAdmin && elements.actionHeader) {
-        elements.actionHeader.remove();
-    }
     bindFilters();
+    bindExcelActions({
+        exportButton: elements.exportBtn,
+        importButton: elements.importBtn,
+        importInput: elements.importInput,
+        exportUrl: '/api/admin/excel/events/export',
+        importUrl: '/api/admin/excel/events/import',
+        getExportParams: buildEventQueryParams,
+        fallbackFilename: 'su-kien.xlsx',
+        successExportMessage: 'Xuất Excel sự kiện thành công.',
+        onImportSuccess: () => {
+            state.page = 1;
+            loadEvents();
+        }
+    });
     loadEvents();
 });

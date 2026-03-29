@@ -1,6 +1,7 @@
 <!doctype html>
 <html
         xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layouts/admin/admin-layout}"
 >
@@ -11,10 +12,28 @@
 <div layout:fragment="content">
     <!-- Header Section -->
     <header class="px-0 py-1">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Lịch sử giao dịch</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Theo dõi lịch sử giao dịch và đối soát với các đơn
-                quyên góp.</p>
+        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Lịch sử giao dịch</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Theo dõi lịch sử giao dịch và đối soát với các đơn
+                    quyên góp.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button id="transactionExportBtn"
+                        type="button"
+                        class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    Xuất Excel
+                </button>
+                <input id="transactionImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
+                <button id="transactionImportBtn"
+                        type="button"
+                        sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                        class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                    Nhập Excel
+                </button>
+            </div>
         </div>
     </header>
     <div class="flex flex-col gap-6">

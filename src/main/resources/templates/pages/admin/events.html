@@ -15,12 +15,28 @@
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Quản lý Sự kiện</h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Theo dõi và quản lý các hoạt động gây quỹ</p>
         </div>
-        <a th:href="@{/admin/events/form}"
-           sec:authorize="hasRole('ADMIN')"
-           class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95">
-            <span class="material-symbols-outlined text-[20px]">add</span>
-            Thêm Sự kiện mới
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <button id="eventExportBtn"
+                    type="button"
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">
+                <span class="material-symbols-outlined text-[18px]">file_download</span>
+                Xuất Excel
+            </button>
+            <input id="eventImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
+            <button id="eventImportBtn"
+                    type="button"
+                    sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">
+                <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                Nhập Excel
+            </button>
+            <a th:href="@{/admin/events/form}"
+               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                Thêm Sự kiện mới
+            </a>
+        </div>
     </div>
     <!--  Numbers  -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -133,10 +149,10 @@
 </div>
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
-        window.__IS_ADMIN__ = false;
+        window.__CAN_MANAGE_EVENTS__ = false;
     </script>
-    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
-        window.__IS_ADMIN__ = true;
+    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
+        window.__CAN_MANAGE_EVENTS__ = true;
     </script>
     <script type="module" th:src="@{/js/pages/admin/eventList.js}"></script>
 </th:block>

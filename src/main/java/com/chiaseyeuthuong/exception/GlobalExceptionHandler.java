@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -148,6 +149,29 @@ public class GlobalExceptionHandler {
         errorResponse.setStatus(CONFLICT.value());
         errorResponse.setError(CONFLICT.getReasonPhrase());
         errorResponse.setMessage(e.getMessage());
+
+        return errorResponse;
+    }
+
+    @ResponseStatus(CONFLICT)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ErrorResponse handleDataIntegrityViolationException(DataIntegrityViolationException e, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(CONFLICT.value());
+        errorResponse.setError(CONFLICT.getReasonPhrase());
+
+        String message = e.getMostSpecificCause() != null ? e.getMostSpecificCause().getMessage() : e.getMessage();
+        String lowerCaseMessage = message == null ? "" : message.toLowerCase();
+
+        if (lowerCaseMessage.contains("uk_donors_email")) {
+            errorResponse.setMessage("Email nhà hảo tâm đã tồn tại");
+        } else if (lowerCaseMessage.contains("uk_donors_phone")) {
+            errorResponse.setMessage("Số điện thoại nhà hảo tâm đã tồn tại");
+        } else {
+            errorResponse.setMessage("Dữ liệu bị trùng hoặc không hợp lệ");
+        }
 
         return errorResponse;
     }

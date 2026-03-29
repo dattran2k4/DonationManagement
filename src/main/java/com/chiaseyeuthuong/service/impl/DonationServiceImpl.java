@@ -5,6 +5,7 @@ import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.event.DonationConfirmedEvent;
+import com.chiaseyeuthuong.exception.InvalidDataException;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.model.*;
 import com.chiaseyeuthuong.repository.*;
@@ -38,6 +39,7 @@ import vn.payos.model.webhooks.WebhookData;
 @RequiredArgsConstructor
 @Slf4j(topic = "DONATION-SERVICE")
 public class DonationServiceImpl implements DonationService {
+    private static final String WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
 
     private final DonationRepository donationRepository;
     private final UserRepository userRepository;
@@ -79,7 +81,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createStaffDonation(DonationRequest request, String username) {
+    public long createStaffDonation(DonationRequest request, String username) {
         log.info("Processing create donation from staff {}", username);
 
         User staff = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -95,12 +97,37 @@ public class DonationServiceImpl implements DonationService {
         
         Donation result = donationRepository.save(donation);
         log.info("Donation saved from staff {}", result.getId());
+        return result.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStaffDonation(Long id, DonationRequest request) {
+        log.info("Processing update donation from staff for id {}", id);
+
+        Donation donation = getDonation(id);
+
+        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
+            throw new InvalidDataException("Chỉ hỗ trợ chỉnh sửa khoản quyên góp được tạo nội bộ");
+        }
+        if (EDonationStatus.CONFIRMED.equals(donation.getStatus())) {
+            throw new InvalidDataException("Không thể chỉnh sửa khoản quyên góp đã xác nhận");
+        }
+
+        saveDonation(donation, request);
+        donation.setPaymentMethod(request.getPaymentMethod());
+
+        Donation result = donationRepository.save(donation);
+        log.info("Donation updated from staff {}", result.getId());
     }
 
     private void saveDonation(Donation donation, DonationRequest request) {
+        validateWholeAmount(request.getAmount());
 
         Donor donor = donorRepository.findById(request.getDonorId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhà hảo tâm"));
         donation.setDonor(donor);
+        donation.setEvent(null);
+        donation.setActivity(null);
 
         if (request.getActivityId() != null) {
             log.info("Processing activity {}", request.getActivityId());
@@ -122,6 +149,16 @@ public class DonationServiceImpl implements DonationService {
         donation.setNeedReceipt(request.getNeedReceipt());
         donation.setReceiptEmail(request.getReceiptEmail());
         donation.setReceiptName(request.getReceiptName());
+    }
+
+    private void validateWholeAmount(BigDecimal amount) {
+        if (amount == null) {
+            return;
+        }
+
+        if (amount.stripTrailingZeros().scale() > 0) {
+            throw new InvalidDataException(WHOLE_AMOUNT_MESSAGE);
+        }
     }
 
     @Override
@@ -157,14 +194,18 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target, EDonationType type, int page, int size) {
+    public PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target,
+                                                          EDonationType type, EPaymentMethod paymentMethod,
+                                                          BigDecimal minAmount, BigDecimal maxAmount, int page, int size) {
         log.info("Processing get all donations");
 
         int pageNumber = (page > 0) ? page - 1 : 0;
 
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("id").descending());
 
-        Specification<Donation> specification = DonationSpecification.filterDonation(search, status, target, type);
+        Specification<Donation> specification = DonationSpecification.filterDonation(
+                search, status, target, type, paymentMethod, minAmount, maxAmount
+        );
 
         Page<Donation> donationPage = donationRepository.findAll(specification, pageable);
 
@@ -184,6 +225,11 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
+    public DonationResponse getDonationResponseById(Long id) {
+        return toResponse(getDonation(id));
+    }
+
+    @Override
     public Donation getDonationByMemoCode(String memoCode) {
         return donationRepository.findByMemoCode(memoCode).orElseThrow(() -> new ResourceNotFoundException("Donation not found"));
     }
@@ -198,9 +244,23 @@ public class DonationServiceImpl implements DonationService {
         return donationRepository.sumConfirmedDonationsAmount();
     }
 
+    @Override
+    public List<DonationResponse> getRecentDonationsByDonorId(Long donorId, int limit) {
+        int pageSize = Math.max(limit, 1);
+        Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
+        return donationRepository.findByDonorIdOrderByCreatedAtDesc(donorId, pageable)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private DonationResponse toResponse(Donation donation) {
         DonationResponse response = new DonationResponse();
         BeanUtils.copyProperties(donation, response);
+        response.setDonorId(donation.getDonor() != null ? donation.getDonor().getId() : null);
+        response.setDonorPhone(donation.getDonor() != null ? donation.getDonor().getPhone() : null);
+        response.setEventId(donation.getEvent() != null ? donation.getEvent().getId() : null);
+        response.setActivityId(donation.getActivity() != null ? donation.getActivity().getId() : null);
         response.setDonorName(donation.getDonor().getFullName());
         response.setObjectName(getObjectName(donation, donation.getTarget()));
         return response;

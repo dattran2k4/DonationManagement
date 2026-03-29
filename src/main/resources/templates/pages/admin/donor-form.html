@@ -12,13 +12,13 @@
     <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between">
         <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-slate-400">chevron_right</span>
-            <h2 id="donorFormHeaderTitle" class="text-lg font-semibold">Thêm Nhà hảo tâm mới</h2>
+            <h2 id="donorHeaderTitle" class="text-lg font-semibold">Thêm Nhà hảo tâm mới</h2>
         </div>
         <div class="flex items-center gap-4">
             <button id="saveDonorHeaderBtn" type="button"
                     class="flex items-center gap-2 bg-primary px-4 py-2 rounded-lg text-white font-bold text-sm hover:brightness-105 transition-all">
                 <span class="material-symbols-outlined text-[20px]">save</span>
-                Lưu thông tin
+                <span id="saveDonorHeaderText">Lưu thông tin</span>
             </button>
         </div>
     </header>
@@ -26,8 +26,8 @@
     <div class="flex-1 overflow-y-auto p-8">
         <div class="max-w-4xl mx-auto">
             <div class="mb-8">
-                <h3 class="text-2xl font-bold mb-2">Thông tin Nhà hảo tâm</h3>
-                <p class="text-slate-500 dark:text-slate-400">Vui lòng chọn loại hình và điền đầy đủ thông tin bên
+                <h3 id="donorPageTitle" class="text-2xl font-bold mb-2">Thông tin Nhà hảo tâm</h3>
+                <p id="donorPageDescription" class="text-slate-500 dark:text-slate-400">Vui lòng chọn loại hình và điền đầy đủ thông tin bên
                     dưới.</p>
             </div>
 
@@ -127,8 +127,11 @@
                                     <option value="">Chọn nguồn giới thiệu</option>
                                     <option value="Facebook">Facebook</option>
                                     <option value="Website">Website</option>
-                                    <option value="Friends">Người quen (Friends)</option>
-                                    <option value="Other">Khác (Other)</option>
+                                    <option value="Email">Email</option>
+                                    <option value="Bạn bè giới thiệu">Bạn bè giới thiệu</option>
+                                    <option value="Sự kiện offline">Sự kiện offline</option>
+                                    <option value="Đối tác">Đối tác</option>
+                                    <option value="Khác">Khác</option>
                                 </select>
                                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
                             </div>

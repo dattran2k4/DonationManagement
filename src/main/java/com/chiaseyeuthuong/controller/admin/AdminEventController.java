@@ -6,6 +6,7 @@ import com.chiaseyeuthuong.service.CategoryService;
 import com.chiaseyeuthuong.service.EventService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ public class AdminEventController {
     private final CategoryService categoryService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public String showAdminEventPage(Model model) {
         model.addAttribute("totalEvents", eventService.getEventCount(null));
         model.addAttribute("totalUpcomingEvents", eventService.getEventCount(EEventStatus.UPCOMING));
@@ -32,6 +34,7 @@ public class AdminEventController {
     }
 
     @GetMapping("/form")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showCreatEventPage(Model model) {
         model.addAttribute("event", new EventRequest());
         model.addAttribute("eventFormId", null);
@@ -41,12 +44,23 @@ public class AdminEventController {
     }
 
     @GetMapping("/{id}/form")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showEditEventPage(@Min(1) @PathVariable Long id, Model model) {
         var event = eventService.getEventById(id);
+        if (EEventStatus.COMPLETED.equals(event.getStatus())) {
+            return "redirect:/admin/events/" + id;
+        }
         model.addAttribute("event", event);
         model.addAttribute("eventFormId", event.getId());
         model.addAttribute("eventActivities", event.getActivities());
         model.addAttribute("categories", categoryService.getAllCategories());
         return "/pages/admin/event-form";
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public String showEventDetailPage(@Min(1) @PathVariable Long id, Model model) {
+        model.addAttribute("event", eventService.getEventById(id));
+        return "/pages/admin/event-detail";
     }
 }

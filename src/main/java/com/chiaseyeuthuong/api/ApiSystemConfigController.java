@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import com.chiaseyeuthuong.service.SystemConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ public class ApiSystemConfigController {
     private final SystemConfigService systemConfigService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getAllSystemConfig() {
         return ApiResponse.builder()
                 .status(200)
@@ -29,6 +31,7 @@ public class ApiSystemConfigController {
     }
 
     @GetMapping("/map")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getAllSystemConfigMap() {
         return ApiResponse.builder()
                 .status(200)
@@ -38,6 +41,7 @@ public class ApiSystemConfigController {
     }
 
     @PutMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse upsertSystemConfig(@Valid @RequestBody SystemConfigUpsertRequest request) {
         return ApiResponse.builder()
                 .status(200)
@@ -47,6 +51,7 @@ public class ApiSystemConfigController {
     }
 
     @PostMapping("/upload-image")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse uploadSystemConfigImage(@RequestParam("file") MultipartFile file) {
         return ApiResponse.builder()
                 .status(201)

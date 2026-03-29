@@ -64,10 +64,14 @@ public class TransactionServiceImpl implements TransactionService {
     public void createTransactionFromPayOS(WebhookData data, Donation donation) {
         log.info("Processing create transaction from PayOS");
 
-
         Transaction transaction = new Transaction();
 
         transaction.setAmount(donation.getAmount());
+        transaction.setPaymentMethod(
+                donation.getPaymentMethod() != null
+                        ? donation.getPaymentMethod()
+                        : EPaymentMethod.BANK_TRANSFER_ONLINE
+        );
 
         if (data != null) {
 
@@ -84,9 +88,8 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setCounterAccountName(data.getCounterAccountName());
             transaction.setCounterAccountNumber(data.getCounterAccountNumber());
             transaction.setRawApiData(data.toString());
+            transaction.setPaymentMethod(EPaymentMethod.BANK_TRANSFER_ONLINE);
         }
-
-        transaction.setPaymentMethod(EPaymentMethod.BANK_TRANSFER_ONLINE);
 
         transaction.setDonation(donation);
 

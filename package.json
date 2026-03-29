@@ -1,9 +1,22 @@
 {
+  "scripts": {
+    "cypress:run": "cypress run --browser electron",
+    "cypress:run:donor": "cypress run --browser electron --spec \"cypress/e2e/donor/**/*.cy.js\"",
+    "cypress:run:admin": "cypress run --browser electron --spec \"cypress/e2e/admin/**/*.cy.js\"",
+    "cypress:run:admin:dashboard": "cypress run --browser electron --spec cypress/e2e/admin/dashboard.cy.js",
+    "cypress:run:admin:donors": "cypress run --browser electron --spec cypress/e2e/admin/donors.cy.js",
+    "cypress:run:admin:donations": "cypress run --browser electron --spec cypress/e2e/admin/donations.cy.js",
+    "cypress:run:admin:events": "cypress run --browser electron --spec cypress/e2e/admin/events.cy.js",
+    "cypress:run:admin:activities": "cypress run --browser electron --spec cypress/e2e/admin/activities.cy.js",
+    "cypress:run:admin:transactions": "cypress run --browser electron --spec cypress/e2e/admin/transactions.cy.js",
+    "cypress:run:admin:settings": "cypress run --browser electron --spec cypress/e2e/admin/settings.cy.js"
+  },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.18",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.24"
+    "autoprefixer": "^10.4.24",
+    "cypress": "^15.12.0"
   }
 }

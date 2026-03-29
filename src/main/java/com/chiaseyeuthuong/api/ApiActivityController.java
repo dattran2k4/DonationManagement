@@ -7,6 +7,7 @@ import com.chiaseyeuthuong.service.ActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,6 +53,7 @@ public class ApiActivityController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse saveActivity(@RequestBody @Valid ActivityRequest request) {
         activityService.saveActivity(request);
         return ApiResponse.builder()
@@ -61,6 +63,7 @@ public class ApiActivityController {
     }
 
     @PostMapping({"/upload", "/{id}/upload"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse uploadThumbnail(@PathVariable(required = false) Long id, @RequestParam("file") MultipartFile file) {
         return ApiResponse.builder()
                 .status(201)

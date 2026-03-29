@@ -4,11 +4,13 @@ import com.chiaseyeuthuong.common.EEventStatus;
 import com.chiaseyeuthuong.dto.validator.EnumValue;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
+@Setter
 public class EventRequest {
 
     @Min(value = 1, message = "Lỗi sự kiện")

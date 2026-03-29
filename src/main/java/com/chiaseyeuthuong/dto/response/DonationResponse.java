@@ -17,6 +17,10 @@ import java.time.LocalDateTime;
 @Builder
 public class DonationResponse {
     private Long id;
+    private Long donorId;
+    private String donorPhone;
+    private Long eventId;
+    private Long activityId;
     private BigDecimal amount;
     private String message;
     private String memoCode;
