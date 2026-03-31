@@ -40,4 +40,6 @@ public interface DonationService {
     BigDecimal getTotalConfirmedDonationsAmount();
 
     List<DonationResponse> getRecentDonationsByDonorId(Long donorId, int limit);
+
+    PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size);
 }

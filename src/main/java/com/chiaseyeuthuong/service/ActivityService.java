@@ -16,6 +16,8 @@ public interface ActivityService {
 
     List<ActivityResponse> getAllActivitiesByEventId(Long eventId);
 
+    PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size);
+
     void saveActivity(ActivityRequest request);
 
     Activity getActivity(Long id);

@@ -78,6 +78,28 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size) {
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 10;
+
+        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Activity> activityPage = activityRepository.findByEventId(eventId, pageRequest);
+
+        List<ActivityResponse> response = activityPage.getContent()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return PageResponse.<ActivityResponse>builder()
+                .page(pageNumber + 1)
+                .pageSize(safeSize)
+                .totalItems(activityPage.getTotalElements())
+                .totalPages(activityPage.getTotalPages())
+                .data(response)
+                .build();
+    }
+
+    @Override
     public void saveActivity(ActivityRequest request) {
         log.info("Processing saving activity from eventId {} ", request.getEventId());
 

@@ -254,6 +254,28 @@ public class DonationServiceImpl implements DonationService {
                 .toList();
     }
 
+    @Override
+    public PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size) {
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by("id").descending());
+        Page<Donation> donationPage = donationRepository.findByEventScopeId(eventId, pageable);
+
+        List<DonationResponse> data = donationPage.getContent()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return PageResponse.<DonationResponse>builder()
+                .page(pageNumber + 1)
+                .pageSize(safeSize)
+                .totalPages(donationPage.getTotalPages())
+                .totalItems(donationPage.getTotalElements())
+                .data(data)
+                .build();
+    }
+
     private DonationResponse toResponse(Donation donation) {
         DonationResponse response = new DonationResponse();
         BeanUtils.copyProperties(donation, response);

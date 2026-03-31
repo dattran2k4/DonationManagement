@@ -53,4 +53,25 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
 
     @EntityGraph(attributePaths = {"event", "activity"})
     Page<Donation> findByDonorId(Long donorId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"donor", "event", "activity"})
+    @Query("""
+            SELECT donation
+            FROM Donation donation
+            LEFT JOIN donation.event event
+            LEFT JOIN donation.activity activity
+            LEFT JOIN activity.event activityEvent
+            WHERE event.id = :eventId OR activityEvent.id = :eventId
+            """)
+    Page<Donation> findByEventScopeId(Long eventId, Pageable pageable);
+
+    @Query("""
+            SELECT COUNT(donation.id)
+            FROM Donation donation
+            LEFT JOIN donation.event event
+            LEFT JOIN donation.activity activity
+            LEFT JOIN activity.event activityEvent
+            WHERE event.id = :eventId OR activityEvent.id = :eventId
+            """)
+    long countByEventScopeId(Long eventId);
 }

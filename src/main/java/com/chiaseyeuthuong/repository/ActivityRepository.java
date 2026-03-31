@@ -1,6 +1,8 @@
 package com.chiaseyeuthuong.repository;
 
 import com.chiaseyeuthuong.model.Activity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -13,4 +15,8 @@ public interface ActivityRepository extends JpaRepository<Activity, Long>, JpaSp
     Optional<Activity> findBySlug(String slug);
 
     List<Activity> findAllByEventId(Long eventId);
+
+    Page<Activity> findByEventId(Long eventId, Pageable pageable);
+
+    long countByEventId(Long eventId);
 }

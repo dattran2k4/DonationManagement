@@ -2,7 +2,11 @@ package com.chiaseyeuthuong.service;
 
 import com.chiaseyeuthuong.common.EEventStatus;
 import com.chiaseyeuthuong.dto.request.EventRequest;
+import com.chiaseyeuthuong.dto.response.ActivityResponse;
+import com.chiaseyeuthuong.dto.response.DonorResponse;
 import com.chiaseyeuthuong.dto.response.EventResponse;
+import com.chiaseyeuthuong.dto.response.EventDetailTabsSummaryResponse;
+import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Event;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,4 +34,12 @@ public interface EventService {
     void updateEventCurrentAmount(Event event, BigDecimal amount);
 
     String saveThumbnailUrl(Long id, MultipartFile file);
+
+    EventDetailTabsSummaryResponse getEventDetailTabsSummary(Long eventId);
+
+    PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size);
+
+    PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size);
+
+    PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size);
 }

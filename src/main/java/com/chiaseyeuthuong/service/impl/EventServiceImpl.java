@@ -5,14 +5,21 @@ import com.chiaseyeuthuong.common.EEventStatus;
 import com.chiaseyeuthuong.dto.request.EventRequest;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.dto.response.CategoryResponse;
+import com.chiaseyeuthuong.dto.response.DonorResponse;
+import com.chiaseyeuthuong.dto.response.DonationResponse;
+import com.chiaseyeuthuong.dto.response.EventDetailTabsSummaryResponse;
 import com.chiaseyeuthuong.dto.response.EventResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.exception.BusinessException;
 import com.chiaseyeuthuong.model.Category;
 import com.chiaseyeuthuong.model.Event;
+import com.chiaseyeuthuong.repository.ActivityRepository;
 import com.chiaseyeuthuong.repository.CategoryRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
+import com.chiaseyeuthuong.repository.DonationRepository;
+import com.chiaseyeuthuong.service.ActivityService;
+import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.DonorService;
 import com.chiaseyeuthuong.service.EventService;
 import com.chiaseyeuthuong.service.EventSpecification;
@@ -48,8 +55,12 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
+    private final ActivityRepository activityRepository;
+    private final DonationRepository donationRepository;
 
     private final DonorService donorService;
+    private final ActivityService activityService;
+    private final DonationService donationService;
 
     public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
@@ -244,6 +255,35 @@ public class EventServiceImpl implements EventService {
             log.error("Cannot save thumbnail caused: {}", e.getMessage(), e);
             throw new RuntimeException("Cannot save thumbnail url caused ", e);
         }
+    }
+
+    @Override
+    public EventDetailTabsSummaryResponse getEventDetailTabsSummary(Long eventId) {
+        findEventById(eventId);
+
+        return EventDetailTabsSummaryResponse.builder()
+                .activityCount(activityRepository.countByEventId(eventId))
+                .donorCount(donorService.getDorCountByObjectId(eventId, EEntityType.EVENT))
+                .donationCount(donationRepository.countByEventScopeId(eventId))
+                .build();
+    }
+
+    @Override
+    public PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size) {
+        findEventById(eventId);
+        return activityService.getActivitiesByEventId(eventId, page, size);
+    }
+
+    @Override
+    public PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size) {
+        findEventById(eventId);
+        return donorService.getDonorsByEventId(eventId, page, size);
+    }
+
+    @Override
+    public PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size) {
+        findEventById(eventId);
+        return donationService.getDonationsByEventId(eventId, page, size);
     }
 
     private EventResponse toResponse(Event event) {

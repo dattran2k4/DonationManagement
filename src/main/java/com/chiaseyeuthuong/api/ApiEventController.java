@@ -58,6 +58,52 @@ public class ApiEventController {
                 .build();
     }
 
+    @GetMapping("/{id}/detail-tabs/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getEventDetailTabsSummary(@PathVariable Long id) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy tổng quan tab chi tiết sự kiện thành công")
+                .data(eventService.getEventDetailTabsSummary(id))
+                .build();
+    }
+
+    @GetMapping("/{id}/detail-tabs/activities")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getEventDetailActivities(@PathVariable Long id,
+                                                @RequestParam(required = false, defaultValue = "1") int page,
+                                                @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách hoạt động theo sự kiện thành công")
+                .data(eventService.getEventDetailActivities(id, page, size))
+                .build();
+    }
+
+    @GetMapping("/{id}/detail-tabs/donors")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getEventDetailDonors(@PathVariable Long id,
+                                            @RequestParam(required = false, defaultValue = "1") int page,
+                                            @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách nhà hảo tâm theo sự kiện thành công")
+                .data(eventService.getEventDetailDonors(id, page, size))
+                .build();
+    }
+
+    @GetMapping("/{id}/detail-tabs/donations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getEventDetailDonations(@PathVariable Long id,
+                                               @RequestParam(required = false, defaultValue = "1") int page,
+                                               @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách quyên góp theo sự kiện thành công")
+                .data(eventService.getEventDetailDonations(id, page, size))
+                .build();
+    }
+
     @PostMapping("/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse saveEvent(@RequestBody @Valid EventRequest request) {

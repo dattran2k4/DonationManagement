@@ -30,5 +30,24 @@ export const eventApi = {
             body: formData
         });
         return response.json();
+    },
+
+    getEventDetailTabsSummary: async (id) => {
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/summary`);
+    },
+
+    getEventDetailActivities: async (id, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/activities?${queryString}`);
+    },
+
+    getEventDetailDonors: async (id, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/donors?${queryString}`);
+    },
+
+    getEventDetailDonations: async (id, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/donations?${queryString}`);
     }
 };
