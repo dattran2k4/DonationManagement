@@ -173,10 +173,10 @@
                 </div>
 
                 <div>
-                    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Chi tiết sự kiện</p>
+                    <p class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Danh mục</p>
                     <p class="text-base leading-relaxed text-slate-700 dark:text-slate-300"
-                       th:text="${event.description != null && !#strings.isEmpty(event.description) ? event.description : 'Chưa có mô tả chi tiết.'}">
-                        Chưa có mô tả chi tiết.
+                       th:text="${event.category != null && event.category.name != null && !#strings.isEmpty(event.category.name) ? event.category.name : 'Chưa có danh mục'}">
+                        Chưa có danh mục
                     </p>
                 </div>
 
