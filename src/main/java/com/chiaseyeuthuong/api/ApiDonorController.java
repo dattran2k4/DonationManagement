@@ -53,6 +53,18 @@ public class ApiDonorController {
                 .build();
     }
 
+    @GetMapping("/{id}/donations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getDonorDonations(@PathVariable Long id,
+                                         @RequestParam(required = false, defaultValue = "1") int page,
+                                         @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Get donor donation history successfully")
+                .data(donorService.getDonorDonations(id, page, size))
+                .build();
+    }
+
     @PostMapping("/individuals")
     public ApiResponse saveIndividualDonor(@Valid @RequestBody IndividualDonorRequest request) {
         return ApiResponse.builder()

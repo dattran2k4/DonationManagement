@@ -13,7 +13,7 @@ export const donorApi = {
     },
     getDonorDonations: async (id, params) => {
         const queryString = buildQuery(params);
-        return await apiClient.get(`/api/donor/${id}/donations?${queryString}`);
+        return await apiClient.get(`${BASE_URL}/${id}/donations?${queryString}`);
     },
     saveIndividual: async (body) => {
         return await apiClient.post(`${BASE_URL}/individuals`, body);

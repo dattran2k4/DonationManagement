@@ -407,7 +407,7 @@ public class DonorServiceImpl implements DonorService {
         response.setStatus(donation.getStatus());
         response.setStatusLabel(getStatusLabel(donation.getStatus()));
         response.setTarget(donation.getTarget());
-        response.setTargetLabel(donation.getTarget() != null ? donation.getTarget().getValue() : null);
+        response.setTargetLabel(getTargetLabel(donation.getTarget()));
         response.setDonatedAt(donation.getDonatedAt() != null ? donation.getDonatedAt() : donation.getCreatedAt());
 
         if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
@@ -435,6 +435,17 @@ public class DonorServiceImpl implements DonorService {
             case CANCELLED -> "Đã hủy";
             case REJECTED -> "Đã từ chối";
             case FAILED -> "Thất bại";
+        };
+    }
+
+    private String getTargetLabel(EDonationTarget target) {
+        if (target == null) {
+            return "Không gắn mục tiêu";
+        }
+        return switch (target) {
+            case EVENT -> "Sự kiện";
+            case ACTIVITY -> "Hoạt động";
+            case NONE -> "Không gắn mục tiêu";
         };
     }
 }
