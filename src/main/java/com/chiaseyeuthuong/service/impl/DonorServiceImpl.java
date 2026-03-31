@@ -230,6 +230,28 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
+    public PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size) {
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 10;
+
+        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Donor> donorPage = donorRepository.findDonorsByActivityId(activityId, pageRequest);
+
+        List<DonorResponse> data = donorPage.getContent()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return PageResponse.<DonorResponse>builder()
+                .page(pageNumber + 1)
+                .pageSize(safeSize)
+                .totalItems(donorPage.getTotalElements())
+                .totalPages(donorPage.getTotalPages())
+                .data(data)
+                .build();
+    }
+
+    @Override
     public long getDorCountByObjectId(Long objectId, EEntityType type) {
         if (EEntityType.EVENT.equals(type)) {
             return donorRepository.countDonorByEventId(objectId);

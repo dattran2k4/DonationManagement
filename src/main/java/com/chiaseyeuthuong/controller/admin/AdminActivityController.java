@@ -50,4 +50,11 @@ public class AdminActivityController {
         model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
         return "pages/admin/activity-form";
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public String showAdminActivityDetailPage(@PathVariable Long id, Model model) {
+        model.addAttribute("activity", activityService.getActivityById(id));
+        return "pages/admin/activity-detail";
+    }
 }

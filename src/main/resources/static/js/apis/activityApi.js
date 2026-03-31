@@ -24,5 +24,19 @@ export const activityApi = {
             body: formData
         });
         return response.json();
+    },
+
+    getActivityDetailTabsSummary: async (id) => {
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/summary`);
+    },
+
+    getActivityDetailDonors: async (id, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/donors?${queryString}`);
+    },
+
+    getActivityDetailDonations: async (id, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/detail-tabs/donations?${queryString}`);
     }
 };

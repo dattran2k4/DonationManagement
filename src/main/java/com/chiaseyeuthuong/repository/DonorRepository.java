@@ -50,6 +50,19 @@ public interface DonorRepository extends JpaRepository<Donor, Long>, JpaSpecific
             """)
     Page<Donor> findDonorsByEventId(Long eventId, Pageable pageable);
 
+    @Query("""
+            SELECT donor
+            FROM Donor donor
+            WHERE EXISTS (
+                SELECT 1
+                FROM Donation donation
+                WHERE donation.donor.id = donor.id
+                  AND donation.status = 'CONFIRMED'
+                  AND donation.activity.id = :activityId
+            )
+            """)
+    Page<Donor> findDonorsByActivityId(Long activityId, Pageable pageable);
+
     @Query("SELECT COUNT(DISTINCT d.donor.id) FROM Donation d " +
             "WHERE d.status = 'CONFIRMED'")
     long countDonor();

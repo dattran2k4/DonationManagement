@@ -2,7 +2,10 @@ package com.chiaseyeuthuong.service;
 
 import com.chiaseyeuthuong.common.EActivityStatus;
 import com.chiaseyeuthuong.dto.request.ActivityRequest;
+import com.chiaseyeuthuong.dto.response.ActivityDetailTabsSummaryResponse;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
+import com.chiaseyeuthuong.dto.response.DonationResponse;
+import com.chiaseyeuthuong.dto.response.DonorResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Activity;
 import com.chiaseyeuthuong.model.Donation;
@@ -33,4 +36,10 @@ public interface ActivityService {
     String saveThumbnailUrl(Long id, MultipartFile file);
 
     long getActivityCount();
+
+    ActivityDetailTabsSummaryResponse getActivityDetailTabsSummary(Long activityId);
+
+    PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size);
+
+    PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size);
 }

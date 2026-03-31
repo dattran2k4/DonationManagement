@@ -29,6 +29,8 @@ public interface DonorService {
 
     PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size);
 
+    PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size);
+
     long getDorCountByObjectId(Long objectId, EEntityType type);
 
     Integer getConfirmedDonationCount(Long donorId, EDonationStatus status);

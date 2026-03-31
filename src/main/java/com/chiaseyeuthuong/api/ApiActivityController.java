@@ -52,6 +52,40 @@ public class ApiActivityController {
                 .build();
     }
 
+    @GetMapping("/{id}/detail-tabs/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getActivityDetailTabsSummary(@PathVariable Long id) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy tổng quan tab chi tiết hoạt động thành công")
+                .data(activityService.getActivityDetailTabsSummary(id))
+                .build();
+    }
+
+    @GetMapping("/{id}/detail-tabs/donors")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getActivityDetailDonors(@PathVariable Long id,
+                                               @RequestParam(required = false, defaultValue = "1") int page,
+                                               @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách nhà hảo tâm theo hoạt động thành công")
+                .data(activityService.getActivityDetailDonors(id, page, size))
+                .build();
+    }
+
+    @GetMapping("/{id}/detail-tabs/donations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getActivityDetailDonations(@PathVariable Long id,
+                                                  @RequestParam(required = false, defaultValue = "1") int page,
+                                                  @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách quyên góp theo hoạt động thành công")
+                .data(activityService.getActivityDetailDonations(id, page, size))
+                .build();
+    }
+
     @PostMapping("/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse saveActivity(@RequestBody @Valid ActivityRequest request) {

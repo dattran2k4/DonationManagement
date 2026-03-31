@@ -82,7 +82,7 @@ const renderActivityRow = (activity) => {
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
         <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">#${activity.id}</td>
         <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-text-main dark:text-white">${activity.name}</div>
+            <a href="/admin/activities/${activity.id}" class="text-sm font-medium text-text-main dark:text-white hover:text-primary transition-colors">${activity.name}</a>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm text-text-main dark:text-gray-300">${activity.event?.name || 'Không thuộc sự kiện'}</div>
@@ -120,6 +120,9 @@ const renderActivityRow = (activity) => {
         ${canManageActivities ? `
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                 <div class="flex items-center justify-center">
+                    <a href="/admin/activities/${activity.id}" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Chi tiết">
+                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                    </a>
                     <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Cập nhật">
                         <span class="material-symbols-outlined text-[20px]">edit</span>
                     </button>

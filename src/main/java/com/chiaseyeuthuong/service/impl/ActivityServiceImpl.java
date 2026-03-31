@@ -3,15 +3,20 @@ package com.chiaseyeuthuong.service.impl;
 import com.chiaseyeuthuong.common.EActivityStatus;
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.dto.request.ActivityRequest;
+import com.chiaseyeuthuong.dto.response.ActivityDetailTabsSummaryResponse;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
+import com.chiaseyeuthuong.dto.response.DonationResponse;
+import com.chiaseyeuthuong.dto.response.DonorResponse;
 import com.chiaseyeuthuong.dto.response.EventResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.model.Activity;
 import com.chiaseyeuthuong.model.Event;
 import com.chiaseyeuthuong.repository.ActivityRepository;
+import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.service.ActivityService;
+import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.ActivitySpecification;
 import com.chiaseyeuthuong.service.DonorService;
 import com.github.slugify.Slugify;
@@ -45,7 +50,9 @@ public class ActivityServiceImpl implements ActivityService {
 
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
+    private final DonationRepository donationRepository;
     private final DonorService donorService;
+    private final DonationService donationService;
 
     @Override
     public PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft) {
@@ -200,6 +207,27 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public long getActivityCount() {
         return activityRepository.count();
+    }
+
+    @Override
+    public ActivityDetailTabsSummaryResponse getActivityDetailTabsSummary(Long activityId) {
+        getActivity(activityId);
+        return ActivityDetailTabsSummaryResponse.builder()
+                .donorCount(donorService.getDorCountByObjectId(activityId, EEntityType.ACTIVITY))
+                .donationCount(donationRepository.countByActivityId(activityId))
+                .build();
+    }
+
+    @Override
+    public PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size) {
+        getActivity(activityId);
+        return donorService.getDonorsByActivityId(activityId, page, size);
+    }
+
+    @Override
+    public PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size) {
+        getActivity(activityId);
+        return donationService.getDonationsByActivityId(activityId, page, size);
     }
 
     private ActivityResponse toResponse(Activity activity) {

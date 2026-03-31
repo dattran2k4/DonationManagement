@@ -42,4 +42,6 @@ public interface DonationService {
     List<DonationResponse> getRecentDonationsByDonorId(Long donorId, int limit);
 
     PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size);
+
+    PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size);
 }
