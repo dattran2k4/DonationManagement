@@ -16,6 +16,7 @@ import com.chiaseyeuthuong.repository.ActivityRepository;
 import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.service.ActivityService;
+import com.chiaseyeuthuong.service.AuditLogService;
 import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.ActivitySpecification;
 import com.chiaseyeuthuong.service.DonorService;
@@ -38,7 +39,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.chiaseyeuthuong.service.impl.EventServiceImpl.UPLOAD_DIR;
@@ -53,6 +56,7 @@ public class ActivityServiceImpl implements ActivityService {
     private final DonationRepository donationRepository;
     private final DonorService donorService;
     private final DonationService donationService;
+    private final AuditLogService auditLogService;
 
     @Override
     public PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft) {
@@ -112,7 +116,9 @@ public class ActivityServiceImpl implements ActivityService {
 
         Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
-        Activity activity = (request.getId() != null) ? getActivity(request.getId()) : new Activity();
+        boolean isCreate = request.getId() == null;
+        Activity activity = isCreate ? new Activity() : getActivity(request.getId());
+        Map<String, Object> beforeValues = isCreate ? Map.of() : buildActivityAuditMap(activity);
 
         activity.setEvent(event);
         activity.setName(request.getName());
@@ -133,6 +139,12 @@ public class ActivityServiceImpl implements ActivityService {
         Activity result = activityRepository.save(activity);
 
         log.info("Saved activity {} ", result.getId());
+        Map<String, Object> afterValues = buildActivityAuditMap(result);
+        if (isCreate) {
+            auditLogService.logCreate(EEntityType.ACTIVITY, result.getId(), "Tạo mới hoạt động", afterValues);
+        } else {
+            auditLogService.logUpdate(EEntityType.ACTIVITY, result.getId(), "Cập nhật hoạt động", beforeValues, afterValues);
+        }
     }
 
     @Override
@@ -239,5 +251,21 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setEvent(eventResponse);
         activityResponse.setEventId(activity.getEvent().getId());
         return activityResponse;
+    }
+
+    private Map<String, Object> buildActivityAuditMap(Activity activity) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("eventId", activity.getEvent() != null ? activity.getEvent().getId() : null);
+        values.put("name", activity.getName());
+        values.put("slug", activity.getSlug());
+        values.put("status", activity.getStatus() != null ? activity.getStatus().name() : null);
+        values.put("shortDescription", activity.getShortDescription());
+        values.put("location", activity.getLocation());
+        values.put("startDate", activity.getStartDate());
+        values.put("endDate", activity.getEndDate());
+        values.put("targetAmount", activity.getTargetAmount());
+        values.put("currentAmount", activity.getCurrentAmount());
+        values.put("thumbnailUrl", activity.getThumbnailUrl());
+        return values;
     }
 }

@@ -194,6 +194,22 @@ CREATE TABLE `donation_transactions` (
                                          CONSTRAINT `fk_donation_transactions_donations` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- donation.audit_logs definition
+CREATE TABLE `audit_logs` (
+                              `id` bigint NOT NULL AUTO_INCREMENT,
+                              `action` enum('CREATE','UPDATE','DELETE','STATUS_CHANGE') NOT NULL,
+                              `entity_type` enum('DONATION','EVENT','ACTIVITY') NOT NULL,
+                              `entity_id` bigint NOT NULL,
+                              `actor_username` varchar(255) DEFAULT NULL,
+                              `actor_role` varchar(100) DEFAULT NULL,
+                              `summary` varchar(500) DEFAULT NULL,
+                              `changes_json` text,
+                              `ip_address` varchar(100) DEFAULT NULL,
+                              `user_agent` varchar(500) DEFAULT NULL,
+                              `created_at` datetime(6) DEFAULT NULL,
+                              PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 1) users (6 dòng)
 INSERT INTO users (id, created_at, updated_at, email, full_name, password, phone, role, username) VALUES
                                                                                                        (1, '2026-02-01 08:10:00.000000', '2026-02-20 10:00:00.000000', 'admin@gms.local',    'Quản trị hệ thống', '$2a$10$s3go5e.GYivSMmrJXG6jceddjfSAbg6O832Sip8XIVNRRLIjXNP6G', '0905000001', 'ADMIN',      'admin'),
