@@ -19,3 +19,39 @@
 body {
     font-family: Inter, sans-serif;
 }
+
+/* CKEditor content readability and list marker fix */
+.ck-content,
+.prose.ck-content {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.ck-content ul,
+.prose.ck-content ul {
+    list-style: disc;
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.ck-content ol,
+.prose.ck-content ol {
+    list-style: decimal;
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.ck-content li,
+.prose.ck-content li {
+    margin: 0.25rem 0;
+}
+
+.ck-content ul ul,
+.prose.ck-content ul ul {
+    list-style: circle;
+}
+
+.ck-content ol ol,
+.prose.ck-content ol ol {
+    list-style: lower-alpha;
+}
