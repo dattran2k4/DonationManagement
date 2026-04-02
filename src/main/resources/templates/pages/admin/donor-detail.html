@@ -50,6 +50,11 @@
                         class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Lịch sử quyên góp
                 </button>
+                <button id="tabAuditBtn" data-tab="audit" type="button"
+                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+                    Lịch sử thao tác
+                    <span id="tabAuditCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                </button>
             </div>
         </div>
 
@@ -154,6 +159,27 @@
                 </table>
             </div>
             <div id="donorDonationPagination"></div>
+        </div>
+
+        <div id="tabAuditPanel" class="hidden pt-2">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Thời gian</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Người thao tác</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Hành động</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody id="donorAuditTableBody" class="divide-y divide-slate-100">
+                    <tr>
+                        <td class="px-6 py-8 text-center text-slate-500" colspan="4">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="donorAuditPagination"></div>
         </div>
     </section>
 </div>

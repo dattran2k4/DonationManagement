@@ -25,15 +25,15 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-3 text-sm">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-semibold">1</span>
-            <span class="text-slate-700">Nhập email</span>
+        <div class="flex items-center gap-3 text-sm" id="lookupSteps">
+            <span id="stepCircle1" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-semibold">1</span>
+            <span id="stepLabel1" class="text-slate-700">Nhập email</span>
             <span class="text-slate-300">-</span>
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">2</span>
-            <span class="text-slate-500">Nhập mã xác thực</span>
+            <span id="stepCircle2" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">2</span>
+            <span id="stepLabel2" class="text-slate-500">Nhập mã xác thực</span>
             <span class="text-slate-300">-</span>
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">3</span>
-            <span class="text-slate-500">Xem lịch sử</span>
+            <span id="stepCircle3" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-semibold">3</span>
+            <span id="stepLabel3" class="text-slate-500">Xem lịch sử</span>
         </div>
 
         <form id="emailLookupForm" class="space-y-4">
@@ -115,11 +115,13 @@
         <div id="emptyDonationHistory" class="hidden mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600 text-sm">
             Chưa có dữ liệu quyên góp cho email này.
         </div>
+
+        <div id="lookupPagination"></div>
     </section>
 </div>
 
 <th:block layout:fragment="scripts">
-    <script th:src="@{/js/pages/web/donationLookup.js}"></script>
+    <script type="module" th:src="@{/js/pages/web/donationLookup.js}"></script>
 </th:block>
 </body>
 </html>

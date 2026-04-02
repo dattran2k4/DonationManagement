@@ -27,6 +27,8 @@ public interface DonorService {
 
     PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size);
 
+    PageResponse<DonorDonationHistoryResponse> getDonorDonationsByEmail(String email, String code, int page, int size);
+
     PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size);
 
     PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size);
@@ -36,4 +38,6 @@ public interface DonorService {
     Integer getConfirmedDonationCount(Long donorId, EDonationStatus status);
 
     BigDecimal getConfirmedDonationTotalAmount(Long donorId, EDonationStatus status);
+
+    void sendLookupCodeIfEmailExists(String email);
 }

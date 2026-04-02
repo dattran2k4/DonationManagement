@@ -18,6 +18,7 @@ import com.chiaseyeuthuong.repository.ActivityRepository;
 import com.chiaseyeuthuong.repository.CategoryRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.repository.DonationRepository;
+import com.chiaseyeuthuong.service.AuditLogService;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.DonorService;
@@ -45,7 +46,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -61,6 +65,7 @@ public class EventServiceImpl implements EventService {
     private final DonorService donorService;
     private final ActivityService activityService;
     private final DonationService donationService;
+    private final AuditLogService auditLogService;
 
     public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
@@ -96,9 +101,11 @@ public class EventServiceImpl implements EventService {
     public long saveEvent(EventRequest request) {
         log.info("Processing saving event: ");
         validateEventSchedule(request);
-        Event event = (request.getId() != null) ? findEventById(request.getId()) : new Event();
+        boolean isCreate = request.getId() == null;
+        Event event = isCreate ? new Event() : findEventById(request.getId());
+        Map<String, Object> beforeValues = isCreate ? Map.of() : buildEventAuditMap(event);
 
-        if (request.getId() != null && EEventStatus.COMPLETED.equals(event.getStatus())) {
+        if (!isCreate && EEventStatus.COMPLETED.equals(event.getStatus())) {
             throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
         }
 
@@ -112,6 +119,13 @@ public class EventServiceImpl implements EventService {
 
         Event result = eventRepository.save(event);
         log.info("Saved event: {} ", result.getId());
+
+        Map<String, Object> afterValues = buildEventAuditMap(result);
+        if (isCreate) {
+            auditLogService.logCreate(EEntityType.EVENT, result.getId(), "Tạo mới sự kiện", afterValues);
+        } else {
+            auditLogService.logUpdate(EEntityType.EVENT, result.getId(), "Cập nhật sự kiện", beforeValues, afterValues);
+        }
 
         return result.getId();
     }
@@ -186,6 +200,7 @@ public class EventServiceImpl implements EventService {
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(EEventStatus status, Long id) {
         Event event = findEventById(id);
+        EEventStatus oldStatus = event.getStatus();
 
         if (EEventStatus.COMPLETED.equals(event.getStatus())) {
             throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
@@ -199,6 +214,15 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.save(event);
         log.info("Updated status event {} to: {} ", event.getId(), status);
+        if (!Objects.equals(oldStatus, status)) {
+            auditLogService.logStatusChange(
+                    EEntityType.EVENT,
+                    event.getId(),
+                    "Cập nhật trạng thái sự kiện",
+                    oldStatus != null ? oldStatus.name() : null,
+                    status != null ? status.name() : null
+            );
+        }
     }
 
     @Override
@@ -313,5 +337,21 @@ public class EventServiceImpl implements EventService {
         eventResponse.setActivities(activities);
 
         return eventResponse;
+    }
+
+    private Map<String, Object> buildEventAuditMap(Event event) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("name", event.getName());
+        values.put("slug", event.getSlug());
+        values.put("categoryId", event.getCategory() != null ? event.getCategory().getId() : null);
+        values.put("status", event.getStatus() != null ? event.getStatus().name() : null);
+        values.put("shortDescription", event.getShortDescription());
+        values.put("location", event.getLocation());
+        values.put("startDate", event.getStartDate());
+        values.put("endDate", event.getEndDate());
+        values.put("targetAmount", event.getTargetAmount());
+        values.put("currentAmount", event.getCurrentAmount());
+        values.put("thumbnailUrl", event.getThumbnailUrl());
+        return values;
     }
 }

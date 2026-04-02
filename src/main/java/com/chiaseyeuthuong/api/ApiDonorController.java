@@ -1,6 +1,8 @@
 package com.chiaseyeuthuong.api;
 
 import com.chiaseyeuthuong.common.EDonorType;
+import com.chiaseyeuthuong.dto.request.DonorLookupDonationRequest;
+import com.chiaseyeuthuong.dto.request.DonorLookupRequest;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
 import com.chiaseyeuthuong.dto.request.OrganizeDonorRequest;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
@@ -62,6 +64,26 @@ public class ApiDonorController {
                 .status(200)
                 .message("Get donor donation history successfully")
                 .data(donorService.getDonorDonations(id, page, size))
+                .build();
+    }
+
+    @PostMapping("/lookup/send-code")
+    public ApiResponse sendLookupCode(@Valid @RequestBody DonorLookupRequest request) {
+        donorService.sendLookupCodeIfEmailExists(request.getEmail());
+        return ApiResponse.builder()
+                .status(200)
+                .message("Nếu email tồn tại trong hệ thống, mã xác nhận đã được gửi.")
+                .build();
+    }
+
+    @PostMapping("/lookup/donations")
+    public ApiResponse getLookupDonations(@Valid @RequestBody DonorLookupDonationRequest request,
+                                          @RequestParam(required = false, defaultValue = "1") int page,
+                                          @RequestParam(required = false, defaultValue = "10") int size) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy lịch sử quyên góp thành công")
+                .data(donorService.getDonorDonationsByEmail(request.getEmail(), request.getCode(), page, size))
                 .build();
     }
 

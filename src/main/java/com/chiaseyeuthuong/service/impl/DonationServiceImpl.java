@@ -9,6 +9,7 @@ import com.chiaseyeuthuong.exception.InvalidDataException;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
 import com.chiaseyeuthuong.model.*;
 import com.chiaseyeuthuong.repository.*;
+import com.chiaseyeuthuong.service.AuditLogService;
 import com.chiaseyeuthuong.service.DonationService;
 import com.chiaseyeuthuong.service.DonationSpecification;
 import jakarta.persistence.*;
@@ -31,6 +32,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import vn.payos.model.webhooks.WebhookData;
@@ -46,6 +49,7 @@ public class DonationServiceImpl implements DonationService {
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
     private final DonorRepository donorRepository;
+    private final AuditLogService auditLogService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -96,6 +100,12 @@ public class DonationServiceImpl implements DonationService {
         donation.setPaymentMethod(request.getPaymentMethod());
         
         Donation result = donationRepository.save(donation);
+        auditLogService.logCreate(
+                EEntityType.DONATION,
+                result.getId(),
+                "Tạo mới khoản quyên góp nội bộ",
+                buildDonationAuditMap(result)
+        );
         log.info("Donation saved from staff {}", result.getId());
         return result.getId();
     }
@@ -106,6 +116,7 @@ public class DonationServiceImpl implements DonationService {
         log.info("Processing update donation from staff for id {}", id);
 
         Donation donation = getDonation(id);
+        Map<String, Object> beforeValues = buildDonationAuditMap(donation);
 
         if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
             throw new InvalidDataException("Chỉ hỗ trợ chỉnh sửa khoản quyên góp được tạo nội bộ");
@@ -118,6 +129,13 @@ public class DonationServiceImpl implements DonationService {
         donation.setPaymentMethod(request.getPaymentMethod());
 
         Donation result = donationRepository.save(donation);
+        auditLogService.logUpdate(
+                EEntityType.DONATION,
+                result.getId(),
+                "Cập nhật khoản quyên góp nội bộ",
+                beforeValues,
+                buildDonationAuditMap(result)
+        );
         log.info("Donation updated from staff {}", result.getId());
     }
 
@@ -327,5 +345,25 @@ public class DonationServiceImpl implements DonationService {
         // Sinh chuỗi ngẫu nhiên 3 k≥ý tự (A-Z, 0-9)
         String randomPart = RandomStringUtils.randomAlphanumeric(3).toUpperCase();
         return prefix + datePart + randomPart;
+    }
+
+    private Map<String, Object> buildDonationAuditMap(Donation donation) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("amount", donation.getAmount());
+        values.put("message", donation.getMessage());
+        values.put("target", donation.getTarget() != null ? donation.getTarget().name() : null);
+        values.put("eventId", donation.getEvent() != null ? donation.getEvent().getId() : null);
+        values.put("eventName", donation.getEvent() != null ? donation.getEvent().getName() : null);
+        values.put("activityId", donation.getActivity() != null ? donation.getActivity().getId() : null);
+        values.put("activityName", donation.getActivity() != null ? donation.getActivity().getName() : null);
+        values.put("donorId", donation.getDonor() != null ? donation.getDonor().getId() : null);
+        values.put("donorName", donation.getDonor() != null ? donation.getDonor().getFullName() : null);
+        values.put("needReceipt", donation.getNeedReceipt());
+        values.put("receiptName", donation.getReceiptName());
+        values.put("receiptEmail", donation.getReceiptEmail());
+        values.put("paymentMethod", donation.getPaymentMethod() != null ? donation.getPaymentMethod().name() : null);
+        values.put("status", donation.getStatus() != null ? donation.getStatus().name() : null);
+        values.put("donationVia", donation.getDonationVia() != null ? donation.getDonationVia().name() : null);
+        return values;
     }
 }

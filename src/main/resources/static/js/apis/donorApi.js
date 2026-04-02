@@ -15,6 +15,13 @@ export const donorApi = {
         const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}/${id}/donations?${queryString}`);
     },
+    sendLookupCode: async (email) => {
+        return await apiClient.post(`${BASE_URL}/lookup/send-code`, {email});
+    },
+    getLookupDonations: async (email, code, params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.post(`${BASE_URL}/lookup/donations?${queryString}`, {email, code});
+    },
     saveIndividual: async (body) => {
         return await apiClient.post(`${BASE_URL}/individuals`, body);
     },

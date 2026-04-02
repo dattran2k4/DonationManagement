@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -53,6 +52,9 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
 
     @EntityGraph(attributePaths = {"event", "activity"})
     Page<Donation> findByDonorId(Long donorId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"event", "activity"})
+    Page<Donation> findByDonorEmailIgnoreCase(String donorEmail, Pageable pageable);
 
     @EntityGraph(attributePaths = {"donor", "event", "activity"})
     @Query("""

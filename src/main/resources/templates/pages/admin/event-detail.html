@@ -159,6 +159,11 @@
                     Quyên góp
                     <span id="tabDonationsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
                 </button>
+                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button"
+                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                    Lịch sử thao tác
+                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
             </div>
         </div>
 
@@ -259,6 +264,29 @@
                 </table>
             </div>
             <div id="eventDonationsPagination"></div>
+        </div>
+
+        <div id="tabAuditLogsPanel" class="hidden pt-2">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Thời gian</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Người thao tác</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody id="eventAuditLogsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                            Đang tải lịch sử thao tác...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="eventAuditLogsPagination"></div>
         </div>
     </section>
 </div>
