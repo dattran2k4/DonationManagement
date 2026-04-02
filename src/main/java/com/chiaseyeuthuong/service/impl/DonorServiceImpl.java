@@ -18,6 +18,7 @@ import com.chiaseyeuthuong.model.Organization;
 import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.repository.DonorRepository;
 import com.chiaseyeuthuong.service.DonorService;
+import com.chiaseyeuthuong.service.MailService;
 import com.chiaseyeuthuong.service.DonorSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ public class DonorServiceImpl implements DonorService {
 
     private final DonorRepository donorRepository;
     private final DonationRepository donationRepository;
+    private final MailService mailService;
 
     private static final String DONOR_NOT_FOUND_MESSAGE = "Không tìm thấy nhà hảo tâm";
 
@@ -208,6 +210,35 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
+    public PageResponse<DonorDonationHistoryResponse> getDonorDonationsByEmail(String email, String code, int page, int size) {
+        String normalizedEmail = normalizeEmail(email);
+        if (!StringUtils.hasText(normalizedEmail)) {
+            throw new InvalidDataException("Email không hợp lệ");
+        }
+
+        if (!mailService.verifyLookupCode(normalizedEmail, code)) {
+            throw new InvalidDataException("Mã xác thực không hợp lệ hoặc đã hết hạn");
+        }
+
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        int safeSize = size > 0 ? size : 10;
+        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Donation> donationPage = donationRepository.findByDonorEmailIgnoreCase(normalizedEmail, pageRequest);
+
+        List<DonorDonationHistoryResponse> data = donationPage.stream()
+                .map(this::toDonorDonationHistoryResponse)
+                .toList();
+
+        return PageResponse.<DonorDonationHistoryResponse>builder()
+                .page(pageNumber + 1)
+                .pageSize(safeSize)
+                .totalItems(donationPage.getTotalElements())
+                .totalPages(donationPage.getTotalPages())
+                .data(data)
+                .build();
+    }
+
+    @Override
     public PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size) {
         int pageNumber = (page > 0) ? page - 1 : 0;
         int safeSize = size > 0 ? size : 10;
@@ -269,6 +300,13 @@ public class DonorServiceImpl implements DonorService {
     @Override
     public BigDecimal getConfirmedDonationTotalAmount(Long donorId, EDonationStatus status) {
         return donationRepository.sumAmountByDonorIdAndStatus(donorId, EDonationStatus.CONFIRMED);
+    }
+
+    @Override
+    public void sendLookupCodeIfEmailExists(String email) {
+        log.info("Sending lookup code to email: {}", email);
+
+        mailService.sendVerificationCodeMailAsync(normalizeEmail(email));
     }
 
     private Donor resolveDonor(String phone, String email) {
@@ -333,16 +371,20 @@ public class DonorServiceImpl implements DonorService {
         Comparator<String> textComparator = Comparator.nullsLast(getVietnameseCollator());
         Comparator<DonorResponse> baseComparator = switch (normalizedSortBy) {
             case "name" -> Comparator.comparing(this::getSortableDonorName, textComparator);
-            case "type" -> Comparator.comparing(donor -> donor.getType() != null ? donor.getType().name() : null, textComparator);
+            case "type" ->
+                    Comparator.comparing(donor -> donor.getType() != null ? donor.getType().name() : null, textComparator);
             case "contact" -> Comparator.comparing(this::getSortableContact, textComparator);
-            case "createdAt" -> Comparator.comparing(DonorResponse::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "numberOfDonations" -> Comparator.comparing(donor -> donor.getNumberOfDonations() != null ? donor.getNumberOfDonations() : 0);
-            case "totalDonationAmount" -> Comparator.comparing(donor -> donor.getTotalDonationAmount() != null ? donor.getTotalDonationAmount() : BigDecimal.ZERO);
+            case "createdAt" ->
+                    Comparator.comparing(DonorResponse::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "numberOfDonations" ->
+                    Comparator.comparing(donor -> donor.getNumberOfDonations() != null ? donor.getNumberOfDonations() : 0);
+            case "totalDonationAmount" ->
+                    Comparator.comparing(donor -> donor.getTotalDonationAmount() != null ? donor.getTotalDonationAmount() : BigDecimal.ZERO);
             default -> Comparator.comparing(DonorResponse::getId, Comparator.nullsLast(Comparator.naturalOrder()));
         };
 
         Comparator<Long> idComparator = descending
-                ? Comparator.nullsLast(Comparator.<Long>reverseOrder())
+                ? Comparator.nullsLast(Comparator.reverseOrder())
                 : Comparator.nullsLast(Comparator.<Long>naturalOrder());
         Comparator<DonorResponse> tieBreaker = Comparator.comparing(DonorResponse::getId, idComparator);
 
@@ -353,7 +395,8 @@ public class DonorServiceImpl implements DonorService {
         if (!StringUtils.hasText(sortBy)) return "id";
 
         return switch (sortBy.trim()) {
-            case "name", "type", "contact", "createdAt", "numberOfDonations", "totalDonationAmount", "id" -> sortBy.trim();
+            case "name", "type", "contact", "createdAt", "numberOfDonations", "totalDonationAmount", "id" ->
+                    sortBy.trim();
             default -> "id";
         };
     }
@@ -376,7 +419,7 @@ public class DonorServiceImpl implements DonorService {
         if (donor == null) return null;
         String phone = donor.getPhone() != null ? donor.getPhone() : "";
         String email = donor.getEmail() != null ? donor.getEmail() : "";
-        String combined = (phone + " " + email).trim();
+        String combined = ("%s %s".formatted(phone, email)).trim();
         return combined.isEmpty() ? null : combined;
     }
 
@@ -412,10 +455,10 @@ public class DonorServiceImpl implements DonorService {
 
         if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
             response.setTargetTitle(donation.getEvent().getName());
-            response.setTargetUrl(donation.getEvent().getSlug() != null ? "/events/" + donation.getEvent().getSlug() : null);
+            response.setTargetUrl(donation.getEvent().getSlug() != null ? "/events/%s".formatted(donation.getEvent().getSlug()) : null);
         } else if (EDonationTarget.ACTIVITY.equals(donation.getTarget()) && donation.getActivity() != null) {
             response.setTargetTitle(donation.getActivity().getName());
-            response.setTargetUrl(donation.getActivity().getSlug() != null ? "/activities/" + donation.getActivity().getSlug() : null);
+            response.setTargetUrl(donation.getActivity().getSlug() != null ? "/activities/%s".formatted(donation.getActivity().getSlug()) : null);
         } else {
             response.setTargetTitle("Không gắn mục tiêu");
             response.setTargetUrl(null);
