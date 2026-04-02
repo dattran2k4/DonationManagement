@@ -83,129 +83,175 @@
         </div>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div class="space-y-6">
-            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nhà hảo tâm</h2>
-                </div>
-                <div class="grid gap-5 p-6 md:grid-cols-2">
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Tên nhà hảo tâm</p>
-                        <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorName ?: '---'}">---</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Số điện thoại</p>
-                        <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorPhone ?: '---'}">---</p>
-                    </div>
-                    <div class="space-y-1 md:col-span-2" th:if="${donation.donorId != null}">
-                        <a th:href="@{/admin/donors/{id}(id=${donation.donorId})}"
-                           class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
-                            <span class="material-symbols-outlined text-[18px]">arrow_outward</span>
-                            Xem hồ sơ nhà hảo tâm
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Thông tin quyên góp</h2>
-                </div>
-                <div class="grid gap-5 p-6 md:grid-cols-2">
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Phương thức thanh toán</p>
-                        <p class="font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.paymentMethod != null ? donation.paymentMethod.value : '---'}">
-                            ---
-                        </p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Cần biên lai</p>
-                        <p class="font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.needReceipt == true ? 'Có' : 'Không'}">
-                            Không
-                        </p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Tên trên biên lai</p>
-                        <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.receiptName ?: '---'}">---</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Email nhận biên lai</p>
-                        <p class="font-semibold break-all text-slate-900 dark:text-white" th:text="${donation.receiptEmail ?: '---'}">---</p>
-                    </div>
-                    <div class="space-y-1 md:col-span-2">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Lời nhắn / Ghi chú</p>
-                        <p class="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                           th:text="${(donation.message != null && !#strings.isEmpty(donation.message)) ? donation.message : 'Chưa có lời nhắn.'}">
-                            Chưa có lời nhắn.
-                        </p>
-                    </div>
-                </div>
-            </section>
+    <section id="donationDetailTabsSection"
+             th:attr="data-donation-id=${donation.id}"
+             class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 px-6 pt-5 dark:border-slate-800">
+            <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
+                <button id="tabInfoBtn" data-tab="info" type="button"
+                        class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">
+                    Thông tin chung
+                </button>
+                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button"
+                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                    Lịch sử thao tác
+                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
+            </div>
         </div>
 
-        <div class="space-y-6">
-            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Mốc thời gian</h2>
-                </div>
-                <div class="space-y-4 p-6">
-                    <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Ngày tạo</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.createdAt != null ? #temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                            ---
-                        </p>
-                    </div>
-                    <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Ngày quyên góp</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                            ---
-                        </p>
-                    </div>
-                    <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Ngày xác nhận</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.confirmedAt != null ? #temporals.format(donation.confirmedAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                            ---
-                        </p>
-                    </div>
-                </div>
-            </section>
+        <div id="tabInfoPanel" class="p-6">
+            <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                <div class="space-y-6">
+                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nhà hảo tâm</h2>
+                        </div>
+                        <div class="grid gap-5 p-6 md:grid-cols-2">
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Tên nhà hảo tâm</p>
+                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorName ?: '---'}">---</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Số điện thoại</p>
+                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorPhone ?: '---'}">---</p>
+                            </div>
+                            <div class="space-y-1 md:col-span-2" th:if="${donation.donorId != null}">
+                                <a th:href="@{/admin/donors/{id}(id=${donation.donorId})}"
+                                   class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+                                    <span class="material-symbols-outlined text-[18px]">arrow_outward</span>
+                                    Xem hồ sơ nhà hảo tâm
+                                </a>
+                            </div>
+                        </div>
+                    </section>
 
-            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nguồn gốc xử lý</h2>
+                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Thông tin quyên góp</h2>
+                        </div>
+                        <div class="grid gap-5 p-6 md:grid-cols-2">
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Phương thức thanh toán</p>
+                                <p class="font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.paymentMethod != null ? donation.paymentMethod.value : '---'}">
+                                    ---
+                                </p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Cần biên lai</p>
+                                <p class="font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.needReceipt == true ? 'Có' : 'Không'}">
+                                    Không
+                                </p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Tên trên biên lai</p>
+                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.receiptName ?: '---'}">---</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Email nhận biên lai</p>
+                                <p class="font-semibold break-all text-slate-900 dark:text-white" th:text="${donation.receiptEmail ?: '---'}">---</p>
+                            </div>
+                            <div class="space-y-1 md:col-span-2">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Lời nhắn / Ghi chú</p>
+                                <p class="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                   th:text="${(donation.message != null && !#strings.isEmpty(donation.message)) ? donation.message : 'Chưa có lời nhắn.'}">
+                                    Chưa có lời nhắn.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                <div class="space-y-4 p-6">
-                    <div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Tạo bởi</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.createdBy != null && donation.createdBy.fullName != null ? donation.createdBy.fullName : 'Hệ thống / Website'}">
-                            Hệ thống / Website
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Người xác nhận</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.confirmedBy != null && donation.confirmedBy.fullName != null ? donation.confirmedBy.fullName : '---'}">
-                            ---
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Yêu cầu duyệt</p>
-                        <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                           th:text="${donation.approvalRequired == true ? 'Có' : 'Không'}">
-                            Không
-                        </p>
-                    </div>
+
+                <div class="space-y-6">
+                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Mốc thời gian</h2>
+                        </div>
+                        <div class="space-y-4 p-6">
+                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày tạo</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.createdAt != null ? #temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">
+                                    ---
+                                </p>
+                            </div>
+                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày quyên góp</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'dd/MM/yyyy HH:mm') : '---'}">
+                                    ---
+                                </p>
+                            </div>
+                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày xác nhận</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.confirmedAt != null ? #temporals.format(donation.confirmedAt, 'dd/MM/yyyy HH:mm') : '---'}">
+                                    ---
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nguồn gốc xử lý</h2>
+                        </div>
+                        <div class="space-y-4 p-6">
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Tạo bởi</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.createdBy != null && donation.createdBy.fullName != null ? donation.createdBy.fullName : 'Hệ thống / Website'}">
+                                    Hệ thống / Website
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Người xác nhận</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.confirmedBy != null && donation.confirmedBy.fullName != null ? donation.confirmedBy.fullName : '---'}">
+                                    ---
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Yêu cầu duyệt</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
+                                   th:text="${donation.approvalRequired == true ? 'Có' : 'Không'}">
+                                    Không
+                                </p>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-            </section>
+            </div>
         </div>
-    </div>
+
+        <div id="tabAuditLogsPanel" class="hidden pt-2">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Thời gian</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Người thao tác</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody id="donationAuditLogsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                            Đang tải lịch sử thao tác...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="donationAuditLogsPagination"></div>
+        </div>
+    </section>
 </div>
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/admin/donationDetail.js}"></script>
+</th:block>
 </body>
 </html>
