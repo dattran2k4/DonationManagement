@@ -17,6 +17,7 @@ import com.chiaseyeuthuong.model.Donor;
 import com.chiaseyeuthuong.model.Organization;
 import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.repository.DonorRepository;
+import com.chiaseyeuthuong.service.AuditLogService;
 import com.chiaseyeuthuong.service.DonorService;
 import com.chiaseyeuthuong.service.MailService;
 import com.chiaseyeuthuong.service.DonorSpecification;
@@ -34,8 +35,10 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.text.Collator;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -46,6 +49,7 @@ public class DonorServiceImpl implements DonorService {
     private final DonorRepository donorRepository;
     private final DonationRepository donationRepository;
     private final MailService mailService;
+    private final AuditLogService auditLogService;
 
     private static final String DONOR_NOT_FOUND_MESSAGE = "Không tìm thấy nhà hảo tâm";
 
@@ -57,17 +61,13 @@ public class DonorServiceImpl implements DonorService {
         log.info("Processing saving donor for donor phone: {}", phone);
 
         Donor donor = resolveDonor(phone, email);
-        donor.setFullName(request.getFullName());
-        donor.setPhone(phone);
-        donor.setReferralSource(request.getReferralSource());
-        donor.setDisplayName(request.getDisplayName());
-        donor.setEmail(email);
-        donor.setOrganization(null);
-        donor.setNote(request.getNote());
-        donor.setType(EDonorType.INDIVIDUAL);
+
+        toEntity(donor, request, phone, email);
 
         Donor newDonor = donorRepository.save(donor);
         log.info("Individual Donor saved successfully with id={}", newDonor.getId());
+        Map<String, Object> afterValues = buildDonorAuditMap(newDonor);
+        auditLogService.logCreate(EEntityType.DONOR, newDonor.getId(), "Tạo mới nhà hảo tâm cá nhân", afterValues);
 
         return newDonor.getId();
     }
@@ -79,24 +79,14 @@ public class DonorServiceImpl implements DonorService {
         String email = normalizeEmail(request.getEmail());
 
         Donor donor = resolveDonor(phone, email);
-        Organization organization = (donor.getOrganization() != null) ? donor.getOrganization() : new Organization();
 
-        donor.setType(EDonorType.ORGANIZATION);
-        donor.setFullName(request.getName());
-        donor.setPhone(phone);
-        donor.setDisplayName(request.getName());
-        donor.setReferralSource(request.getReferralSource());
-        donor.setEmail(email);
-        donor.setNote(request.getNote());
-
-        organization.setName(request.getName());
-        organization.setTaxCode(request.getTaxCode());
-        organization.setRepresentative(request.getRepresentative());
-        organization.setBillingAddress(request.getBillingAddress());
-        donor.setOrganization(organization);
+        toEntity(donor, request, phone, email);
 
         Donor result = donorRepository.save(donor);
         log.info("Organization Donor saved successfully with id={}", result.getId());
+        Map<String, Object> afterValues = buildDonorAuditMap(result);
+        auditLogService.logCreate(EEntityType.DONOR, result.getId(), "Tạo mới nhà hảo tâm tổ chức", afterValues);
+
         return result.getId();
     }
 
@@ -109,18 +99,19 @@ public class DonorServiceImpl implements DonorService {
         Donor donor = getExistingDonor(donorId);
         validateDonorType(donor, EDonorType.INDIVIDUAL);
         validateUniqueContactForUpdate(donorId, phone, email);
+        Map<String, Object> beforeValues = buildDonorAuditMap(donor);
 
-        donor.setType(EDonorType.INDIVIDUAL);
-        donor.setFullName(request.getFullName());
-        donor.setDisplayName(request.getDisplayName());
-        donor.setPhone(phone);
-        donor.setEmail(email);
-        donor.setReferralSource(request.getReferralSource());
-        donor.setNote(request.getNote());
-        donor.setOrganization(null);
+        toEntity(donor, request, phone, email);
 
         Donor result = donorRepository.save(donor);
         log.info("Individual Donor updated successfully with id={}", result.getId());
+        auditLogService.logUpdate(
+                EEntityType.DONOR,
+                result.getId(),
+                "Cập nhật nhà hảo tâm cá nhân",
+                beforeValues,
+                buildDonorAuditMap(result)
+        );
         return result.getId();
     }
 
@@ -133,25 +124,19 @@ public class DonorServiceImpl implements DonorService {
         Donor donor = getExistingDonor(donorId);
         validateDonorType(donor, EDonorType.ORGANIZATION);
         validateUniqueContactForUpdate(donorId, phone, email);
+        Map<String, Object> beforeValues = buildDonorAuditMap(donor);
 
-        Organization organization = donor.getOrganization() != null ? donor.getOrganization() : new Organization();
-
-        donor.setType(EDonorType.ORGANIZATION);
-        donor.setFullName(request.getName());
-        donor.setDisplayName(request.getName());
-        donor.setPhone(phone);
-        donor.setEmail(email);
-        donor.setReferralSource(request.getReferralSource());
-        donor.setNote(request.getNote());
-
-        organization.setName(request.getName());
-        organization.setTaxCode(request.getTaxCode());
-        organization.setRepresentative(request.getRepresentative());
-        organization.setBillingAddress(request.getBillingAddress());
-        donor.setOrganization(organization);
+        toEntity(donor, request, phone, email);
 
         Donor result = donorRepository.save(donor);
         log.info("Organization Donor updated successfully with id={}", result.getId());
+        auditLogService.logUpdate(
+                EEntityType.DONOR,
+                result.getId(),
+                "Cập nhật nhà hảo tâm tổ chức",
+                beforeValues,
+                buildDonorAuditMap(result)
+        );
         return result.getId();
     }
 
@@ -354,6 +339,56 @@ public class DonorServiceImpl implements DonorService {
         if (donor.getType() != expectedType) {
             throw new InvalidDataException("Loại nhà hảo tâm không khớp với biểu mẫu chỉnh sửa");
         }
+    }
+
+    private void toEntity(Donor donor, IndividualDonorRequest request, String phone, String email) {
+        donor.setType(EDonorType.INDIVIDUAL);
+        donor.setFullName(request.getFullName());
+        donor.setDisplayName(request.getDisplayName());
+        donor.setPhone(phone);
+        donor.setEmail(email);
+        donor.setReferralSource(request.getReferralSource());
+        donor.setNote(request.getNote());
+        donor.setOrganization(null);
+    }
+
+    private void toEntity(Donor donor, OrganizeDonorRequest request, String phone, String email) {
+        donor.setType(EDonorType.ORGANIZATION);
+        donor.setFullName(request.getName());
+        donor.setDisplayName(request.getName());
+        donor.setPhone(phone);
+        donor.setEmail(email);
+        donor.setReferralSource(request.getReferralSource());
+        donor.setNote(request.getNote());
+
+        Organization organization = toEntity(donor.getOrganization(), request);
+        donor.setOrganization(organization);
+    }
+
+    private Organization toEntity(Organization organization, OrganizeDonorRequest request) {
+        Organization target = organization != null ? organization : new Organization();
+        target.setName(request.getName());
+        target.setTaxCode(request.getTaxCode());
+        target.setRepresentative(request.getRepresentative());
+        target.setBillingAddress(request.getBillingAddress());
+        return target;
+    }
+
+    private Map<String, Object> buildDonorAuditMap(Donor donor) {
+        Organization org = donor.getOrganization();
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("type", donor.getType() != null ? donor.getType().name() : null);
+        values.put("fullName", donor.getFullName());
+        values.put("displayName", donor.getDisplayName());
+        values.put("phone", donor.getPhone());
+        values.put("email", donor.getEmail());
+        values.put("referralSource", donor.getReferralSource());
+        values.put("note", donor.getNote());
+        values.put("organizationName", org != null ? org.getName() : null);
+        values.put("organizationTaxCode", org != null ? org.getTaxCode() : null);
+        values.put("organizationRepresentative", org != null ? org.getRepresentative() : null);
+        values.put("organizationBillingAddress", org != null ? org.getBillingAddress() : null);
+        return values;
     }
 
     private String normalizePhone(String phone) {
