@@ -27,9 +27,9 @@ public class DonationConfirmedEventListener {
     @EventListener
     @Transactional(rollbackFor = Exception.class)
     public void onDonationConfirmed(DonationConfirmedEvent event) {
-        Donation donation = donationRepository.findById(event.getDonationId()).orElseThrow(() -> new IllegalStateException("Donation not found when handling DonationConfirmedEvent"));
+        Donation donation = donationRepository.findById(event.donationId()).orElseThrow(() -> new IllegalStateException("Donation not found when handling DonationConfirmedEvent"));
 
-        transactionService.createTransactionFromPayOS(event.getWebhookData(), donation);
+        transactionService.createTransactionFromPayOS(event.webhookData(), donation);
 
         BigDecimal amount = donation.getAmount();
         if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
