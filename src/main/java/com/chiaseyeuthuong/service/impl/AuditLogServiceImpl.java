@@ -73,13 +73,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
-    public PageResponse<AuditLogResponse> getAuditLogs(int page, int size, EEntityType entityType, EAuditAction action,
+    public PageResponse<AuditLogResponse> getAuditLogs(int page, int size, EEntityType entityType, Long entityId, EAuditAction action,
                                                        String actorUsername, String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
         int pageNumber = (page > 0) ? page - 1 : 0;
         int safeSize = size > 0 ? size : 20;
         Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Specification<AuditLog> specification = AuditLogSpecification.filter(entityType, action, actorUsername, keyword, fromDate, toDate);
+        Specification<AuditLog> specification = AuditLogSpecification.filter(entityType, entityId, action, actorUsername, keyword, fromDate, toDate);
         Page<AuditLog> auditLogs = auditLogRepository.findAll(specification, pageable);
 
         List<AuditLogResponse> data = auditLogs.getContent().stream()

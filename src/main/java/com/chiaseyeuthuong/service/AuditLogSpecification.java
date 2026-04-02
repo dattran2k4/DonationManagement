@@ -13,13 +13,17 @@ public class AuditLogSpecification {
     private AuditLogSpecification() {
     }
 
-    public static Specification<AuditLog> filter(EEntityType entityType, EAuditAction action, String actorUsername,
+    public static Specification<AuditLog> filter(EEntityType entityType, Long entityId, EAuditAction action, String actorUsername,
                                                  String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
         return (root, query, criteriaBuilder) -> {
             var predicates = criteriaBuilder.conjunction();
 
             if (entityType != null) {
                 predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("entityType"), entityType));
+            }
+
+            if (entityId != null) {
+                predicates = criteriaBuilder.and(predicates, criteriaBuilder.equal(root.get("entityId"), entityId));
             }
 
             if (action != null) {

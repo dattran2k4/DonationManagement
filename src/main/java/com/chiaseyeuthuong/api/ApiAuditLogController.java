@@ -26,6 +26,7 @@ public class ApiAuditLogController {
     public ApiResponse getAuditLogs(@RequestParam(required = false, defaultValue = "1") int page,
                                     @RequestParam(required = false, defaultValue = "20") int size,
                                     @RequestParam(required = false) EEntityType entityType,
+                                    @RequestParam(required = false) Long entityId,
                                     @RequestParam(required = false) EAuditAction action,
                                     @RequestParam(required = false) String actorUsername,
                                     @RequestParam(required = false) String keyword,
@@ -34,7 +35,7 @@ public class ApiAuditLogController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách audit log thành công")
-                .data(auditLogService.getAuditLogs(page, size, entityType, action, actorUsername, keyword, fromDate, toDate))
+                .data(auditLogService.getAuditLogs(page, size, entityType, entityId, action, actorUsername, keyword, fromDate, toDate))
                 .build();
     }
 }
