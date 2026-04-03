@@ -47,6 +47,37 @@
                th:text="${#strings.isEmpty(event.shortDescription) ? 'Sự kiện hiện chưa có mô tả ngắn.' : event.shortDescription}">
                 Mô tả ngắn của sự kiện.
             </p>
+
+            <div class="mt-5 flex flex-wrap items-center gap-3 js-share-container"
+                 th:attr="data-share-title=${event.name}">
+                <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">Chia sẻ:</span>
+                <a data-share="facebook"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="12" fill="#1877F2"></circle>
+                        <path fill="#FFFFFF" d="M13.26 19v-6.16h2.08l.31-2.4h-2.39V8.9c0-.69.2-1.16 1.2-1.16h1.28V5.6c-.22-.03-.98-.1-1.87-.1-1.84 0-3.1 1.12-3.1 3.18v1.76H8.7v2.4h2.06V19h2.5z"></path>
+                    </svg>
+                    Facebook
+                </a>
+                <a data-share="zalo"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="#0068FF"></rect>
+                        <text x="12" y="15" text-anchor="middle" font-size="7.2" font-weight="700" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif">Zalo</text>
+                    </svg>
+                    Zalo
+                </a>
+                <button type="button"
+                        data-share="copy"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    <span class="material-symbols-outlined text-[18px]">link</span>
+                    Sao chép link
+                </button>
+            </div>
         </div>
 
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
@@ -428,6 +459,7 @@
     </script>
 
     <script type="module" th:src="@{/js/modules/donation-form.js}"></script>
+    <script type="module" th:src="@{/js/modules/share-buttons.js}"></script>
 </th:block>
 </body>
 </html>
