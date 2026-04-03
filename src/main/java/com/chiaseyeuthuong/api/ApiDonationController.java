@@ -3,6 +3,7 @@ package com.chiaseyeuthuong.api;
 import com.chiaseyeuthuong.common.EDonationStatus;
 import com.chiaseyeuthuong.common.EDonationTarget;
 import com.chiaseyeuthuong.common.EDonationType;
+import com.chiaseyeuthuong.common.EDonorWallPeriod;
 import com.chiaseyeuthuong.common.EPaymentMethod;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
@@ -61,6 +62,17 @@ public class ApiDonationController {
                 .status(200)
                 .message("Tạo đơn từ thiện thành công từ web")
                 .data(donationService.createWebDonation(request))
+                .build();
+    }
+
+    @GetMapping("/donor-wall")
+    public ApiResponse getDonorWall(@RequestParam(required = false, defaultValue = "MONTH") EDonorWallPeriod period,
+                                    @RequestParam(required = false) Integer year,
+                                    @RequestParam(required = false) Integer month) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy bảng vàng tri ân thành công")
+                .data(donationService.getDonorWall(period, year, month))
                 .build();
     }
 

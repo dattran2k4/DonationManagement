@@ -3,8 +3,10 @@ package com.chiaseyeuthuong.service;
 import com.chiaseyeuthuong.common.EDonationStatus;
 import com.chiaseyeuthuong.common.EDonationTarget;
 import com.chiaseyeuthuong.common.EDonationType;
+import com.chiaseyeuthuong.common.EDonorWallPeriod;
 import com.chiaseyeuthuong.common.EPaymentMethod;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
+import com.chiaseyeuthuong.dto.response.DonorWallResponse;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.model.Donation;
@@ -44,4 +46,6 @@ public interface DonationService {
     PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size);
 
     PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size);
+
+    DonorWallResponse getDonorWall(EDonorWallPeriod period, Integer year, Integer month);
 }

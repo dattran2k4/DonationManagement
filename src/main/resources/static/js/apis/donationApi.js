@@ -24,4 +24,8 @@ export const donationApi = {
     updateStaffDonation: async (id, data) => {
         return await apiClient.put(`${BASE_URL}/${id}/staff-update`, data);
     },
+    getDonorWall: async (params) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/donor-wall?${queryString}`);
+    },
 };

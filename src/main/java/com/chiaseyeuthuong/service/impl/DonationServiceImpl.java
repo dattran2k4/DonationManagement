@@ -2,6 +2,8 @@ package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.*;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
+import com.chiaseyeuthuong.dto.response.DonorWallItemResponse;
+import com.chiaseyeuthuong.dto.response.DonorWallResponse;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.event.DonationConfirmedEvent;
@@ -30,10 +32,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 import vn.payos.model.webhooks.WebhookData;
@@ -98,7 +102,7 @@ public class DonationServiceImpl implements DonationService {
         donation.setStatus(EDonationStatus.PENDING_APPROVED);
         donation.setCreatedBy(staff);
         donation.setPaymentMethod(request.getPaymentMethod());
-        
+
         Donation result = donationRepository.save(donation);
         auditLogService.logCreate(
                 EEntityType.DONATION,
@@ -316,6 +320,48 @@ public class DonationServiceImpl implements DonationService {
                 .build();
     }
 
+    @Override
+    public DonorWallResponse getDonorWall(EDonorWallPeriod period, Integer year, Integer month) {
+        EDonorWallPeriod safePeriod = period != null ? period : EDonorWallPeriod.MONTH;
+
+        LocalDate now = LocalDate.now();
+        int safeYear = year != null ? year : now.getYear();
+        int safeMonth = month != null ? month : now.getMonthValue();
+
+        if (safeMonth < 1 || safeMonth > 12) {
+            throw new InvalidDataException("Tháng không hợp lệ");
+        }
+
+        LocalDate fromDate;
+        LocalDate toDate;
+        int quarter;
+        if (EDonorWallPeriod.QUARTER.equals(safePeriod)) {
+            quarter = ((safeMonth - 1) / 3) + 1;
+            int firstMonthOfQuarter = (quarter - 1) * 3 + 1;
+            fromDate = LocalDate.of(safeYear, firstMonthOfQuarter, 1);
+            toDate = fromDate.plusMonths(3).minusDays(1);
+        } else {
+            quarter = ((safeMonth - 1) / 3) + 1;
+            fromDate = LocalDate.of(safeYear, safeMonth, 1);
+            toDate = fromDate.withDayOfMonth(fromDate.lengthOfMonth());
+        }
+
+        List<DonationRepository.DonorWallAggregation> aggregations = donationRepository.aggregateDonorWall(fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX));
+
+        List<DonorWallItemResponse> donors = mapDonorWallItems(aggregations);
+
+        return DonorWallResponse.builder()
+                .period(safePeriod)
+                .periodLabel(buildPeriodLabel(safePeriod, safeYear, safeMonth, quarter))
+                .year(safeYear)
+                .month(safeMonth)
+                .quarter(quarter)
+                .fromDate(fromDate)
+                .toDate(toDate)
+                .donors(donors)
+                .build();
+    }
+
     private DonationResponse toResponse(Donation donation) {
         DonationResponse response = new DonationResponse();
         BeanUtils.copyProperties(donation, response);
@@ -345,6 +391,42 @@ public class DonationServiceImpl implements DonationService {
         // Sinh chuỗi ngẫu nhiên 3 k≥ý tự (A-Z, 0-9)
         String randomPart = RandomStringUtils.randomAlphanumeric(3).toUpperCase();
         return prefix + datePart + randomPart;
+    }
+
+    private List<DonorWallItemResponse> mapDonorWallItems(List<DonationRepository.DonorWallAggregation> aggregations) {
+        List<DonorWallItemResponse> items = new ArrayList<>();
+        int rank = 1;
+        for (DonationRepository.DonorWallAggregation aggregation : aggregations) {
+            if (rank > 100) {
+                break;
+            }
+            items.add(DonorWallItemResponse.builder()
+                    .donorId(aggregation.getDonorId())
+                    .displayName(resolveDonorDisplayName(aggregation.getDisplayName(), aggregation.getFullName()))
+                    .totalAmount(aggregation.getTotalAmount())
+                    .donationCount(aggregation.getDonationCount())
+                    .rank(rank)
+                    .build());
+            rank++;
+        }
+        return items;
+    }
+
+    private String resolveDonorDisplayName(String displayName, String fullName) {
+        if (displayName != null && !displayName.isBlank()) {
+            return displayName;
+        }
+        if (fullName != null && !fullName.isBlank()) {
+            return fullName;
+        }
+        return "Nhà hảo tâm ẩn danh";
+    }
+
+    private String buildPeriodLabel(EDonorWallPeriod period, int year, int month, int quarter) {
+        if (EDonorWallPeriod.QUARTER.equals(period)) {
+            return "Quý %d/%d".formatted(quarter, year);
+        }
+        return "Tháng %02d/%d".formatted(month, year);
     }
 
     private Map<String, Object> buildDonationAuditMap(Donation donation) {

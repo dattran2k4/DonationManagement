@@ -20,4 +20,9 @@ public class DonationController {
     public String showDonationLookupPage() {
         return "pages/web/donation-lookup";
     }
+
+    @GetMapping({"/donor-wall", "/bang-vang-tri-an"})
+    public String showDonorWallPage() {
+        return "pages/web/donor-wall";
+    }
 }

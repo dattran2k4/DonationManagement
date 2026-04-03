@@ -12,12 +12,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSpecificationExecutor<Donation> {
+    interface DonorWallAggregation {
+        Long getDonorId();
+
+        String getDisplayName();
+
+        String getFullName();
+
+        BigDecimal getTotalAmount();
+
+        Long getDonationCount();
+    }
+
     boolean existsByMemoCode(String memo);
 
     Optional<Donation> findByMemoCode(String memoCode);
@@ -81,4 +94,20 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
     Page<Donation> findByActivityId(Long activityId, Pageable pageable);
 
     long countByActivityId(Long activityId);
+
+    @Query("""
+            SELECT donor.id AS donorId,
+                   MAX(donor.displayName) AS displayName,
+                   MAX(donor.fullName) AS fullName,
+                   COALESCE(SUM(donation.amount), 0) AS totalAmount,
+                   COUNT(donation.id) AS donationCount
+            FROM Donation donation
+            JOIN donation.donor donor
+            WHERE donation.status = 'CONFIRMED'
+              AND COALESCE(donation.donatedAt, donation.createdAt) >= :fromDate
+              AND COALESCE(donation.donatedAt, donation.createdAt) <= :toDate
+            GROUP BY donor.id
+            ORDER BY COALESCE(SUM(donation.amount), 0) DESC, COUNT(donation.id) DESC
+            """)
+    List<DonorWallAggregation> aggregateDonorWall(LocalDateTime fromDate, LocalDateTime toDate);
 }

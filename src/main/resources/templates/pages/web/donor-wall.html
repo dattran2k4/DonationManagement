@@ -1,0 +1,109 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/web/main-layout}"
+>
+<head>
+    <title>Bảng vàng tri ân</title>
+</head>
+<body>
+<div layout:fragment="content" class="max-w-5xl mx-auto space-y-6">
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-2 overflow-x-auto whitespace-nowrap pb-2">
+        <a th:href="@{/}" class="hover:text-primary flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">home</span> Trang chủ
+        </a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-primary font-medium">Bảng vàng tri ân</span>
+    </nav>
+
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 space-y-6">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Bảng vàng tri ân</h1>
+                <p class="text-slate-600 mt-2">
+                    Vinh danh các nhà hảo tâm theo tên hiển thị trên website trong tháng hoặc quý.
+                </p>
+            </div>
+            <div class="inline-flex items-center gap-2">
+                <button id="periodMonthBtn" type="button"
+                        class="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">
+                    Theo tháng
+                </button>
+                <button id="periodQuarterBtn" type="button"
+                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Theo quý
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm font-medium text-slate-700">Mốc thời gian</span>
+                <select id="donorWallYearSelect"
+                        class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                </select>
+                <select id="donorWallMonthSelect"
+                        class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="1">Tháng 1</option>
+                    <option value="2">Tháng 2</option>
+                    <option value="3">Tháng 3</option>
+                    <option value="4">Tháng 4</option>
+                    <option value="5">Tháng 5</option>
+                    <option value="6">Tháng 6</option>
+                    <option value="7">Tháng 7</option>
+                    <option value="8">Tháng 8</option>
+                    <option value="9">Tháng 9</option>
+                    <option value="10">Tháng 10</option>
+                    <option value="11">Tháng 11</option>
+                    <option value="12">Tháng 12</option>
+                </select>
+                <select id="donorWallQuarterSelect"
+                        class="hidden rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="1">Quý 1</option>
+                    <option value="2">Quý 2</option>
+                    <option value="3">Quý 3</option>
+                    <option value="4">Quý 4</option>
+                </select>
+                <button id="reloadDonorWallBtn" type="button"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    <span class="material-symbols-outlined text-[18px]">refresh</span>
+                    Tải lại
+                </button>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+                <div>
+                    <span class="font-semibold text-slate-700">Kỳ áp dụng:</span>
+                    <span id="donorWallPeriodLabel">---</span>
+                </div>
+                <div class="mt-0.5 text-xs text-slate-500">
+                    Từ ngày <span id="donorWallFromDate">---</span> đến ngày <span id="donorWallToDate">---</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-slate-700">
+                <tr>
+                    <th class="text-left px-6 py-3 font-semibold">Xếp hạng</th>
+                    <th class="text-left px-6 py-3 font-semibold">Nhà hảo tâm</th>
+                    <th class="text-right px-6 py-3 font-semibold">Tổng quyên góp</th>
+                    <th class="text-right px-6 py-3 font-semibold">Số lượt</th>
+                </tr>
+                </thead>
+                <tbody id="donorWallTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="donorWallEmptyState" class="hidden rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600 text-sm">
+            Chưa có dữ liệu tri ân trong khoảng thời gian này.
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/web/donorWall.js}"></script>
+</th:block>
+</body>
+</html>
