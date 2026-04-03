@@ -34,18 +34,17 @@ public class MailServiceImpl implements MailService {
     private String fromEmail;
 
     @Override
-    public String generateVerificationCode() {
-        int code = 100000 + SECURE_RANDOM.nextInt(900000);
-        return String.valueOf(code);
-    }
-
-    @Override
     public void sendVerificationCodeMail(String to) {
         String code = generateVerificationCode();
         storeVerificationCode(to, code);
         String subject = "Mã xác nhận tra cứu quyên góp";
         String html = buildVerificationCodeEmail(code);
         sendVerificationHtmlMailWithInlineLogo(to, subject, html);
+    }
+
+    private String generateVerificationCode() {
+        int code = 100000 + SECURE_RANDOM.nextInt(900000);
+        return String.valueOf(code);
     }
 
     @Override
@@ -73,6 +72,21 @@ public class MailServiceImpl implements MailService {
         }
 
         return codeInfo.code().equals(code.trim());
+    }
+
+    @Override
+    @Async("mailTaskExecutor")
+    public void sendDonationThankYouMailAsync(String to, String donorName, String memoCode, String targetTitle, String amountText) {
+        try {
+            if (!StringUtils.hasText(to)) {
+                return;
+            }
+            String subject = "Cảm ơn bạn đã quyên góp";
+            String html = buildDonationThankYouEmail(donorName, memoCode, targetTitle, amountText);
+            sendVerificationHtmlMailWithInlineLogo(to, subject, html);
+        } catch (Exception ex) {
+            log.error("Cannot send thank-you mail async to {} caused: {}", to, ex.getMessage(), ex);
+        }
     }
 
     private void storeVerificationCode(String email, String code) {
@@ -148,6 +162,80 @@ public class MailServiceImpl implements MailService {
                 </body>
                 </html>
                 """.formatted(code);
+    }
+
+    private String buildDonationThankYouEmail(String donorName, String memoCode, String targetTitle, String amountText) {
+        String safeDonorName = StringUtils.hasText(donorName) ? donorName : "Nhà hảo tâm";
+        String safeMemoCode = StringUtils.hasText(memoCode) ? memoCode : "---";
+        String safeTargetTitle = StringUtils.hasText(targetTitle) ? targetTitle : "Không gắn mục tiêu";
+        String safeAmountText = StringUtils.hasText(amountText) ? amountText : "---";
+
+        return """
+                <!doctype html>
+                <html lang="vi">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Thư cảm ơn</title>
+                </head>
+                <body style="margin:0;padding:0;background:#f3f6f9;font-family:Inter,Arial,sans-serif;color:#1f2937;">
+                <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#f3f6f9;padding:24px 0;">
+                    <tr>
+                        <td align="center">
+                            <table role="presentation" width="620" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;">
+                                <tr>
+                                    <td align="center" style="padding:28px 24px 10px;">
+                                        <img src="cid:projectLogo" alt="Logo dự án" width="64" height="64" style="display:block;width:64px;height:64px;border-radius:12px;object-fit:cover;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding:0 24px 8px;">
+                                        <h1 style="margin:0;font-size:24px;line-height:32px;color:#111827;font-weight:800;">Cảm ơn bạn đã đồng hành</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="left" style="padding:0 24px 16px;">
+                                        <p style="margin:0 0 10px;font-size:15px;line-height:24px;color:#374151;">
+                                            Chào <strong>%s</strong>,
+                                        </p>
+                                        <p style="margin:0;font-size:15px;line-height:24px;color:#374151;">
+                                            Khoản quyên góp của bạn đã được xác nhận thành công. CLB Chia Sẻ Yêu Thương chân thành cảm ơn sự tin tưởng và sẻ chia của bạn.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 24px 20px;">
+                                        <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb;">
+                                            <tr>
+                                                <td style="padding:14px 16px;font-size:14px;color:#6b7280;">Mã quyên góp</td>
+                                                <td style="padding:14px 16px;font-size:14px;color:#111827;font-weight:600;text-align:right;">%s</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:14px 16px;font-size:14px;color:#6b7280;border-top:1px solid #e5e7eb;">Mục tiêu</td>
+                                                <td style="padding:14px 16px;font-size:14px;color:#111827;font-weight:600;text-align:right;border-top:1px solid #e5e7eb;">%s</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:14px 16px;font-size:14px;color:#6b7280;border-top:1px solid #e5e7eb;">Số tiền</td>
+                                                <td style="padding:14px 16px;font-size:14px;color:#059669;font-weight:700;text-align:right;border-top:1px solid #e5e7eb;">%s</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 24px 24px;">
+                                        <div style="height:1px;background:#e5e7eb;"></div>
+                                        <p style="margin:14px 0 0;font-size:12px;line-height:20px;color:#9ca3af;text-align:center;">
+                                            Email tự động từ hệ thống CLB Chia Sẻ Yêu Thương.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </body>
+                </html>
+                """.formatted(safeDonorName, safeMemoCode, safeTargetTitle, safeAmountText);
     }
 
     private void sendVerificationHtmlMailWithInlineLogo(String to, String subject, String htmlContent) {

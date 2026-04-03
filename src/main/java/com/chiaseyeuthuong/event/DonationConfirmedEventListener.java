@@ -1,18 +1,23 @@
 package com.chiaseyeuthuong.event;
 
 import com.chiaseyeuthuong.common.EDonationTarget;
+import com.chiaseyeuthuong.common.EDonationVia;
 import com.chiaseyeuthuong.model.Donation;
 import com.chiaseyeuthuong.repository.DonationRepository;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.EventService;
+import com.chiaseyeuthuong.service.MailService;
 import com.chiaseyeuthuong.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +28,7 @@ public class DonationConfirmedEventListener {
     private final TransactionService transactionService;
     private final ActivityService activityService;
     private final EventService eventService;
+    private final MailService mailService;
 
     @EventListener
     @Transactional(rollbackFor = Exception.class)
@@ -44,6 +50,30 @@ public class DonationConfirmedEventListener {
             }
         }
 
+        if (EDonationVia.WEB.equals(donation.getDonationVia()) && donation.getDonor() != null && StringUtils.hasText(donation.getDonor().getEmail())) {
+            mailService.sendDonationThankYouMailAsync(donation.getDonor().getEmail(), donation.getDonor().getDisplayName(),
+                    donation.getMemoCode(), getTargetTitle(donation), formatVndAmount(donation.getAmount()));
+        }
+
         log.info("Handled DonationConfirmedEvent for donationId={}", donation.getId());
+    }
+
+    private String getTargetTitle(Donation donation) {
+        if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
+            return donation.getEvent().getName();
+        }
+        if (EDonationTarget.ACTIVITY.equals(donation.getTarget()) && donation.getActivity() != null) {
+            return donation.getActivity().getName();
+        }
+        return "Không gắn mục tiêu";
+    }
+
+    private String formatVndAmount(BigDecimal amount) {
+        if (amount == null) {
+            return "---";
+        }
+        NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"));
+        numberFormat.setMaximumFractionDigits(0);
+        return "%s VNĐ".formatted(numberFormat.format(amount));
     }
 }
