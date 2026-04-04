@@ -36,3 +36,12 @@ build/
 .vscode/
 
 *.env
+prod.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
