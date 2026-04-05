@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.config;
 
 import com.chiaseyeuthuong.security.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
+import java.util.TimeZone;
 
 @Configuration
 @EnableWebSecurity
@@ -30,8 +32,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppConfig {
 
+    private static final String APP_TIME_ZONE = "Asia/Ho_Chi_Minh";
     public static final List<String> WHITE_LIST_URL = List.of("/about", "/contact", "/events/*", "/activities/*", "/", "/donations");
     private final CustomUserDetailsService customUserDetailsService;
+
+    @PostConstruct
+    public void initTimezone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(APP_TIME_ZONE));
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -91,7 +99,9 @@ public class AppConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setTimeZone(TimeZone.getTimeZone(APP_TIME_ZONE));
+        return objectMapper;
     }
 
     @Bean
