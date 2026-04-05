@@ -131,6 +131,7 @@ public class DonationServiceImpl implements DonationService {
 
         saveDonation(donation, request);
         donation.setPaymentMethod(request.getPaymentMethod());
+        donation.setStatus(EDonationStatus.PENDING_APPROVED);
 
         Donation result = donationRepository.save(donation);
         auditLogService.logUpdate(
@@ -171,6 +172,7 @@ public class DonationServiceImpl implements DonationService {
         donation.setNeedReceipt(request.getNeedReceipt());
         donation.setReceiptEmail(request.getReceiptEmail());
         donation.setReceiptName(request.getReceiptName());
+        donation.setRejectionReason(null);
     }
 
     private void validateWholeAmount(BigDecimal amount) {
@@ -191,10 +193,44 @@ public class DonationServiceImpl implements DonationService {
             return;
         }
 
+        if (EDonationStatus.REJECTED.equals(status)) {
+            throw new InvalidDataException("Vui lòng dùng API từ chối riêng và cung cấp lý do từ chối");
+        }
+
         Donation donation = getDonation(id);
         donation.setStatus(status);
         donationRepository.save(donation);
         log.info("Donation updated status to {}", status);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void rejectDonation(Long id, String reason, String username) {
+        Donation donation = getDonation(id);
+
+        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
+            throw new InvalidDataException("Chỉ hỗ trợ từ chối khoản quyên góp tạo bởi nhân sự nội bộ");
+        }
+
+        if (!EDonationStatus.PENDING_APPROVED.equals(donation.getStatus())) {
+            throw new InvalidDataException("Chỉ được từ chối khoản quyên góp đang ở trạng thái chờ duyệt");
+        }
+
+        String normalizedReason = reason == null ? "" : reason.trim();
+        if (normalizedReason.isBlank()) {
+            throw new InvalidDataException("Vui lòng nhập lý do từ chối");
+        }
+
+        Map<String, Object> beforeValues = buildDonationAuditMap(donation);
+
+        donation.setStatus(EDonationStatus.REJECTED);
+        donation.setRejectionReason(normalizedReason);
+        Donation savedDonation = donationRepository.save(donation);
+
+        auditLogService.logUpdate(EEntityType.DONATION, savedDonation.getId(),
+                "Từ chối khoản quyên góp nội bộ", beforeValues, buildDonationAuditMap(savedDonation));
+
+        log.info("Donation {} rejected by {}", savedDonation.getId(), username);
     }
 
     @Override
@@ -445,6 +481,7 @@ public class DonationServiceImpl implements DonationService {
         values.put("receiptEmail", donation.getReceiptEmail());
         values.put("paymentMethod", donation.getPaymentMethod() != null ? donation.getPaymentMethod().name() : null);
         values.put("status", donation.getStatus() != null ? donation.getStatus().name() : null);
+        values.put("rejectionReason", donation.getRejectionReason());
         values.put("donationVia", donation.getDonationVia() != null ? donation.getDonationVia().name() : null);
         return values;
     }

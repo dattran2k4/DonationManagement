@@ -25,6 +25,8 @@ public interface DonationService {
 
     void changeStatusDonation(EDonationStatus status, Long id);
 
+    void rejectDonation(Long id, String reason, String username);
+
     void confirmDonation(Long id, WebhookData webhookData);
 
     PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target,

@@ -91,6 +91,9 @@ public class Donation {
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;

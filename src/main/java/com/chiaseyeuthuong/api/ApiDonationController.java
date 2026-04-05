@@ -6,6 +6,7 @@ import com.chiaseyeuthuong.common.EDonationType;
 import com.chiaseyeuthuong.common.EDonorWallPeriod;
 import com.chiaseyeuthuong.common.EPaymentMethod;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
+import com.chiaseyeuthuong.dto.request.RejectDonationRequest;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
 import com.chiaseyeuthuong.service.DonationService;
 import jakarta.validation.Valid;
@@ -103,6 +104,18 @@ public class ApiDonationController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Cập nhật trạng thái đơn từ thiện thành công")
+                .build();
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
+    public ApiResponse rejectDonation(@Min(1) @PathVariable Long id,
+                                      @Valid @RequestBody RejectDonationRequest request,
+                                      Principal principal) {
+        donationService.rejectDonation(id, request.getReason(), principal.getName());
+        return ApiResponse.builder()
+                .status(200)
+                .message("Từ chối đơn từ thiện thành công")
                 .build();
     }
 }

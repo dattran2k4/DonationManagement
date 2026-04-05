@@ -155,6 +155,7 @@ CREATE TABLE donations (
                            payment_method enum('BANK_TRANSFER_OFFLINE','BANK_TRANSFER_ONLINE','CASH') DEFAULT NULL,
                            receipt_email varchar(255) DEFAULT NULL,
                            receipt_name varchar(255) DEFAULT NULL,
+                           rejection_reason text,
                            status enum('CANCELLED','CONFIRMED','FAILED','PENDING_APPROVED','PENDING_PAYMENT','REJECTED') DEFAULT NULL,
                            target enum('ACTIVITY','EVENT','NONE') DEFAULT NULL,
                            type enum('MONEY','ITEM') DEFAULT NULL,

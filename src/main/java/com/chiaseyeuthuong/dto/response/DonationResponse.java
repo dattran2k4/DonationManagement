@@ -39,6 +39,7 @@ public class DonationResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime confirmedAt;
+    private String rejectionReason;
     private String donorName;
     private String objectName;
 }

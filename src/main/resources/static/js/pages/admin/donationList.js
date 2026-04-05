@@ -358,13 +358,26 @@ window.handleAction = async (id, action) => {
     if (!canApproveDonations) return;
     const isConfirm = action === 'CONFIRM';
     const statusText = isConfirm ? 'duyệt' : 'từ chối';
-    const statusEnum = isConfirm ? 'CONFIRMED' : 'REJECTED';
 
     const message = `Bạn có chắc chắn muốn ${statusText} khoản quyên góp này không?`;
     if (!confirm(message)) return;
 
     try {
-        const response = await donationApi.changeStatus(id, statusEnum);
+        let response;
+        if (isConfirm) {
+            response = await donationApi.changeStatus(id, 'CONFIRMED');
+        } else {
+            const reason = prompt('Nhập lý do từ chối khoản quyên góp này:');
+            if (reason === null) return;
+
+            const normalizedReason = reason.trim();
+            if (!normalizedReason) {
+                alert('Vui lòng nhập lý do từ chối.');
+                return;
+            }
+
+            response = await donationApi.rejectDonation(id, normalizedReason);
+        }
 
         if (response.status === 200) {
             alert(response.message || 'Cập nhật thành công!');
