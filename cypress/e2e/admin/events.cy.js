@@ -1,7 +1,7 @@
 import { pagedResponse, stubAlert, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Events', () => {
-  it('loads the events list and applies search, status, category and sort filters', () => {
+describe('Quản lý Chiến dịch', () => {
+  it('TC-ADM-EVT-001 + TC-ADM-EVT-002 - Mở danh sách chiến dịch, tìm kiếm và lọc', () => {
     cy.intercept('GET', '/api/events?*', (req) => {
       const search = req.query.search || '';
       const status = req.query.status || '';
@@ -72,7 +72,7 @@ describe('Admin Events', () => {
     });
   });
 
-  it('creates a new event successfully from the admin form', () => {
+  it('TC-ADM-EVT-003 - Tạo chiến dịch thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/events/save', (req) => {
@@ -103,7 +103,7 @@ describe('Admin Events', () => {
     cy.get('@alert').should('have.been.calledWith', 'Lưu thành công!');
   });
 
-  it('validates that the event name is required before saving', () => {
+  it('TC-ADM-EVT-004 - Kiểm tra bắt buộc của chiến dịch', () => {
     stubAlert();
 
     visitAdminPage('/admin/events/form');
@@ -112,7 +112,7 @@ describe('Admin Events', () => {
     cy.get('@alert').should('have.been.calledWith', 'Vui lòng nhập tên sự kiện!');
   });
 
-  it('shows a business error when the event end date is before the start date', () => {
+  it('TC-ADM-EVT-005 - Kiểm tra logic ngày bắt đầu và ngày kết thúc', () => {
     stubAlert();
 
     visitAdminPage('/admin/events/form');
@@ -130,7 +130,7 @@ describe('Admin Events', () => {
     });
   });
 
-  it('updates an existing event successfully from the edit form', () => {
+  it('TC-ADM-EVT-006 - Sửa chiến dịch thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/events/save', (req) => {
@@ -151,7 +151,7 @@ describe('Admin Events', () => {
     cy.get('@alert').should('have.been.calledWith', 'Lưu thành công!');
   });
 
-  it('does not render an edit action for completed events in the admin list', () => {
+  it('TC-ADM-EVT-007 - Chặn sửa chiến dịch đã hoàn thành', () => {
     cy.intercept('GET', '/api/events?*', {
       statusCode: 200,
       body: pagedResponse([

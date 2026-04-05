@@ -78,8 +78,8 @@ const confirmDonationAsAdmin = (donationId) => {
     });
 };
 
-describe('Donor Donation Status Integration', () => {
-  it('confirms an event donation and increases the linked event current amount', () => {
+describe('Luồng tích hợp quyên góp nhà hảo tâm', () => {
+  it('TC-NHT-EVT-004 - Webhook cập nhật số tiền của sự kiện', () => {
     const amount = 11111;
     getEventCurrentAmount(EVENT_ID).then((beforeAmount) => {
       createUniqueDonor('event-confirm')
@@ -101,7 +101,7 @@ describe('Donor Donation Status Integration', () => {
     });
   });
 
-  it('keeps an event donation pending and leaves the event amount unchanged on the cancel route', () => {
+  it('TC-NHT-EVT-005 - Hủy thanh toán từ form sự kiện', () => {
     const amount = 22222;
     getEventCurrentAmount(EVENT_ID).then((beforeAmount) => {
       createUniqueDonor('event-cancel')
@@ -125,7 +125,7 @@ describe('Donor Donation Status Integration', () => {
     });
   });
 
-  it('confirms an activity donation and increases both the activity and its parent event amounts', () => {
+  it('TC-NHT-ACT-004 + TC-NHT-ACT-005 - Webhook cập nhật số tiền hoạt động và cộng dồn cho sự kiện cha', () => {
     const amount = 33333;
     getActivityCurrentAmount(ACTIVITY_ID).then((beforeActivityAmount) => {
       getEventCurrentAmount(EVENT_ID).then((beforeEventAmount) => {
@@ -153,7 +153,7 @@ describe('Donor Donation Status Integration', () => {
     });
   });
 
-  it('keeps an activity donation pending and does not increase activity or parent event amounts on cancel', () => {
+  it('TC-NHT-ACT-006 - Hủy thanh toán từ form hoạt động', () => {
     const amount = 44444;
     getActivityCurrentAmount(ACTIVITY_ID).then((beforeActivityAmount) => {
       getEventCurrentAmount(EVENT_ID).then((beforeEventAmount) => {
@@ -183,7 +183,7 @@ describe('Donor Donation Status Integration', () => {
     });
   });
 
-  it('shows the default "Không có" message when a confirmed donation has no message', () => {
+  it('TC-NHT-PAY-003 - Hiển thị giá trị mặc định khi không có lời nhắn', () => {
     const amount = 55555;
 
     createUniqueDonor('no-message')
@@ -198,7 +198,7 @@ describe('Donor Donation Status Integration', () => {
       });
   });
 
-  it('currently leaves the donor on the same success page when the receipt button is clicked', () => {
+  it('TC-NHT-PAY-008 - Nút Xem biên lai / Hóa đơn', () => {
     visitSuccess(932603210199);
 
     cy.contains('button', 'Xem biên lai / Hóa đơn').click();

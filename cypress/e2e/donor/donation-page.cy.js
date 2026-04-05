@@ -7,8 +7,8 @@ import {
   fillCommonDonation
 } from './helpers/donorTestUtils.js';
 
-describe('Donor Donation Page', () => {
-  it('loads /donations and shows the expected default state', () => {
+describe('Trang quyên góp nhà hảo tâm', () => {
+  it('TC-NHT-DON-001 - Mở trang quyên góp', () => {
     visitDonationPage();
 
     cy.get(selectors.donorTypeIndividual).should('be.checked');
@@ -17,7 +17,7 @@ describe('Donor Donation Page', () => {
     cy.get(selectors.receiptFields).should('have.class', 'hidden');
   });
 
-  it('switches correctly between individual and organization donor forms', () => {
+  it('TC-NHT-DON-002 + TC-NHT-DON-003 - Mặc định tab nhà hảo tâm là Cá nhân và cho phép chuyển đổi giữa Cá nhân, Tổ chức', () => {
     visitDonationPage();
 
     cy.get(selectors.donorTypeOrganization).check({ force: true });
@@ -29,7 +29,7 @@ describe('Donor Donation Page', () => {
     cy.get(selectors.organizationSection).should('have.class', 'hidden');
   });
 
-  it('shows receipt fields and auto-fills receipt email from donor email', () => {
+  it('TC-NHT-DON-004 + TC-NHT-DON-005 - Hiển thị thông tin biên lai và tự động điền email biên lai', () => {
     visitDonationPage();
 
     cy.get(selectors.emailInput).type('donor01@test.com');
@@ -39,7 +39,7 @@ describe('Donor Donation Page', () => {
     cy.get(selectors.receiptEmailInput).should('have.value', 'donor01@test.com');
   });
 
-  it('blocks submission when amount is below minimum', () => {
+  it('TC-NHT-DON-009 - Số tiền nhỏ hơn mức tối thiểu', () => {
     visitDonationPage();
     stubAlert();
 
@@ -50,7 +50,7 @@ describe('Donor Donation Page', () => {
     cy.get('@alert').should('have.been.calledWith', 'Số tiền phải từ 1.000 đồng đến tối đa 10.000.000 đồng');
   });
 
-  it('blocks submission when amount is above the configured frontend maximum', () => {
+  it('TC-NHT-DON-010 - Số tiền vượt giới hạn giao diện', () => {
     visitDonationPage();
     stubAlert();
 
@@ -61,7 +61,7 @@ describe('Donor Donation Page', () => {
     cy.get('@alert').should('have.been.calledWith', 'Số tiền phải từ 1.000 đồng đến tối đa 10.000.000 đồng');
   });
 
-  it('submits a successful individual donation flow with stubbed APIs', () => {
+  it('TC-NHT-DON-006 - Quyên góp cá nhân thành công', () => {
     cy.intercept('POST', '/api/donors/individuals', (req) => {
       expect(req.body).to.include({
         fullName: 'Nguyen Van A',
@@ -101,7 +101,7 @@ describe('Donor Donation Page', () => {
     cy.location('search').should('include', 'payment=success');
   });
 
-  it('submits a successful organization donation flow with stubbed APIs', () => {
+  it('TC-NHT-DON-007 - Quyên góp tổ chức thành công', () => {
     cy.intercept('POST', '/api/donors/organizations', (req) => {
       expect(req.body).to.include({
         name: 'Cong ty ABC',
@@ -138,7 +138,7 @@ describe('Donor Donation Page', () => {
     cy.location('search').should('include', 'payment=org-success');
   });
 
-  it('shows a friendly alert when donor API returns duplicate email', () => {
+  it('TC-NHT-DON-019 - Dữ liệu nhà hảo tâm bị trùng', () => {
     cy.intercept('POST', '/api/donors/individuals', {
       statusCode: 409,
       body: {
@@ -158,7 +158,7 @@ describe('Donor Donation Page', () => {
     cy.get('@alert').should('have.been.calledWith', 'Email nhà hảo tâm đã tồn tại');
   });
 
-  it('shows a friendly alert when donation creation fails', () => {
+  it('AUTO-NHT-DON-001 - Hiển thị thông báo thân thiện khi tạo quyên góp lỗi', () => {
     cy.intercept('POST', '/api/donors/individuals', {
       statusCode: 200,
       body: { status: 200, data: 303 }
@@ -189,7 +189,7 @@ describe('Donor Donation Page', () => {
     cy.get('@alert').should('have.been.calledWith', 'Số tiền không hợp lệ');
   });
 
-  it('submits receipt information when donor requests a receipt', () => {
+  it('AUTO-NHT-DON-002 - Gửi đúng thông tin biên lai khi nhà hảo tâm yêu cầu', () => {
     cy.intercept('POST', '/api/donors/individuals', {
       statusCode: 200,
       body: { status: 200, data: 404 }

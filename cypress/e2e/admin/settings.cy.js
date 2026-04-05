@@ -1,7 +1,7 @@
 import { stubAlert, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Settings', () => {
-  it('saves system settings text values successfully', () => {
+describe('Cài đặt Hệ thống', () => {
+  it('TC-ADM-SET-001 + TC-ADM-SET-002 - Mở trang cài đặt và cập nhật cấu hình văn bản thành công', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/configs/map', {
@@ -80,7 +80,7 @@ describe('Admin Settings', () => {
     cy.get('#ORG_PHONE').should('have.value', '0911222333');
   });
 
-  it('resets unsaved settings and rejects invalid image uploads', () => {
+  it('TC-ADM-SET-004 + TC-ADM-SET-005 - Kiểm tra tệp ảnh không hợp lệ và đặt lại thay đổi chưa lưu', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/configs/map', {
@@ -124,7 +124,7 @@ describe('Admin Settings', () => {
     cy.get('@alert').should('have.been.calledWith', 'Vui lòng chọn tệp hình ảnh hợp lệ.');
   });
 
-  it('uploads a valid image, previews it and saves the returned image URL', () => {
+  it('TC-ADM-SET-003 - Tải ảnh hợp lệ', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/configs/map', {

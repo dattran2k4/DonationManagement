@@ -1,7 +1,7 @@
 import { visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Dashboard', () => {
-  it('logs in as admin and renders the dashboard overview', () => {
+describe('Bảng điều khiển quản trị', () => {
+  it('TC-ADM-DASH-001 - Mở trang bảng điều khiển', () => {
     cy.intercept('GET', '/api/dashboard/donation-trend*', {
       statusCode: 200,
       body: {
@@ -24,7 +24,7 @@ describe('Admin Dashboard', () => {
     cy.get('#donationTrendBars').children().should('have.length', 2);
   });
 
-  it('switches the dashboard period filter and updates the chart summary', () => {
+  it('TC-ADM-DASH-002 - Chuyển kỳ thống kê', () => {
     cy.intercept('GET', '/api/dashboard/donation-trend?period=WEEK', {
       statusCode: 200,
       body: {
@@ -63,7 +63,7 @@ describe('Admin Dashboard', () => {
     cy.get('#donationTrendBars').children().should('have.length', 3);
   });
 
-  it('shows a stable empty state when the selected period has no donation data', () => {
+  it('TC-ADM-DASH-003 - Hiển thị ổn định khi không có dữ liệu', () => {
     cy.intercept('GET', '/api/dashboard/donation-trend?period=WEEK', {
       statusCode: 200,
       body: {

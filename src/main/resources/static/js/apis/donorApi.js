@@ -11,6 +11,18 @@ export const donorApi = {
     getDonorById: async (id) => {
         return await apiClient.get(`${BASE_URL}/${id}`);
     },
+    getPersonRelationshipTypes: async () => {
+        return await apiClient.get(`${BASE_URL}/relationship-types/person`);
+    },
+    getOrganizationRoleTypes: async () => {
+        return await apiClient.get(`${BASE_URL}/relationship-types/organization-roles`);
+    },
+    getPersonRelationships: async (id) => {
+        return await apiClient.get(`${BASE_URL}/${id}/relationships/person`);
+    },
+    getOrganizationRelationships: async (id) => {
+        return await apiClient.get(`${BASE_URL}/${id}/relationships/organizations`);
+    },
     getDonorDonations: async (id, params) => {
         const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}/${id}/donations?${queryString}`);
@@ -33,5 +45,23 @@ export const donorApi = {
     },
     updateOrganization: async (id, body) => {
         return await apiClient.put(`${BASE_URL}/${id}/organizations`, body);
+    },
+    createPersonRelationship: async (id, body) => {
+        return await apiClient.post(`${BASE_URL}/${id}/relationships/person`, body);
+    },
+    updatePersonRelationship: async (id, relationshipId, body) => {
+        return await apiClient.put(`${BASE_URL}/${id}/relationships/person/${relationshipId}`, body);
+    },
+    deactivatePersonRelationship: async (id, relationshipId) => {
+        return await apiClient.delete(`${BASE_URL}/${id}/relationships/person/${relationshipId}`);
+    },
+    createOrganizationRelationship: async (id, body) => {
+        return await apiClient.post(`${BASE_URL}/${id}/relationships/organizations`, body);
+    },
+    updateOrganizationRelationship: async (id, relationshipId, body) => {
+        return await apiClient.put(`${BASE_URL}/${id}/relationships/organizations/${relationshipId}`, body);
+    },
+    deactivateOrganizationRelationship: async (id, relationshipId) => {
+        return await apiClient.delete(`${BASE_URL}/${id}/relationships/organizations/${relationshipId}`);
     }
 };

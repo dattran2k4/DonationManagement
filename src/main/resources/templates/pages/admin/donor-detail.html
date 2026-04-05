@@ -50,6 +50,10 @@
                         class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Lịch sử quyên góp
                 </button>
+                <button id="tabRelationshipBtn" data-tab="relationship" type="button"
+                        class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+                    Mối quan hệ
+                </button>
                 <button id="tabAuditBtn" data-tab="audit" type="button"
                         class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Lịch sử thao tác
@@ -161,6 +165,213 @@
             <div id="donorDonationPagination"></div>
         </div>
 
+        <div id="tabRelationshipPanel" class="hidden p-6 space-y-8">
+            <section th:if="${donor.type.name() == 'INDIVIDUAL'}" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Mối quan hệ cá nhân</h2>
+                        <p class="mt-1 text-sm text-slate-500">Quản lý người thân, người quen hoặc các liên kết cá nhân của nhà hảo tâm này.</p>
+                    </div>
+                    <button th:if="${canEditRelationships}" id="addPersonRelationshipBtn" type="button"
+                            class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                        Thêm quan hệ cá nhân
+                    </button>
+                </div>
+
+                <div th:if="${canEditRelationships}" id="personRelationshipFormCard" class="mt-5 hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 id="personRelationshipFormTitle" class="text-base font-bold text-slate-900">Thêm quan hệ cá nhân</h3>
+                            <p class="text-sm text-slate-500">Chọn loại quan hệ và nhà hảo tâm liên quan.</p>
+                        </div>
+                        <button id="cancelPersonRelationshipBtn" type="button" class="text-sm font-semibold text-slate-500 transition hover:text-slate-800">
+                            Hủy
+                        </button>
+                    </div>
+
+                    <form id="personRelationshipForm" class="mt-5 space-y-4">
+                        <input id="personRelationshipId" type="hidden">
+                        <input id="personRelatedDonorId" type="hidden">
+
+                        <div class="grid gap-4 lg:grid-cols-2">
+                            <div class="space-y-2">
+                                <label for="personRelationshipTypeSelect" class="text-sm font-semibold text-slate-700">Loại mối quan hệ</label>
+                                <select id="personRelationshipTypeSelect"
+                                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                    <option value="">Chọn loại mối quan hệ</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="personRelatedDonorSearch" class="text-sm font-semibold text-slate-700">Nhà hảo tâm liên quan</label>
+                                <div id="personRelatedDonorSearchWrapper" class="relative">
+                                    <input id="personRelatedDonorSearch" type="text" autocomplete="off"
+                                           placeholder="Tìm theo tên, số điện thoại hoặc email"
+                                           class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"/>
+                                    <div id="personRelatedDonorDropdown"
+                                         class="absolute left-0 right-0 top-[calc(100%+8px)] z-20 hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                                        <div id="personRelatedDonorDropdownList" class="max-h-72 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <p id="personRelatedDonorMeta" class="text-xs text-slate-500">Chưa chọn nhà hảo tâm liên quan.</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="personRelationshipNote" class="text-sm font-semibold text-slate-700">Ghi chú</label>
+                            <textarea id="personRelationshipNote" rows="3"
+                                      placeholder="Ví dụ: liên hệ thường xuyên qua gia đình, hỗ trợ chung trong các chiến dịch..."
+                                      class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"></textarea>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-end gap-3">
+                            <button type="button" id="personRelationshipResetBtn"
+                                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">
+                                Làm mới
+                            </button>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105">
+                                Lưu mối quan hệ cá nhân
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Nhà hảo tâm liên quan</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Mối quan hệ</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Ghi chú</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Cập nhật</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="personRelationshipTableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="px-6 py-8 text-center text-slate-500" colspan="5">Đang tải dữ liệu...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900"
+                            th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Nhà hảo tâm liên quan' : 'Mối quan hệ tổ chức'">
+                            Mối quan hệ tổ chức
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-500"
+                           th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Theo dõi các nhà hảo tâm cá nhân đang có vai trò liên quan tới tổ chức này.' : 'Quản lý vai trò của nhà hảo tâm này trong các tổ chức liên quan.'">
+                            Quản lý vai trò của nhà hảo tâm này trong các tổ chức liên quan.
+                        </p>
+                    </div>
+                    <button th:if="${canEditRelationships}" id="addOrganizationRelationshipBtn" type="button"
+                            class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105">
+                                <span class="material-symbols-outlined text-[20px]">add_business</span>
+                        <span th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Thêm nhà hảo tâm liên quan' : 'Thêm quan hệ tổ chức'">Thêm quan hệ tổ chức</span>
+                    </button>
+                </div>
+
+                <div th:if="${canEditRelationships}" id="organizationRelationshipFormCard" class="mt-5 hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 id="organizationRelationshipFormTitle" class="text-base font-bold text-slate-900"
+                                th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Thêm nhà hảo tâm liên quan' : 'Thêm quan hệ tổ chức'">
+                                Thêm quan hệ tổ chức
+                            </h3>
+                            <p class="text-sm text-slate-500"
+                               th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Chọn nhà hảo tâm cá nhân và vai trò tương ứng với tổ chức này.' : 'Chọn tổ chức và vai trò tương ứng của nhà hảo tâm.'">
+                                Chọn tổ chức và vai trò tương ứng của nhà hảo tâm.
+                            </p>
+                        </div>
+                        <button id="cancelOrganizationRelationshipBtn" type="button" class="text-sm font-semibold text-slate-500 transition hover:text-slate-800">
+                            Hủy
+                        </button>
+                    </div>
+
+                    <form id="organizationRelationshipForm" class="mt-5 space-y-4">
+                        <input id="organizationRelationshipId" type="hidden">
+                        <input id="organizationRelatedDonorId" type="hidden">
+
+                        <div class="grid gap-4 lg:grid-cols-2">
+                            <div class="space-y-2">
+                                <label for="organizationRoleTypeSelect" class="text-sm font-semibold text-slate-700">Vai trò trong tổ chức</label>
+                                <select id="organizationRoleTypeSelect"
+                                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                    <option value="">Chọn vai trò trong tổ chức</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="organizationRelatedDonorSearch" class="text-sm font-semibold text-slate-700"
+                                       th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Nhà hảo tâm liên quan' : 'Tổ chức liên quan'">
+                                    Tổ chức liên quan
+                                </label>
+                                <div id="organizationRelatedDonorSearchWrapper" class="relative">
+                                    <input id="organizationRelatedDonorSearch" type="text" autocomplete="off"
+                                           th:attr="placeholder=${donor.type.name() == 'ORGANIZATION'} ? 'Tìm theo tên, số điện thoại hoặc email của nhà hảo tâm' : 'Tìm theo tên tổ chức, số điện thoại hoặc email'"
+                                           class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"/>
+                                    <div id="organizationRelatedDonorDropdown"
+                                         class="absolute left-0 right-0 top-[calc(100%+8px)] z-20 hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                                        <div id="organizationRelatedDonorDropdownList" class="max-h-72 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <p id="organizationRelatedDonorMeta" class="text-xs text-slate-500"
+                                   th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Chưa chọn nhà hảo tâm liên quan.' : 'Chưa chọn tổ chức liên quan.'">
+                                    Chưa chọn tổ chức liên quan.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="organizationRelationshipNote" class="text-sm font-semibold text-slate-700">Ghi chú</label>
+                            <textarea id="organizationRelationshipNote" rows="3"
+                                      placeholder="Ví dụ: đang đại diện làm việc cho doanh nghiệp này trong các chiến dịch gây quỹ..."
+                                      class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"></textarea>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-end gap-3">
+                            <button type="button" id="organizationRelationshipResetBtn"
+                                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900">
+                                Làm mới
+                            </button>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105">
+                                Lưu mối quan hệ tổ chức
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Nhà hảo tâm liên quan' : 'Tổ chức liên quan'">
+                                Tổ chức liên quan
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Vai trò</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Ghi chú</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Cập nhật</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="organizationRelationshipTableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="px-6 py-8 text-center text-slate-500" colspan="5">Đang tải dữ liệu...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
         <div id="tabAuditPanel" class="hidden pt-2">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200">
@@ -187,6 +398,9 @@
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
         window.__DONOR_ID__ = [[${donor.id}]];
+        window.__DONOR_TYPE__ = [[${donor.type.name()}]];
+        window.__CAN_EDIT_RELATIONSHIPS__ = [[${canEditRelationships}]];
+        window.__DONOR_FULL_NAME__ = [[${donor.fullName}]];
     </script>
     <script type="module" th:src="@{/js/pages/admin/donorDetail.js}"></script>
 </th:block>

@@ -1,7 +1,7 @@
 import { pagedResponse, stubAlert, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Donors', () => {
-  it('loads the donor list and applies keyword and type filters', () => {
+describe('Quản lý nhà hảo tâm', () => {
+  it('TC-ADM-DONOR-001 + TC-ADM-DONOR-002 + TC-ADM-DONOR-003 - Mở danh sách nhà hảo tâm, tìm kiếm và lọc theo loại', () => {
     cy.intercept('GET', '/api/donors?*', (req) => {
       const search = req.query.search || '';
       const type = req.query.type || '';
@@ -72,7 +72,7 @@ describe('Admin Donors', () => {
     cy.get('button[title="Chỉnh sửa"]').should('exist');
   });
 
-  it('creates an individual donor successfully from the admin form', () => {
+  it('TC-ADM-DONOR-005 - Tạo nhà hảo tâm cá nhân thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/donors/individuals', (req) => {
@@ -118,7 +118,7 @@ describe('Admin Donors', () => {
     cy.location('pathname').should('eq', '/admin/donors');
   });
 
-  it('creates an organization donor successfully from the admin form', () => {
+  it('TC-ADM-DONOR-006 - Tạo nhà hảo tâm tổ chức thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/donors/organizations', (req) => {
@@ -172,7 +172,7 @@ describe('Admin Donors', () => {
     cy.location('pathname').should('eq', '/admin/donors');
   });
 
-  it('validates required individual donor fields on the admin form', () => {
+  it('TC-ADM-DONOR-007 - Kiểm tra bắt buộc cho nhà hảo tâm cá nhân', () => {
     stubAlert();
 
     visitAdminPage('/admin/donors/form');
@@ -185,7 +185,7 @@ describe('Admin Donors', () => {
     cy.get('@alert').should('have.been.calledWith', 'Họ và tên không được để trống');
   });
 
-  it('validates required organization donor fields on the admin form', () => {
+  it('TC-ADM-DONOR-008 - Kiểm tra bắt buộc cho nhà hảo tâm tổ chức', () => {
     stubAlert();
 
     visitAdminPage('/admin/donors/form');
@@ -198,7 +198,7 @@ describe('Admin Donors', () => {
     cy.get('@alert').should('have.been.calledWith', 'Tên tổ chức không được để trống');
   });
 
-  it('shows the seeded donor detail page with the saved contact information', () => {
+  it('TC-ADM-DONOR-009 - Xem chi tiết nhà hảo tâm', () => {
     visitAdminPage('/admin/donors/1');
 
     cy.contains('Hồ sơ Nhà hảo tâm').should('be.visible');
@@ -208,7 +208,7 @@ describe('Admin Donors', () => {
     cy.contains('Chỉnh sửa').should('be.visible');
   });
 
-  it('loads the edit donor form, keeps donor type locked and saves updated information', () => {
+  it('TC-ADM-DONOR-010 + TC-ADM-DONOR-011 - Sửa nhà hảo tâm thành công và khóa loại nhà hảo tâm khi chỉnh sửa', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors/1', {

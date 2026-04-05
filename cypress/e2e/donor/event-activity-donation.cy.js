@@ -6,8 +6,8 @@ import {
   fillCommonDonation
 } from './helpers/donorTestUtils.js';
 
-describe('Donation Forms On Event And Activity Pages', () => {
-  it('renders the event donation form with a hidden eventId', () => {
+describe('Quyên góp từ trang sự kiện và hoạt động', () => {
+  it('TC-NHT-EVT-001 - Hiển thị form quyên góp gắn mã sự kiện', () => {
     cy.visit(pages.event);
 
     cy.contains('Gây quỹ mổ tim cho bé An').should('be.visible');
@@ -16,7 +16,7 @@ describe('Donation Forms On Event And Activity Pages', () => {
     cy.get('input[name="activityId"]').should('not.exist');
   });
 
-  it('submits the event-page donation flow with eventId attached', () => {
+  it('TC-NHT-EVT-002 - Quyên góp thành công từ trang sự kiện', () => {
     let expectedEventId = null;
 
     cy.intercept('POST', '/api/donors/individuals', {
@@ -54,7 +54,7 @@ describe('Donation Forms On Event And Activity Pages', () => {
     cy.location('search').should('include', 'payment=event-success');
   });
 
-  it('renders the activity donation form with a hidden activityId', () => {
+  it('TC-NHT-ACT-001 - Hiển thị form quyên góp gắn mã hoạt động', () => {
     cy.visit(pages.activity);
 
     cy.contains('Đợt 1 - Chi phí phẫu thuật').should('be.visible');
@@ -63,7 +63,7 @@ describe('Donation Forms On Event And Activity Pages', () => {
     cy.get('input[name="eventId"]').should('not.exist');
   });
 
-  it('submits the activity-page organization donation flow with activityId attached', () => {
+  it('TC-NHT-ACT-002 - Quyên góp thành công từ trang hoạt động', () => {
     let expectedActivityId = null;
 
     cy.intercept('POST', '/api/donors/organizations', {

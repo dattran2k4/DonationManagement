@@ -3,6 +3,7 @@ package com.chiaseyeuthuong.controller.admin;
 import com.chiaseyeuthuong.service.DonorService;
 import com.chiaseyeuthuong.service.DonationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,9 +27,10 @@ public class AdminDonorController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
-    public String showDonorDetailPage(@PathVariable Long id, Model model) {
+    public String showDonorDetailPage(@PathVariable Long id, Model model, Authentication authentication) {
         model.addAttribute("donor", donorService.getDonorById(id));
         model.addAttribute("recentDonations", donationService.getRecentDonationsByDonorId(id, 10));
+        model.addAttribute("canEditRelationships", hasAnyAuthority(authentication, "ROLE_ADMIN", "ROLE_STAFF"));
         return "pages/admin/donor-detail";
     }
 
@@ -51,5 +53,20 @@ public class AdminDonorController {
         model.addAttribute("donorId", id);
         model.addAttribute("donor", donorService.getDonorById(id));
         return "pages/admin/donor-donations";
+    }
+
+    private boolean hasAnyAuthority(Authentication authentication, String... roles) {
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+
+        for (String role : roles) {
+            boolean matched = authentication.getAuthorities().stream()
+                    .anyMatch(authority -> role.equals(authority.getAuthority()));
+            if (matched) {
+                return true;
+            }
+        }
+        return false;
     }
 }

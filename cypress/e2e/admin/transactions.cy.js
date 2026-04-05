@@ -1,7 +1,7 @@
 import { pagedResponse, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Transactions', () => {
-  it('loads the transactions list, searches, filters by method and shows unlinked rows', () => {
+describe('Quản lý Giao dịch', () => {
+  it('TC-ADM-TRX-001 + TC-ADM-TRX-002 + TC-ADM-TRX-004 - Mở danh sách giao dịch, tìm kiếm, lọc và hiển thị giao dịch không liên kết quyên góp', () => {
     cy.intercept('GET', '/api/transactions?*', (req) => {
       const search = req.query.search || '';
       const method = req.query.method || '';
@@ -62,7 +62,7 @@ describe('Admin Transactions', () => {
     });
   });
 
-  it('shows a transaction detail page for a synthetic linked transaction record', () => {
+  it('TC-ADM-TRX-003 - Xem chi tiết giao dịch', () => {
     const suffix = `${Date.now()}`;
     const transactionCode = `CYPTRX-${suffix}`;
     let transactionId = 0;

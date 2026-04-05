@@ -1,7 +1,7 @@
 import { pagedResponse, stubAlert, stubConfirm, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Donations', () => {
-  it('loads the donation list, filters it and resets the filters', () => {
+describe('Quản lý quyên góp', () => {
+  it('TC-ADM-DON-001 + TC-ADM-DON-002 + TC-ADM-DON-003 - Mở danh sách quyên góp, tìm kiếm, lọc và đặt lại bộ lọc', () => {
     cy.intercept('GET', '/api/donations/list?*', (req) => {
       const search = req.query.search || '';
       const status = req.query.status || '';
@@ -68,7 +68,7 @@ describe('Admin Donations', () => {
     });
   });
 
-  it('approves a pending donation from the admin list', () => {
+  it('TC-ADM-DON-012 - Duyệt khoản quyên góp chờ xử lý', () => {
     stubAlert();
     stubConfirm(true);
 
@@ -121,7 +121,7 @@ describe('Admin Donations', () => {
     cy.contains('Đã xác nhận').should('be.visible');
   });
 
-  it('creates an internal donation with target and receipt information', () => {
+  it('TC-ADM-DON-005 + TC-ADM-DON-010 - Tạo khoản quyên góp nội bộ gắn chiến dịch và thông tin biên lai', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors?*', {
@@ -156,6 +156,17 @@ describe('Admin Donations', () => {
       });
     }).as('createDonation');
 
+    cy.intercept('GET', '/api/events?*', {
+      statusCode: 200,
+      body: pagedResponse([
+        {
+          id: 15,
+          name: 'Event 15',
+          status: 'ONGOING'
+        }
+      ])
+    }).as('searchEvents');
+
     cy.intercept('GET', '/api/donations/list?*', {
       statusCode: 200,
       body: pagedResponse([
@@ -185,7 +196,10 @@ describe('Admin Donations', () => {
     cy.get('#message').type('Quyen gop noi bo');
     cy.get('#targetEvent').check({ force: true });
     cy.get('#eventTargetGroup').should('be.visible');
-    cy.get('#eventId').type('15');
+    cy.get('#eventSearchInput').click();
+    cy.wait('@searchEvents');
+    cy.contains('#eventDropdownList button', 'Event 15').click();
+    cy.get('#eventId').should('have.value', '15');
     cy.get('#needReceipt').check({ force: true });
     cy.get('#receiptFields').should('be.visible');
     cy.get('#receiptName').type('Tran Van Donation');
@@ -198,7 +212,7 @@ describe('Admin Donations', () => {
     cy.location('pathname').should('eq', '/admin/donations');
   });
 
-  it('creates an internal donation without attaching an event or activity target', () => {
+  it('TC-ADM-DON-004 - Tạo khoản quyên góp nội bộ không gắn mục tiêu', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors?*', {
@@ -264,7 +278,7 @@ describe('Admin Donations', () => {
     cy.location('pathname').should('eq', '/admin/donations');
   });
 
-  it('creates an internal donation with an attached activity target', () => {
+  it('TC-ADM-DON-006 - Tạo khoản quyên góp nội bộ gắn hoạt động', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors?*', {
@@ -296,6 +310,23 @@ describe('Admin Donations', () => {
       });
     }).as('createDonation');
 
+    cy.intercept('GET', '/api/activities?*', {
+      statusCode: 200,
+      body: pagedResponse([
+        {
+          id: 25,
+          name: 'Activity 25',
+          status: 'ONGOING',
+          event: { name: 'Event 15' },
+          startDate: '2026-03-23',
+          endDate: '2026-03-24',
+          location: 'Da Nang',
+          currentAmount: 0,
+          targetAmount: 1000000
+        }
+      ])
+    }).as('searchActivities');
+
     cy.intercept('GET', '/api/donations/list?*', {
       statusCode: 200,
       body: pagedResponse([
@@ -322,7 +353,10 @@ describe('Admin Donations', () => {
     cy.get('#amount').type('2100000');
     cy.get('#targetActivity').check({ force: true });
     cy.get('#activityTargetGroup').should('be.visible');
-    cy.get('#activityId').type('25');
+    cy.get('#activitySearchInput').click();
+    cy.wait('@searchActivities');
+    cy.contains('#activityDropdownList button', 'Activity 25').click();
+    cy.get('#activityId').should('have.value', '25');
     cy.get('#submitDonation').click();
 
     cy.wait('@createDonation');
@@ -331,7 +365,7 @@ describe('Admin Donations', () => {
     cy.location('pathname').should('eq', '/admin/donations');
   });
 
-  it('validates that a donor must be selected before creating a staff donation', () => {
+  it('TC-ADM-DON-007 - Kiểm tra bắt buộc phải chọn nhà hảo tâm', () => {
     stubAlert();
 
     visitAdminPage('/admin/donations/form');
@@ -341,7 +375,7 @@ describe('Admin Donations', () => {
     cy.get('@alert').should('have.been.calledWith', 'Vui lòng chọn nhà hảo tâm hợp lệ.');
   });
 
-  it('validates that the donation amount is valid and at least 1,000 VND', () => {
+  it('TC-ADM-DON-008 - Kiểm tra số tiền không hợp lệ', () => {
     cy.intercept('GET', '/api/donors?*', {
       statusCode: 200,
       body: pagedResponse([
@@ -373,7 +407,7 @@ describe('Admin Donations', () => {
     cy.get('@createDonation.all').should('have.length', 0);
   });
 
-  it('validates that the selected target id is provided when an event target is chosen', () => {
+  it('TC-ADM-DON-009 - Kiểm tra bắt buộc chọn mục tiêu khi đã chọn loại mục tiêu', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors?*', {
@@ -400,10 +434,10 @@ describe('Admin Donations', () => {
     cy.get('#targetEvent').check({ force: true });
     cy.get('#submitDonation').click();
 
-    cy.get('@alert').should('have.been.calledWith', 'Vui lòng nhập ID sự kiện.');
+    cy.get('@alert').should('have.been.calledWith', 'Vui lòng chọn sự kiện đang diễn ra.');
   });
 
-  it('validates receipt information before creating a donation with receipt requested', () => {
+  it('TC-ADM-DON-010 - Kiểm tra thông tin biên lai', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donors?*', {
@@ -435,7 +469,7 @@ describe('Admin Donations', () => {
     cy.get('@alert').should('have.been.calledWith', 'Vui lòng nhập email nhận biên lai.');
   });
 
-  it('shows the seeded donation detail page with donor and donation information', () => {
+  it('TC-ADM-DON-011 - Xem chi tiết khoản quyên góp', () => {
     visitAdminPage('/admin/donations/17');
 
     cy.contains('Chi tiết quyên góp').should('be.visible');
@@ -444,7 +478,7 @@ describe('Admin Donations', () => {
     cy.contains('1,059,000').should('be.visible');
   });
 
-  it('rejects a pending donation from the admin list', () => {
+  it('TC-ADM-DON-013 - Từ chối khoản quyên góp chờ xử lý', () => {
     stubAlert();
     stubConfirm(true);
 
@@ -497,7 +531,7 @@ describe('Admin Donations', () => {
     cy.contains('Đã từ chối').should('be.visible');
   });
 
-  it('loads a staff donation edit form and saves the updated information', () => {
+  it('TC-ADM-DON-014 - Sửa khoản quyên góp nội bộ chưa xác nhận', () => {
     stubAlert();
 
     cy.intercept('GET', '/api/donations/197', {
@@ -550,7 +584,7 @@ describe('Admin Donations', () => {
     cy.location('pathname').should('eq', '/admin/donations/197');
   });
 
-  it('blocks the edit route for a public or already confirmed donation', () => {
+  it('TC-ADM-DON-015 - Chặn sửa khoản quyên góp đã xác nhận hoặc khoản quyên góp công khai', () => {
     visitAdminPage('/admin/donations/17/form');
 
     cy.location('pathname').should('eq', '/admin/donations/17');

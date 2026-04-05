@@ -7,15 +7,15 @@ import {
   fillCommonDonation
 } from './helpers/donorTestUtils.js';
 
-describe('Donor Donation Page Remaining Cases', () => {
-  it('stays publicly accessible without redirecting to login', () => {
+describe('Trang quyên góp nhà hảo tâm - Bổ sung', () => {
+  it('TC-NHT-DON-008 - Nhà hảo tâm không cần đăng nhập vẫn quyên góp được', () => {
     visitDonationPage();
 
     cy.location('pathname').should('eq', '/donations');
     cy.contains('Thông tin quyên góp').should('be.visible');
   });
 
-  it('shows a validation alert when individual full name is blank', () => {
+  it('TC-NHT-DON-011 - Thiếu họ và tên nhà hảo tâm cá nhân', () => {
     visitDonationPage();
     stubAlert();
 
@@ -31,7 +31,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Họ và tên không được để trống');
   });
 
-  it('shows a validation alert when phone number is invalid', () => {
+  it('TC-NHT-DON-012 - Số điện thoại không hợp lệ', () => {
     visitDonationPage();
     stubAlert();
 
@@ -47,7 +47,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Số điện thoại không hợp lệ');
   });
 
-  it('shows a backend validation alert when donor email is invalid', () => {
+  it('TC-NHT-DON-013 - Email không hợp lệ', () => {
     cy.intercept('POST', '/api/donors/individuals', {
       statusCode: 400,
       body: {
@@ -73,7 +73,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Email không hợp lệ');
   });
 
-  it('blocks decimal amounts and tells the donor to enter a whole amount', () => {
+  it('TC-NHT-DON-014 - Số tiền thập phân không hợp lệ', () => {
     visitDonationPage();
     stubAlert();
 
@@ -85,7 +85,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get(selectors.amountInput).should('have.value', '');
   });
 
-  it('shows a validation alert when organization name is blank', () => {
+  it('TC-NHT-DON-015 - Thiếu tên tổ chức', () => {
     visitDonationPage();
     stubAlert();
 
@@ -102,7 +102,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Tên tổ chức không được để trống');
   });
 
-  it('shows a validation alert when tax code is blank', () => {
+  it('TC-NHT-DON-016 - Thiếu mã số thuế', () => {
     visitDonationPage();
     stubAlert();
 
@@ -119,7 +119,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Mã số thuế không được để trống');
   });
 
-  it('shows a validation alert when representative is blank', () => {
+  it('TC-NHT-DON-017 - Thiếu người đại diện', () => {
     visitDonationPage();
     stubAlert();
 
@@ -136,7 +136,7 @@ describe('Donor Donation Page Remaining Cases', () => {
     cy.get('@alert').should('have.been.calledWith', 'Người đại diện không được để trống');
   });
 
-  it('falls back display name to full name and submits target NONE payload', () => {
+  it('TC-NHT-DON-018 - Tên hiển thị tự lấy theo họ và tên khi để trống', () => {
     cy.intercept('POST', '/api/donors/individuals', (req) => {
       expect(req.body).to.include({
         fullName: 'Tran Thi B',

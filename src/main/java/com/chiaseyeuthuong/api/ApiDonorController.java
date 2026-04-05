@@ -3,6 +3,8 @@ package com.chiaseyeuthuong.api;
 import com.chiaseyeuthuong.common.EDonorType;
 import com.chiaseyeuthuong.dto.request.DonorLookupDonationRequest;
 import com.chiaseyeuthuong.dto.request.DonorLookupRequest;
+import com.chiaseyeuthuong.dto.request.DonorOrganizationRelationshipRequest;
+import com.chiaseyeuthuong.dto.request.DonorPersonRelationshipRequest;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
 import com.chiaseyeuthuong.dto.request.OrganizeDonorRequest;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,6 +55,46 @@ public class ApiDonorController {
                 .status(200)
                 .message("Get donor detail successfully")
                 .data(donorService.getDonorById(id))
+                .build();
+    }
+
+    @GetMapping("/relationship-types/person")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getPersonRelationshipTypes() {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách loại mối quan hệ cá nhân thành công")
+                .data(donorService.getActivePersonRelationshipTypes())
+                .build();
+    }
+
+    @GetMapping("/relationship-types/organization-roles")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getOrganizationRoleTypes() {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách vai trò tổ chức thành công")
+                .data(donorService.getActiveOrganizationRoleTypes())
+                .build();
+    }
+
+    @GetMapping("/{id}/relationships/person")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getPersonRelationships(@PathVariable Long id) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách mối quan hệ cá nhân thành công")
+                .data(donorService.getPersonRelationships(id))
+                .build();
+    }
+
+    @GetMapping("/{id}/relationships/organizations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ApiResponse getOrganizationRelationships(@PathVariable Long id) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Lấy danh sách mối quan hệ tổ chức thành công")
+                .data(donorService.getOrganizationRelationships(id))
                 .build();
     }
 
@@ -122,6 +165,74 @@ public class ApiDonorController {
                 .status(200)
                 .message("Donor updated successfully")
                 .data(donorService.updateOrganizeDonor(id, request))
+                .build();
+    }
+
+    @PostMapping("/{id}/relationships/person")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse createPersonRelationship(@PathVariable Long id,
+                                                @Valid @RequestBody DonorPersonRelationshipRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Thêm mối quan hệ cá nhân thành công")
+                .data(donorService.createPersonRelationship(id, request))
+                .build();
+    }
+
+    @PutMapping("/{id}/relationships/person/{relationshipId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse updatePersonRelationship(@PathVariable Long id,
+                                                @PathVariable Long relationshipId,
+                                                @Valid @RequestBody DonorPersonRelationshipRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Cập nhật mối quan hệ cá nhân thành công")
+                .data(donorService.updatePersonRelationship(id, relationshipId, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}/relationships/person/{relationshipId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse deactivatePersonRelationship(@PathVariable Long id,
+                                                    @PathVariable Long relationshipId) {
+        donorService.deactivatePersonRelationship(id, relationshipId);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Đã ngừng sử dụng mối quan hệ cá nhân")
+                .build();
+    }
+
+    @PostMapping("/{id}/relationships/organizations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse createOrganizationRelationship(@PathVariable Long id,
+                                                      @Valid @RequestBody DonorOrganizationRelationshipRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Thêm mối quan hệ tổ chức thành công")
+                .data(donorService.createOrganizationRelationship(id, request))
+                .build();
+    }
+
+    @PutMapping("/{id}/relationships/organizations/{relationshipId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse updateOrganizationRelationship(@PathVariable Long id,
+                                                      @PathVariable Long relationshipId,
+                                                      @Valid @RequestBody DonorOrganizationRelationshipRequest request) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Cập nhật mối quan hệ tổ chức thành công")
+                .data(donorService.updateOrganizationRelationship(id, relationshipId, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}/relationships/organizations/{relationshipId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse deactivateOrganizationRelationship(@PathVariable Long id,
+                                                          @PathVariable Long relationshipId) {
+        donorService.deactivateOrganizationRelationship(id, relationshipId);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Đã ngừng sử dụng mối quan hệ tổ chức")
                 .build();
     }
 }

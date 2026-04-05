@@ -1,6 +1,7 @@
 {
   "scripts": {
     "cypress:run": "cypress run --browser electron",
+    "cypress:run:v0.1": "cypress run --browser electron --spec \"cypress/e2e/donor/**/*.cy.js,cypress/e2e/admin/**/*.cy.js\"",
     "cypress:run:donor": "cypress run --browser electron --spec \"cypress/e2e/donor/**/*.cy.js\"",
     "cypress:run:admin": "cypress run --browser electron --spec \"cypress/e2e/admin/**/*.cy.js\"",
     "cypress:run:admin:dashboard": "cypress run --browser electron --spec cypress/e2e/admin/dashboard.cy.js",

@@ -1,7 +1,7 @@
 import { pagedResponse, stubAlert, visitAdminPage } from './helpers/adminTestUtils.js';
 
-describe('Admin Activities', () => {
-  it('loads the activities list, filters it and resets the filters', () => {
+describe('Quản lý Hoạt động', () => {
+  it('TC-ADM-ACT-001 + TC-ADM-ACT-002 - Mở danh sách hoạt động, tìm kiếm và lọc', () => {
     cy.intercept('GET', '/api/activities?*', (req) => {
       const search = req.query.search || '';
       const status = req.query.status || '';
@@ -58,7 +58,7 @@ describe('Admin Activities', () => {
     });
   });
 
-  it('creates a new activity successfully from the admin form', () => {
+  it('TC-ADM-ACT-003 - Tạo hoạt động thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/activities/save', (req) => {
@@ -87,7 +87,7 @@ describe('Admin Activities', () => {
     cy.get('@alert').should('have.been.calledWith', 'Lưu hoạt động thành công!');
   });
 
-  it('validates that the parent event is required before saving an activity', () => {
+  it('TC-ADM-ACT-004 - Kiểm tra bắt buộc của hoạt động', () => {
     stubAlert();
 
     visitAdminPage('/admin/activities/form');
@@ -96,7 +96,7 @@ describe('Admin Activities', () => {
     cy.get('@alert').should('have.been.calledWith', 'Vui lòng chọn sự kiện cha!');
   });
 
-  it('auto-fills the activity start date from the selected parent event on create mode', () => {
+  it('TC-ADM-ACT-005 - Tự đồng bộ ngày bắt đầu từ sự kiện cha', () => {
     visitAdminPage('/admin/activities/form');
 
     cy.get('#activityStartDate').should('have.value', '');
@@ -106,7 +106,7 @@ describe('Admin Activities', () => {
     });
   });
 
-  it('updates an existing activity successfully from the edit form', () => {
+  it('TC-ADM-ACT-006 - Sửa hoạt động thành công', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/activities/save', (req) => {

@@ -1,7 +1,7 @@
 import { orders, visitSuccess } from './helpers/donorTestUtils.js';
 
-describe('Payment Result Pages', () => {
-  it('shows the fallback organization label for a general donation success page', () => {
+describe('Trang kết quả thanh toán', () => {
+  it('TC-NHT-PAY-004 - Hiển thị giá trị mặc định cho khoản quyên góp không gắn sự kiện hoặc hoạt động', () => {
     visitSuccess(orders.none.code);
 
     cy.contains(orders.none.label).should('be.visible');
@@ -12,7 +12,7 @@ describe('Payment Result Pages', () => {
     cy.contains('Xem biên lai / Hóa đơn').should('be.visible');
   });
 
-  it('shows the linked event information on a successful event donation', () => {
+  it('TC-NHT-EVT-003 - Trang thành công hiển thị đúng tên sự kiện', () => {
     visitSuccess(orders.event.code);
 
     cy.contains(orders.event.label).should('be.visible');
@@ -23,7 +23,7 @@ describe('Payment Result Pages', () => {
     cy.contains(orders.event.message).should('be.visible');
   });
 
-  it('shows the linked activity information on a successful activity donation', () => {
+  it('TC-NHT-ACT-003 - Trang thành công hiển thị đúng tên hoạt động', () => {
     visitSuccess(orders.activity.code);
 
     cy.contains(orders.activity.label).should('be.visible');
@@ -34,7 +34,7 @@ describe('Payment Result Pages', () => {
     cy.contains(orders.activity.message).should('be.visible');
   });
 
-  it('allows the donor to return to the home page from the success page', () => {
+  it('TC-NHT-PAY-007 - Nút Quay lại trang chủ hoạt động đúng', () => {
     visitSuccess(orders.none.code);
 
     cy.contains('a', 'Quay lại trang chủ').click();
@@ -42,7 +42,7 @@ describe('Payment Result Pages', () => {
     cy.contains('Cùng nhau, chúng ta').should('be.visible');
   });
 
-  it('renders the home page content on the failed payment route', () => {
+  it('TC-NHT-PAY-006 - Điều hướng trang thất bại khi hủy thanh toán', () => {
     cy.visit('/thanh-toan/that-bai');
 
     cy.location('pathname').should('eq', '/thanh-toan/that-bai');
@@ -50,7 +50,7 @@ describe('Payment Result Pages', () => {
     cy.contains('Quyên góp').should('be.visible');
   });
 
-  it('handles an invalid order code without returning a server error', () => {
+  it('TC-NHT-PAY-005 - orderCode không tồn tại', () => {
     cy.request({
       url: '/thanh-toan/thanh-cong?orderCode=999999999',
       failOnStatusCode: false
