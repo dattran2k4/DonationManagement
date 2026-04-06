@@ -422,6 +422,9 @@
   .z-50 {
     z-index: 50;
   }
+  .z-\[1100\] {
+    z-index: 1100;
+  }
   .col-span-1 {
     grid-column: span 1 / span 1;
   }
@@ -700,6 +703,9 @@
   }
   .h-screen {
     height: 100vh;
+  }
+  .max-h-56 {
+    max-height: calc(var(--spacing) * 56);
   }
   .max-h-64 {
     max-height: calc(var(--spacing) * 64);
@@ -1091,6 +1097,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .overflow-auto {
+    overflow: auto;
   }
   .overflow-hidden {
     overflow: hidden;

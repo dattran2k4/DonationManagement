@@ -43,6 +43,8 @@ public class ActivityResponse {
 
     private LocalDateTime updatedAt;
 
+    private String createdBy;
+
     private LocalDateTime completedAt;
 
     private EventResponse event;
