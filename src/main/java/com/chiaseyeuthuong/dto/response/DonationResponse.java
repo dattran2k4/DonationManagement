@@ -1,11 +1,8 @@
 package com.chiaseyeuthuong.dto.response;
 
 import com.chiaseyeuthuong.common.*;
-import com.chiaseyeuthuong.model.*;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import com.chiaseyeuthuong.model.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,7 +30,7 @@ public class DonationResponse {
     private EDonationTarget target;
     private EDonationVia donationVia;
     private Boolean approvalRequired;
-    private User createdBy;
+    private String createdBy;
     private User confirmedBy;
     private LocalDateTime donatedAt;
     private LocalDateTime createdAt;

@@ -74,7 +74,7 @@ public class AdminExcelServiceImpl implements AdminExcelService {
             Sheet sheet = workbook.createSheet("SuKien");
             List<String> headers = List.of(
                     "ID", "Tên sự kiện", "Danh mục ID", "Danh mục", "Trạng thái", "Ngày bắt đầu", "Ngày kết thúc",
-                    "Số tiền hiện tại", "Mục tiêu", "Địa điểm", "Mô tả ngắn", "Mô tả", "Nội dung",
+                    "Số tiền hiện tại", "Mục tiêu", "Địa điểm", "Mô tả ngắn", "Nội dung",
                     "Ảnh đại diện", "Số nhà hảo tâm", "Tạo lúc", "Cập nhật lúc"
             );
             writeHeaderRow(sheet, workbook, headers);
@@ -93,12 +93,11 @@ public class AdminExcelServiceImpl implements AdminExcelService {
                 setDecimalCell(row, 8, event.getTargetAmount());
                 setTextCell(row, 9, event.getLocation());
                 setTextCell(row, 10, event.getShortDescription());
-                setTextCell(row, 11, event.getDescription());
-                setTextCell(row, 12, event.getContent());
-                setTextCell(row, 13, event.getThumbnailUrl());
-                setNumberCell(row, 14, event.getNumberOfDonors());
-                setDateTimeCell(row, 15, event.getCreatedAt());
-                setDateTimeCell(row, 16, event.getUpdatedAt());
+                setTextCell(row, 11, event.getContent());
+                setTextCell(row, 12, event.getThumbnailUrl());
+                setNumberCell(row, 13, event.getNumberOfDonors());
+                setDateTimeCell(row, 14, event.getCreatedAt());
+                setDateTimeCell(row, 15, event.getUpdatedAt());
             }
 
             finalizeWorkbook(sheet, workbook, output, headers.size());
@@ -121,8 +120,8 @@ public class AdminExcelServiceImpl implements AdminExcelService {
             ensureAnyHeaderPresent(headers, "Ngày bắt đầu", "ngaybatdau", "startdate");
             ensureAnyHeaderPresent(headers, "Ngày kết thúc", "ngayketthuc", "enddate");
         }, (row, headers, rowNumber) -> {
+            Long eventId = readLong(row, headers, "id");
             EventRequest request = new EventRequest();
-            request.setId(readLong(row, headers, "id"));
             request.setName(requireString(row, headers, "Tên sự kiện", "tensukien", "name"));
             request.setCategoryId(resolveCategoryId(row, headers, categoriesByName));
             request.setStatus(parseEventStatus(requireString(row, headers, "Trạng thái", "trangthai", "status")));
@@ -132,12 +131,15 @@ public class AdminExcelServiceImpl implements AdminExcelService {
             request.setTargetAmount(readDecimalOrDefault(row, headers, BigDecimal.ZERO, "muctieu", "targetamount"));
             request.setLocation(readString(row, headers, "diadiem", "location"));
             request.setShortDescription(readString(row, headers, "motangan", "shortdescription"));
-            request.setDescription(readString(row, headers, "mota", "description"));
             request.setContent(readString(row, headers, "noidung", "content"));
             request.setThumbnailUrl(readString(row, headers, "anhdaidien", "thumbnailurl", "imageurl"));
 
             validateBean(request);
-            eventService.saveEvent(request);
+            if (eventId == null) {
+                eventService.createEvent(request);
+            } else {
+                eventService.updateEvent(eventId, request);
+            }
         });
     }
 

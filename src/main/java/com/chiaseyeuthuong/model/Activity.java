@@ -3,8 +3,6 @@ package com.chiaseyeuthuong.model;
 import com.chiaseyeuthuong.common.EActivityStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "activities")
-public class Activity {
+public class Activity extends AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,9 +33,6 @@ public class Activity {
 
     @Column(name = "location")
     private String location;
-
-    @Column(name = "description")
-    private String description;
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -60,14 +55,6 @@ public class Activity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private EActivityStatus status;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

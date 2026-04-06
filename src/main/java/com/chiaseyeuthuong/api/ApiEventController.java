@@ -104,23 +104,23 @@ public class ApiEventController {
                 .build();
     }
 
-    @PostMapping("/save")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
-    public ApiResponse saveEvent(@RequestBody @Valid EventRequest request) {
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse createEvent(@RequestBody @Valid EventRequest request) {
         return ApiResponse.builder()
                 .status(200)
-                .message("Successfully saved event")
-                .data(eventService.saveEvent(request))
+                .message("Tạo mới sự kiện thành công")
+                .data(eventService.createEvent(request))
                 .build();
     }
 
-    @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
-    public ApiResponse updateStatus(@Min(1) @PathVariable Long id, @RequestParam EEventStatus status) {
-        eventService.updateStatus(status, id);
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse updateEvent(@Min(1) @PathVariable Long id, @RequestBody @Valid EventRequest request) {
         return ApiResponse.builder()
                 .status(200)
-                .message("Successfully updated status event")
+                .message("Cập nhật sự kiện thành công")
+                .data(eventService.updateEvent(id, request))
                 .build();
     }
 

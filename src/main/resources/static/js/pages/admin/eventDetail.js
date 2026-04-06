@@ -125,38 +125,46 @@ function setActiveTab(tab) {
     const isDonations = tab === "donations";
     const isAuditLogs = tab === "auditLogs";
 
-    elements.infoPanel.classList.toggle("hidden", !isInfo);
-    elements.activitiesPanel.classList.toggle("hidden", !isActivities);
-    elements.donorsPanel.classList.toggle("hidden", !isDonors);
-    elements.donationsPanel.classList.toggle("hidden", !isDonations);
-    elements.auditLogsPanel.classList.toggle("hidden", !isAuditLogs);
+    if (elements.infoPanel) {
+        elements.infoPanel.classList.toggle("hidden", !isInfo);
+    }
+    if (elements.section) {
+        elements.section.classList.toggle("hidden", isInfo);
+    }
 
-    elements.infoBtn.className = isInfo
+    [elements.activitiesPanel, elements.donorsPanel, elements.donationsPanel, elements.auditLogsPanel]
+        .forEach((panel) => panel?.classList.add("hidden"));
+    if (isActivities) elements.activitiesPanel?.classList.remove("hidden");
+    if (isDonors) elements.donorsPanel?.classList.remove("hidden");
+    if (isDonations) elements.donationsPanel?.classList.remove("hidden");
+    if (isAuditLogs) elements.auditLogsPanel?.classList.remove("hidden");
+
+    if (elements.infoBtn) elements.infoBtn.className = isInfo
         ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.activitiesBtn.className = isActivities
+    if (elements.activitiesBtn) elements.activitiesBtn.className = isActivities
         ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.donorsBtn.className = isDonors
+    if (elements.donorsBtn) elements.donorsBtn.className = isDonors
         ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.donationsBtn.className = isDonations
+    if (elements.donationsBtn) elements.donationsBtn.className = isDonations
         ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.auditLogsBtn.className = isAuditLogs
+    if (elements.auditLogsBtn) elements.auditLogsBtn.className = isAuditLogs
         ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
 
-    elements.activitiesCount.className = isActivities
+    if (elements.activitiesCount) elements.activitiesCount.className = isActivities
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
-    elements.donorsCount.className = isDonors
+    if (elements.donorsCount) elements.donorsCount.className = isDonors
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
-    elements.donationsCount.className = isDonations
+    if (elements.donationsCount) elements.donationsCount.className = isDonations
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
-    elements.auditLogsCount.className = isAuditLogs
+    if (elements.auditLogsCount) elements.auditLogsCount.className = isAuditLogs
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
 }
@@ -328,15 +336,7 @@ async function loadSummary() {
         elements.activitiesCount.textContent = summary.activityCount ?? 0;
         elements.donorsCount.textContent = summary.donorCount ?? 0;
         elements.donationsCount.textContent = summary.donationCount ?? 0;
-
-        const auditResponse = await auditLogApi.getAuditLogs({
-            page: 1,
-            size: 1,
-            entityType: "EVENT",
-            entityId: state.eventId
-        });
-        const auditPage = auditResponse?.data || {};
-        elements.auditLogsCount.textContent = auditPage.totalItems ?? 0;
+        elements.auditLogsCount.textContent = summary.auditLogCount ?? 0;
     } catch (error) {
         console.error("Không thể tải tổng quan tab sự kiện:", error);
     }
@@ -451,28 +451,28 @@ function bindTabEvents() {
 
     elements.activitiesBtn?.addEventListener("click", async () => {
         setActiveTab("activities");
-        if (!state.activities.loaded) {
+        if (state.eventId && !state.activities.loaded) {
             await loadActivities();
         }
     });
 
     elements.donorsBtn?.addEventListener("click", async () => {
         setActiveTab("donors");
-        if (!state.donors.loaded) {
+        if (state.eventId && !state.donors.loaded) {
             await loadDonors();
         }
     });
 
     elements.donationsBtn?.addEventListener("click", async () => {
         setActiveTab("donations");
-        if (!state.donations.loaded) {
+        if (state.eventId && !state.donations.loaded) {
             await loadDonations();
         }
     });
 
     elements.auditLogsBtn?.addEventListener("click", async () => {
         setActiveTab("auditLogs");
-        if (!state.auditLogs.loaded) {
+        if (state.eventId && !state.auditLogs.loaded) {
             await loadAuditLogs();
         }
     });
@@ -482,9 +482,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
 
     state.eventId = Number(elements.section.dataset.eventId || 0);
-    if (!state.eventId) return;
-
     bindTabEvents();
     setActiveTab("info");
-    await loadSummary();
+    if (state.eventId) {
+        await loadSummary();
+    } else {
+        [elements.activitiesBtn, elements.donorsBtn, elements.donationsBtn, elements.auditLogsBtn]
+            .forEach((btn) => btn?.setAttribute("disabled", "disabled"));
+    }
 });

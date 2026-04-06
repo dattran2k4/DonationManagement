@@ -210,7 +210,7 @@
                             <div>
                                 <p class="text-sm text-slate-500 dark:text-slate-400">Tạo bởi</p>
                                 <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.createdBy != null && donation.createdBy.fullName != null ? donation.createdBy.fullName : 'Hệ thống / Website'}">
+                                   th:text="${donation.createdBy != null && !#strings.isEmpty(donation.createdBy) ? donation.createdBy : 'Hệ thống / Website'}">
                                     Hệ thống / Website
                                 </p>
                             </div>

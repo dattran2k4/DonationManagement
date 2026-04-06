@@ -3,7 +3,6 @@ import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
 
 const canApproveDonations = window.__CAN_APPROVE_DONATIONS__ === true;
-const canManageDonations = window.__CAN_MANAGE_DONATIONS__ === true;
 
 const state = {
     page: 1,
@@ -147,26 +146,8 @@ const getViaLabel = (donationVia) => {
     return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
 };
 
-const canEditDonation = (item) => {
-    return canManageDonations && item.donationVia === 'STAFF' && item.status !== 'CONFIRMED';
-};
-
 const getActionButtons = (item) => {
-    const actions = [
-        `
-            <button onclick="viewDonation(${item.id})" class="text-slate-400 hover:text-primary p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem chi tiết">
-                <span class="material-symbols-outlined text-[20px]">visibility</span>
-            </button>
-        `
-    ];
-
-    if (canEditDonation(item)) {
-        actions.push(`
-            <button onclick="editDonation(${item.id})" class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
-                <span class="material-symbols-outlined text-[20px]">edit</span>
-            </button>
-        `);
-    }
+    const actions = [];
 
     if (canApproveDonations && item.status === 'PENDING_APPROVED') {
         actions.push(`
@@ -207,7 +188,7 @@ const renderTable = (donations) => {
         return `
         <tr class="${statusStyle.rowClass} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-mono text-slate-900 dark:text-white font-medium">#${item.memoCode || `ORD-${item.id}`}</span>
+                <a href="/admin/donations/${item.id}" class="text-sm font-mono text-slate-900 dark:text-white font-medium hover:text-primary dark:hover:text-primary transition-colors">#${item.memoCode || `ORD-${item.id}`}</a>
                 <div class="text-xs text-slate-500 mt-0.5">${donatedAt}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
@@ -387,15 +368,6 @@ window.handleAction = async (id, action) => {
         console.error('Lỗi cập nhật trạng thái:', error);
         alert(error.message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
     }
-};
-
-window.viewDonation = (id) => {
-    window.location.href = `/admin/donations/${id}`;
-};
-
-window.editDonation = (id) => {
-    if (!canManageDonations) return;
-    window.location.href = `/admin/donations/${id}/form`;
 };
 
 document.addEventListener('DOMContentLoaded', () => {

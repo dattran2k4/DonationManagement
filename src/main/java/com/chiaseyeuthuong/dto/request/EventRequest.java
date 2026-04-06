@@ -13,9 +13,6 @@ import java.time.LocalDate;
 @Setter
 public class EventRequest {
 
-    @Min(value = 1, message = "Lỗi sự kiện")
-    private Long id;
-
     @NotBlank(message = "Tên sự kiện không được để trống")
     private String name;
 
@@ -31,8 +28,6 @@ public class EventRequest {
 
     private String shortDescription;
 
-    private String description;
-
     private String location;
 
     private String content;
@@ -40,7 +35,6 @@ public class EventRequest {
     private String thumbnailUrl;
 
     @EnumValue(name = "status", enumClass = EEventStatus.class)
-    @NotNull(message = "Vui lòng chọn trạng thái")
     private EEventStatus status;
 
     @Min(value = 1, message = "Danh mục không hợp lệ")

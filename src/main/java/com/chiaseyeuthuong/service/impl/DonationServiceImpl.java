@@ -49,7 +49,6 @@ public class DonationServiceImpl implements DonationService {
     private static final String WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
 
     private final DonationRepository donationRepository;
-    private final UserRepository userRepository;
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
     private final DonorRepository donorRepository;
@@ -92,15 +91,12 @@ public class DonationServiceImpl implements DonationService {
     public long createStaffDonation(DonationRequest request, String username) {
         log.info("Processing create donation from staff {}", username);
 
-        User staff = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         Donation donation = new Donation();
 
         saveDonation(donation, request);
 
         donation.setDonationVia(EDonationVia.STAFF);
         donation.setStatus(EDonationStatus.PENDING_APPROVED);
-        donation.setCreatedBy(staff);
         donation.setPaymentMethod(request.getPaymentMethod());
 
         Donation result = donationRepository.save(donation);

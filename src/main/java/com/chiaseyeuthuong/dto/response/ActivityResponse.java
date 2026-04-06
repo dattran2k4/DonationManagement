@@ -29,8 +29,6 @@ public class ActivityResponse {
 
     private String shortDescription;
 
-    private String description;
-
     private String location;
 
     private String content;

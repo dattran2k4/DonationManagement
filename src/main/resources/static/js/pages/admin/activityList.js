@@ -1,7 +1,6 @@
 import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
-const canManageActivities = window.__CAN_MANAGE_ACTIVITIES__ === true;
 
 const state = {page: 1, size: 50, search: '', status: ''};
 let latestRequestId = 0;
@@ -11,7 +10,6 @@ const elements = {
     searchInput: document.getElementById('activitySearchInput'),
     statusFilter: document.getElementById('activityStatusFilter'),
     resetFilterBtn: document.getElementById('activityResetFilterBtn'),
-    actionHeader: document.getElementById('activityActionHeader'),
     exportBtn: document.getElementById('activityExportBtn'),
     importBtn: document.getElementById('activityImportBtn'),
     importInput: document.getElementById('activityImportInput')
@@ -35,7 +33,7 @@ const formatDateRange = (start, end) => {
     return `${startStr} - ${endStr}`;
 };
 
-const getColumnCount = () => canManageActivities ? 8 : 7;
+const getColumnCount = () => 7;
 
 const setTableMessage = (message) => {
     elements.tableBody.innerHTML = `
@@ -117,18 +115,6 @@ const renderActivityRow = (activity) => {
         <td class="px-6 py-4 whitespace-nowrap">
             ${getStatusBadge(activity.status)}
         </td>
-        ${canManageActivities ? `
-            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <div class="flex items-center justify-center">
-                    <a href="/admin/activities/${activity.id}" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Chi tiết">
-                        <span class="material-symbols-outlined text-[20px]">visibility</span>
-                    </a>
-                    <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Cập nhật">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                </div>
-            </td>
-        ` : ``}
     </tr>`;
 };
 
@@ -207,9 +193,6 @@ const bindFilters = () => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
-    if (!canManageActivities && elements.actionHeader) {
-        elements.actionHeader.remove();
-    }
     bindFilters();
     syncStateFromFilters();
     bindExcelActions({
@@ -242,6 +225,3 @@ window.addEventListener('pageshow', (event) => {
     state.page = 1;
     loadActivities();
 });
-
-// Các hàm toàn cục
-window.editActivity = (id) => window.location.href = `/admin/activities/${id}/form`;
