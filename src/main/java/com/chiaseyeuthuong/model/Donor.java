@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class Donor extends AbstractEntity {
     @Column(name = "type", nullable = false)
     private EDonorType type;
 
-    @OneToOne(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "donor", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private Organization organization;
 

@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.dto.response;
 
 import com.chiaseyeuthuong.common.EDonationStatus;
 import com.chiaseyeuthuong.common.EDonationTarget;
+import com.chiaseyeuthuong.common.EPaymentMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +21,7 @@ public class DonorDonationHistoryResponse {
     private String targetLabel;
     private String targetTitle;
     private String targetUrl;
+    private EPaymentMethod paymentMethod;
+    private String paymentMethodLabel;
     private LocalDateTime donatedAt;
 }

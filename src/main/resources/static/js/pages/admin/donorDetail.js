@@ -1,8 +1,12 @@
 import {donorApi} from "../../apis/donorApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
+import {createDonor} from "../../modules/donor-submit.js";
 
 const donorId = window.__DONOR_ID__;
+const donorTypeFromServer = window.__DONOR_TYPE__ || "INDIVIDUAL";
+const canManage = Boolean(window.__CAN_MANAGE_DONOR__);
+const isCreateMode = !donorId;
 const state = {
     activeTab: "info",
     history: {
@@ -14,10 +18,15 @@ const state = {
         page: 1,
         size: 10,
         loaded: false
-    }
+    },
+    selectedDonationIds: new Set(),
+    currentHistoryRows: []
 };
 
 const elements = {
+    saveBtn: document.getElementById("saveBtn"),
+    deleteBtn: document.getElementById("deleteBtn"),
+    refreshBtn: document.getElementById("refreshBtn"),
     infoBtn: document.getElementById("tabInfoBtn"),
     historyBtn: document.getElementById("tabHistoryBtn"),
     auditBtn: document.getElementById("tabAuditBtn"),
@@ -26,9 +35,16 @@ const elements = {
     auditPanel: document.getElementById("tabAuditPanel"),
     tableBody: document.getElementById("donorDonationHistoryBody"),
     paginationContainer: document.getElementById("donorDonationPagination"),
+    selectAllHistory: document.getElementById("donorDonationSelectAll"),
+    totalHistoryCount: document.getElementById("donorDonationTotalCount"),
+    selectedHistoryCount: document.getElementById("donorDonationSelectedCount"),
     auditTableBody: document.getElementById("donorAuditTableBody"),
     auditPaginationContainer: document.getElementById("donorAuditPagination"),
-    auditCount: document.getElementById("tabAuditCount")
+    auditCount: document.getElementById("tabAuditCount"),
+    donorTypeIndividualBtn: document.getElementById("donorTypeIndividualBtn"),
+    donorTypeOrganizationBtn: document.getElementById("donorTypeOrganizationBtn"),
+    donorIndividualSection: document.getElementById("donorIndividualSection"),
+    donorOrganizationSection: document.getElementById("donorOrganizationSection")
 };
 
 const formatCurrency = (amount) => `${new Intl.NumberFormat("vi-VN").format(amount || 0)} đ`;
@@ -44,17 +60,20 @@ const formatDateTime = (dateTime) => {
     });
 };
 
-const getStatusBadge = (status, label) => {
-    const styles = {
-        PENDING_PAYMENT: "bg-yellow-100 text-yellow-800",
-        PENDING_APPROVED: "bg-amber-100 text-amber-800",
-        CONFIRMED: "bg-emerald-100 text-emerald-800",
-        CANCELLED: "bg-slate-100 text-slate-700",
-        REJECTED: "bg-red-100 text-red-700",
-        FAILED: "bg-rose-100 text-rose-700"
-    };
+const formatDate = (dateTime) => {
+    if (!dateTime) return "---";
+    return new Date(dateTime).toLocaleDateString("vi-VN");
+};
 
-    return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status] || "bg-slate-100 text-slate-700"}">${label || status || "---"}</span>`;
+const paymentMethodLabelMap = {
+    CASH: "Tiền mặt",
+    BANK_TRANSFER_ONLINE: "Chuyển Khoản Online",
+    BANK_TRANSFER_OFFLINE: "Chuyển Khoản"
+};
+
+const getPaymentMethodLabel = (item) => {
+    if (item.paymentMethodLabel) return item.paymentMethodLabel;
+    return paymentMethodLabelMap[item.paymentMethod] || "---";
 };
 
 const getAuditActionBadge = (action) => {
@@ -80,46 +99,106 @@ function setActiveTab(tab) {
     const isHistory = tab === "history";
     const isAudit = tab === "audit";
 
-    elements.infoPanel.classList.toggle("hidden", !isInfo);
-    elements.historyPanel.classList.toggle("hidden", !isHistory);
-    elements.auditPanel.classList.toggle("hidden", !isAudit);
+    elements.infoPanel?.classList.toggle("hidden", !isInfo);
+    elements.historyPanel?.classList.toggle("hidden", !isHistory);
+    elements.auditPanel?.classList.toggle("hidden", !isAudit);
 
-    elements.infoBtn.className = isInfo
+    if (elements.infoBtn) elements.infoBtn.className = isInfo
         ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-    elements.historyBtn.className = isHistory
+    if (elements.historyBtn) elements.historyBtn.className = isHistory
         ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-    elements.auditBtn.className = isAudit
+    if (elements.auditBtn) elements.auditBtn.className = isAudit
         ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
         : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
 
-    elements.auditCount.className = isAudit
+    if (elements.auditCount) elements.auditCount.className = isAudit
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700";
 }
 
+function updateHistorySelectionSummary() {
+    if (elements.selectedHistoryCount) {
+        elements.selectedHistoryCount.textContent = String(state.selectedDonationIds.size);
+    }
+
+    if (elements.totalHistoryCount) {
+        elements.totalHistoryCount.textContent = String(state.currentHistoryRows.length);
+    }
+
+    if (!elements.selectAllHistory) return;
+    const currentIds = state.currentHistoryRows.map((row) => row.donationId).filter(Boolean);
+    const selectedInPage = currentIds.filter((id) => state.selectedDonationIds.has(id)).length;
+    elements.selectAllHistory.checked = currentIds.length > 0 && selectedInPage === currentIds.length;
+    elements.selectAllHistory.indeterminate = selectedInPage > 0 && selectedInPage < currentIds.length;
+}
+
+function bindHistorySelectionEvents() {
+    const rowCheckboxes = elements.tableBody.querySelectorAll("input[data-donation-id]");
+    rowCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            const donationId = Number(checkbox.dataset.donationId);
+            if (!donationId) return;
+            if (checkbox.checked) {
+                state.selectedDonationIds.add(donationId);
+            } else {
+                state.selectedDonationIds.delete(donationId);
+            }
+
+            const row = checkbox.closest("tr");
+            if (row) {
+                row.classList.toggle("bg-emerald-50", checkbox.checked);
+            }
+            updateHistorySelectionSummary();
+        });
+    });
+}
+
 function renderTable(rows) {
+    state.currentHistoryRows = rows || [];
+    if (elements.selectAllHistory) {
+        elements.selectAllHistory.checked = false;
+        elements.selectAllHistory.indeterminate = false;
+    }
+
     if (!rows || rows.length === 0) {
-        elements.tableBody.innerHTML = `<tr><td class="px-6 py-8 text-center text-slate-500" colspan="6">Nhà hảo tâm chưa có lịch sử quyên góp.</td></tr>`;
+        elements.tableBody.innerHTML = `<tr><td class="px-6 py-8 text-center text-slate-500" colspan="8">Nhà hảo tâm chưa có lịch sử quyên góp.</td></tr>`;
+        updateHistorySelectionSummary();
         return;
     }
 
-    elements.tableBody.innerHTML = rows.map((item) => `
-        <tr class="hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-700">#${item.donationCode || `DN-${item.donationId}`}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">${item.targetLabel || "---"}</td>
-            <td class="px-6 py-4 text-sm">
-                ${item.targetUrl
-        ? `<a href="${item.targetUrl}" target="_blank" class="font-medium text-primary hover:underline">${item.targetTitle || "---"}</a>`
-        : `<span class="text-slate-700">${item.targetTitle || "---"}</span>`
-    }
+    elements.tableBody.innerHTML = rows.map((item) => {
+        const donationId = Number(item.donationId);
+        const isSelected = donationId && state.selectedDonationIds.has(donationId);
+        const donationCode = item.donationCode || `DTN-${String(donationId || 0).padStart(8, "0")}`;
+
+        return `
+        <tr class="transition-colors ${isSelected ? "bg-emerald-50" : "hover:bg-slate-50"}">
+            <td class="px-4 py-4 text-center">
+                <input type="checkbox"
+                       data-donation-id="${donationId || ""}"
+                       class="h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary"
+                       ${isSelected ? "checked" : ""}>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-slate-900">${formatCurrency(item.amount)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">${getStatusBadge(item.status, item.statusLabel)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${formatDateTime(item.donatedAt)}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary underline underline-offset-2">${donationCode}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${item.targetLabel || "---"}</td>
+            <td class="px-4 py-4 text-sm">
+                ${item.targetUrl
+            ? `<a href="${item.targetUrl}" target="_blank" class="font-medium text-primary underline underline-offset-2 hover:opacity-80">${item.targetTitle || "---"}</a>`
+            : `<span class="text-slate-700">${item.targetTitle || "---"}</span>`
+        }
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${formatDate(item.donatedAt)}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-right font-semibold text-slate-900">${formatCurrency(item.amount)}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${getPaymentMethodLabel(item)}</td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${item.statusLabel || item.status || "---"}</td>
         </tr>
-    `).join("");
+    `;
+    }).join("");
+
+    bindHistorySelectionEvents();
+    updateHistorySelectionSummary();
 }
 
 function renderAuditTable(rows) {
@@ -168,12 +247,12 @@ async function loadHistory() {
         state.history.loaded = true;
     } catch (error) {
         console.error("Lỗi tải lịch sử quyên góp:", error);
-        elements.tableBody.innerHTML = `<tr><td class="px-6 py-8 text-center text-red-500" colspan="6">Không thể tải lịch sử quyên góp.</td></tr>`;
+        elements.tableBody.innerHTML = `<tr><td class="px-6 py-8 text-center text-red-500" colspan="8">Không thể tải lịch sử quyên góp.</td></tr>`;
     }
 }
 
 async function loadAuditSummary() {
-    if (!donorId) return;
+    if (!donorId || !elements.auditCount) return;
     try {
         const response = await auditLogApi.getAuditLogs({
             page: 1,
@@ -210,9 +289,126 @@ async function loadAuditHistory() {
     }
 }
 
+function setCreateDonorType(type) {
+    const isIndividual = type === "INDIVIDUAL";
+    elements.donorIndividualSection?.classList.toggle("hidden", !isIndividual);
+    elements.donorOrganizationSection?.classList.toggle("hidden", isIndividual);
+    elements.donorTypeIndividualBtn?.classList.toggle("bg-primary", isIndividual);
+    elements.donorTypeIndividualBtn?.classList.toggle("text-white", isIndividual);
+    elements.donorTypeIndividualBtn?.classList.toggle("text-slate-600", !isIndividual);
+    elements.donorTypeOrganizationBtn?.classList.toggle("bg-primary", !isIndividual);
+    elements.donorTypeOrganizationBtn?.classList.toggle("text-white", !isIndividual);
+    elements.donorTypeOrganizationBtn?.classList.toggle("text-slate-600", isIndividual);
+}
+
+function collectCreateDonorData() {
+    return {
+        fullName: document.getElementById("fullName")?.value?.trim() || "",
+        displayName: document.getElementById("displayName")?.value?.trim() || "",
+        name: document.getElementById("orgName")?.value?.trim() || "",
+        taxCode: document.getElementById("taxCode")?.value?.trim() || "",
+        representative: document.getElementById("representative")?.value?.trim() || "",
+        billingAddress: document.getElementById("billingAddress")?.value?.trim() || "",
+        phone: document.getElementById("phone")?.value?.trim() || "",
+        email: document.getElementById("email")?.value?.trim() || "",
+        referralSource: document.getElementById("referralSource")?.value || "",
+        note: document.getElementById("note")?.value?.trim() || ""
+    };
+}
+
+function collectDonorData() {
+    return {
+        fullName: document.getElementById("fullName")?.value?.trim() || "",
+        displayName: document.getElementById("displayName")?.value?.trim() || "",
+        name: document.getElementById("orgName")?.value?.trim() || "",
+        taxCode: document.getElementById("taxCode")?.value?.trim() || "",
+        representative: document.getElementById("representative")?.value?.trim() || "",
+        billingAddress: document.getElementById("billingAddress")?.value?.trim() || "",
+        phone: document.getElementById("phone")?.value?.trim() || "",
+        email: document.getElementById("email")?.value?.trim() || "",
+        referralSource: document.getElementById("referralSource")?.value || "",
+        note: document.getElementById("note")?.value?.trim() || ""
+    };
+}
+
+function getCurrentDonorType() {
+    if (!isCreateMode) {
+        return donorTypeFromServer;
+    }
+    return elements.donorTypeOrganizationBtn?.classList.contains("bg-primary")
+        ? "ORGANIZATION"
+        : "INDIVIDUAL";
+}
+
+async function handleCreateDonor() {
+    const donorType = getCurrentDonorType();
+    const rawData = collectCreateDonorData();
+    try {
+        const savedDonorId = await createDonor(donorType, rawData, {});
+        alert("Tạo mới nhà hảo tâm thành công");
+        window.location.href = `/admin/donors/${savedDonorId}`;
+    } catch (error) {
+        alert(error.message || "Không thể tạo mới nhà hảo tâm");
+    }
+}
+
+async function handleUpdateDonor() {
+    if (!donorId) return;
+    const donorType = getCurrentDonorType();
+    const rawData = collectDonorData();
+    try {
+        await createDonor(donorType, rawData, {donorId});
+        alert("Cập nhật nhà hảo tâm thành công");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || "Không thể cập nhật nhà hảo tâm");
+    }
+}
+
+async function handleDeleteDonor() {
+    if (!donorId) return;
+    const confirmed = window.confirm("Bạn chắc chắn muốn xóa nhà hảo tâm này?");
+    if (!confirmed) return;
+    try {
+        const response = await donorApi.deleteDonor(donorId);
+        if (response?.status !== 200) {
+            throw new Error(response?.message || "Không thể xóa nhà hảo tâm");
+        }
+        alert("Xóa nhà hảo tâm thành công");
+        window.location.href = "/admin/donors";
+    } catch (error) {
+        alert(error.message || "Không thể xóa nhà hảo tâm");
+    }
+}
+
+function initUpdateMode() {
+    if (isCreateMode || !canManage) return;
+    document.querySelectorAll(".donor-updatable").forEach((field) => {
+        field.removeAttribute("readonly");
+        field.removeAttribute("disabled");
+        field.classList.remove("border-slate-300");
+        field.classList.add("border-slate-200");
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     setActiveTab("info");
-    loadAuditSummary();
+    if (!isCreateMode) {
+        loadAuditSummary();
+    }
+
+    elements.selectAllHistory?.addEventListener("change", () => {
+        const checked = elements.selectAllHistory.checked;
+        state.currentHistoryRows.forEach((row) => {
+            if (!row.donationId) return;
+            if (checked) {
+                state.selectedDonationIds.add(row.donationId);
+            } else {
+                state.selectedDonationIds.delete(row.donationId);
+            }
+        });
+        renderTable(state.currentHistoryRows);
+    });
 
     elements.infoBtn?.addEventListener("click", () => setActiveTab("info"));
     elements.historyBtn?.addEventListener("click", async () => {
@@ -227,4 +423,18 @@ document.addEventListener("DOMContentLoaded", () => {
             await loadAuditHistory();
         }
     });
+
+    if (isCreateMode) {
+        setCreateDonorType("INDIVIDUAL");
+        elements.donorTypeIndividualBtn?.addEventListener("click", () => setCreateDonorType("INDIVIDUAL"));
+        elements.donorTypeOrganizationBtn?.addEventListener("click", () => setCreateDonorType("ORGANIZATION"));
+        elements.saveBtn?.addEventListener("click", handleCreateDonor);
+    } else {
+        initUpdateMode();
+        if (canManage) {
+            elements.saveBtn?.addEventListener("click", handleUpdateDonor);
+            elements.deleteBtn?.addEventListener("click", handleDeleteDonor);
+        }
+    }
+    elements.refreshBtn?.addEventListener("click", () => window.location.reload());
 });

@@ -39,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +51,7 @@ public class DonorServiceImpl implements DonorService {
     private final AuditLogService auditLogService;
 
     private static final String DONOR_NOT_FOUND_MESSAGE = "Không tìm thấy nhà hảo tâm";
+    private static final String TARGET_NOT_FOUND = "Không gắn mục tiêu";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -60,7 +60,8 @@ public class DonorServiceImpl implements DonorService {
         String email = normalizeEmail(request.getEmail());
         log.info("Processing saving donor for donor phone: {}", phone);
 
-        Donor donor = resolveDonor(phone, email);
+        validateUniqueContactForCreate(phone, email);
+        Donor donor = new Donor();
 
         toEntity(donor, request, phone, email);
 
@@ -78,7 +79,8 @@ public class DonorServiceImpl implements DonorService {
         String phone = normalizePhone(request.getPhone());
         String email = normalizeEmail(request.getEmail());
 
-        Donor donor = resolveDonor(phone, email);
+        validateUniqueContactForCreate(phone, email);
+        Donor donor = new Donor();
 
         toEntity(donor, request, phone, email);
 
@@ -294,22 +296,25 @@ public class DonorServiceImpl implements DonorService {
         mailService.sendVerificationCodeMailAsync(normalizeEmail(email));
     }
 
-    private Donor resolveDonor(String phone, String email) {
-        Optional<Donor> donorByPhone = donorRepository.findByPhone(phone);
-        Optional<Donor> donorByEmail = StringUtils.hasText(email)
-                ? donorRepository.findByEmailIgnoreCase(email)
-                : Optional.empty();
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteDonor(Long donorId) {
+        Donor donor = getExistingDonor(donorId);
+        long donationCount = donationRepository.countByDonorId(donorId);
+        if (donationCount > 0) {
+            throw new InvalidDataException("Không thể xóa nhà hảo tâm đã phát sinh quyên góp");
+        }
+        donorRepository.delete(donor);
+    }
 
-        if (donorByPhone.isPresent() && donorByEmail.isPresent()) {
-            Donor phoneOwner = donorByPhone.get();
-            Donor emailOwner = donorByEmail.get();
-
-            if (!phoneOwner.getId().equals(emailOwner.getId())) {
-                throw new InvalidDataException("Số điện thoại và email đang thuộc về hai nhà hảo tâm khác nhau");
-            }
+    private void validateUniqueContactForCreate(String phone, String email) {
+        if (donorRepository.findByPhone(phone).isPresent()) {
+            throw new InvalidDataException("Số điện thoại đã được dùng cho nhà hảo tâm khác");
         }
 
-        return donorByPhone.orElseGet(() -> donorByEmail.orElseGet(Donor::new));
+        if (donorRepository.findByEmailIgnoreCase(email).isPresent()) {
+            throw new InvalidDataException("Email đã được dùng cho nhà hảo tâm khác");
+        }
     }
 
     private Donor getExistingDonor(Long donorId) {
@@ -467,6 +472,8 @@ public class DonorServiceImpl implements DonorService {
     private DonorResponse toResponse(Donor donor) {
         DonorResponse response = new DonorResponse();
         BeanUtils.copyProperties(donor, response);
+        response.setCreatedAt(donor.getCreatedAt());
+        response.setCreatedBy(donor.getCreatedBy());
         if (donor.getOrganization() != null) {
             OrganizationResponse orgRes = new OrganizationResponse();
             BeanUtils.copyProperties(donor.getOrganization(), orgRes);
@@ -486,6 +493,8 @@ public class DonorServiceImpl implements DonorService {
         response.setStatusLabel(getStatusLabel(donation.getStatus()));
         response.setTarget(donation.getTarget());
         response.setTargetLabel(getTargetLabel(donation.getTarget()));
+        response.setPaymentMethod(donation.getPaymentMethod());
+        response.setPaymentMethodLabel(donation.getPaymentMethod() != null ? donation.getPaymentMethod().getValue() : "---");
         response.setDonatedAt(donation.getDonatedAt() != null ? donation.getDonatedAt() : donation.getCreatedAt());
 
         if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
@@ -495,7 +504,7 @@ public class DonorServiceImpl implements DonorService {
             response.setTargetTitle(donation.getActivity().getName());
             response.setTargetUrl(donation.getActivity().getSlug() != null ? "/activities/%s".formatted(donation.getActivity().getSlug()) : null);
         } else {
-            response.setTargetTitle("Không gắn mục tiêu");
+            response.setTargetTitle(TARGET_NOT_FOUND);
             response.setTargetUrl(null);
         }
 
@@ -518,12 +527,12 @@ public class DonorServiceImpl implements DonorService {
 
     private String getTargetLabel(EDonationTarget target) {
         if (target == null) {
-            return "Không gắn mục tiêu";
+            return TARGET_NOT_FOUND;
         }
         return switch (target) {
             case EVENT -> "Sự kiện";
             case ACTIVITY -> "Hoạt động";
-            case NONE -> "Không gắn mục tiêu";
+            case NONE -> TARGET_NOT_FOUND;
         };
     }
 }

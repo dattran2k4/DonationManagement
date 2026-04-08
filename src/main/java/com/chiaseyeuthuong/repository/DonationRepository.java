@@ -46,6 +46,8 @@ public interface DonationRepository extends JpaRepository<Donation, Long>, JpaSp
 
     Integer countByDonorIdAndStatus(Long donorId, EDonationStatus status);
 
+    long countByDonorId(Long donorId);
+
     @Query("""
                 SELECT COALESCE(SUM(d.amount),0)
                 FROM Donation d

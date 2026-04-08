@@ -33,5 +33,8 @@ export const donorApi = {
     },
     updateOrganization: async (id, body) => {
         return await apiClient.put(`${BASE_URL}/${id}/organizations`, body);
+    },
+    deleteDonor: async (id) => {
+        return await apiClient.delete(`${BASE_URL}/${id}`);
     }
 };

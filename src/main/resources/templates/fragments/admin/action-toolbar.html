@@ -23,7 +23,7 @@
             Hủy bỏ
         </button>
 
-        <button th:if="${showSave}" type="button" id="saveBtn" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+        <button th:if="${showSave}" type="button" id="saveBtn" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')"
                 class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
             <span class="material-symbols-outlined text-[18px]">save</span>
             Lưu
@@ -41,9 +41,9 @@
             Xem website
         </a>
 
-        <button th:if="${showDelete}" type="button"
+        <button th:if="${showDelete}" type="button" id="deleteBtn"
                 class="ml-auto inline-flex items-center gap-2 rounded-2xl bg-red-500 px-6 py-3 text-lg font-semibold text-white hover:bg-red-600"
-                onclick="alert('Chức năng xóa sẽ tích hợp sau.')">
+        >
             <span class="material-symbols-outlined text-[18px]">delete</span>
             Xóa
         </button>
