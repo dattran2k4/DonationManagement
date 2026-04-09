@@ -140,6 +140,11 @@ const selectActivity = (activityItem) => {
     if (!activityItem) return;
     if (activityIdInput) activityIdInput.value = activityItem.id || '';
     if (activitySearchInput) activitySearchInput.value = activityItem.name || '';
+    if (eventIdInput && activityItem.eventId) eventIdInput.value = activityItem.eventId;
+    if (eventSearchInput && activityItem.eventName) eventSearchInput.value = activityItem.eventName;
+    if (activityItem.eventId && activityItem.eventName) {
+        setLookupMeta(eventSelectedMeta, 'Chưa chọn sự kiện nào.', activityItem.eventId, activityItem.eventName);
+    }
     setLookupMeta(activitySelectedMeta, 'Chưa chọn hoạt động nào.', activityItem.id, activityItem.name || 'Không rõ tên');
     hideLookupDropdown(activityDropdown);
 };
@@ -212,6 +217,8 @@ const renderActivityDropdown = (activities) => {
         <button type="button"
                 data-activity-id="${activityItem.id}"
                 data-activity-name="${escapeHtml(activityItem.name || '')}"
+                data-activity-event-id="${escapeHtml(activityItem.event?.id || '')}"
+                data-activity-event-name="${escapeHtml(activityItem.event?.name || '')}"
                 class="grid w-full grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
             <span class="min-w-0">
                 <span class="block font-medium text-slate-900 dark:text-slate-100 truncate">${escapeHtml(activityItem.name || 'Không rõ tên')}</span>
@@ -366,6 +373,10 @@ const validatePayload = (payload, target) => {
         alert('Vui lòng chọn hoạt động đang diễn ra.');
         return false;
     }
+    if (target === 'activity' && !payload.eventId) {
+        alert('Hoạt động phải thuộc một sự kiện hợp lệ.');
+        return false;
+    }
     if (payload.needReceipt) {
         if (!payload.receiptName?.trim()) {
             alert('Vui lòng nhập tên trên biên lai.');
@@ -460,7 +471,9 @@ const handleSubmit = async (event) => {
         needReceipt,
         receiptName: needReceipt ? (rawData.receiptName?.trim() || null) : null,
         receiptEmail: needReceipt ? (rawData.receiptEmail?.trim() || null) : null,
-        eventId: target === 'event' ? parseLongOrNull(rawData.eventId) : null,
+        eventId: target === 'activity'
+            ? parseLongOrNull(rawData.eventId)
+            : (target === 'event' ? parseLongOrNull(rawData.eventId) : null),
         activityId: target === 'activity' ? parseLongOrNull(rawData.activityId) : null
     };
 
@@ -572,7 +585,9 @@ const init = async () => {
 
             selectActivity({
                 id: optionButton.getAttribute('data-activity-id'),
-                name: optionButton.getAttribute('data-activity-name') || optionButton.children[0]?.textContent || ''
+                name: optionButton.getAttribute('data-activity-name') || optionButton.children[0]?.textContent || '',
+                eventId: parseLongOrNull(optionButton.getAttribute('data-activity-event-id')),
+                eventName: optionButton.getAttribute('data-activity-event-name') || ''
             });
         });
     }

@@ -16,6 +16,7 @@ public class DonationResponse {
     private Long id;
     private Long donorId;
     private String donorPhone;
+    private String donorEmail;
     private Long eventId;
     private Long activityId;
     private BigDecimal amount;
@@ -29,8 +30,8 @@ public class DonationResponse {
     private EDonationType type;
     private EDonationTarget target;
     private EDonationVia donationVia;
-    private Boolean approvalRequired;
     private String createdBy;
+    private String updatedBy;
     private User confirmedBy;
     private LocalDateTime donatedAt;
     private LocalDateTime createdAt;
@@ -39,4 +40,7 @@ public class DonationResponse {
     private String rejectionReason;
     private String donorName;
     private String objectName;
+    private String eventName;
+    private String activityName;
+    private String parentEventName;
 }

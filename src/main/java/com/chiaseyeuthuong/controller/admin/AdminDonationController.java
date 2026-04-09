@@ -1,7 +1,5 @@
 package com.chiaseyeuthuong.controller.admin;
 
-import com.chiaseyeuthuong.common.EDonationStatus;
-import com.chiaseyeuthuong.common.EDonationVia;
 import com.chiaseyeuthuong.dto.response.DonationResponse;
 import com.chiaseyeuthuong.service.DonationService;
 import lombok.RequiredArgsConstructor;
@@ -35,21 +33,13 @@ public class AdminDonationController {
     @GetMapping("/form")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public String showAdminDonationFormPage(Model model) {
-        model.addAttribute("donationId", null);
-        return "pages/admin/donation-form";
+        model.addAttribute("donation", DonationResponse.builder().build());
+        return "pages/admin/donation-detail";
     }
 
     @GetMapping("/{id}/form")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public String showEditAdminDonationFormPage(@PathVariable Long id, Model model) {
-        DonationResponse donation = donationService.getDonationResponseById(id);
-        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
-            return "redirect:/admin/donations/" + id;
-        }
-        if (EDonationStatus.CONFIRMED.equals(donation.getStatus())) {
-            return "redirect:/admin/donations/" + id;
-        }
-        model.addAttribute("donationId", id);
-        return "pages/admin/donation-form";
+        return "redirect:/admin/donations/" + id;
     }
 }

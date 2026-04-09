@@ -83,7 +83,7 @@ public class ApiDonationController {
         donationService.createStaffDonation(request, principal.getName());
         return ApiResponse.builder()
                 .status(200)
-                .message("Tạo đơn từ thiện thành công từ staff")
+                .message("Tạo đơn từ thiện nội bộ thành công")
                 .build();
     }
 
@@ -94,6 +94,16 @@ public class ApiDonationController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Cập nhật đơn quyên góp thành công")
+                .build();
+    }
+
+    @PatchMapping("/{id}/submit-approval")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse submitForApproval(@Min(1) @PathVariable Long id) {
+        donationService.submitForApproval(id);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Gửi duyệt khoản quyên góp thành công")
                 .build();
     }
 

@@ -63,9 +63,6 @@ public class Donation extends AbstractEntity {
     @Column(name = "donation_via")
     private EDonationVia donationVia;
 
-    @Column(name = "approval_required")
-    private Boolean approvalRequired;
-
     @ManyToOne
     @JoinColumn(name = "confirmed_by_user_id")
     private User confirmedBy;

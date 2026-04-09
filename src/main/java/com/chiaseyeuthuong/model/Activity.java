@@ -41,10 +41,10 @@ public class Activity extends AbstractEntity {
     private LocalDate endDate;
 
     @Column(name = "current_amount")
-    private BigDecimal currentAmount;
+    private BigDecimal currentAmount = BigDecimal.ZERO;
 
     @Column(name = "target_amount")
-    private BigDecimal targetAmount;
+    private BigDecimal targetAmount = BigDecimal.ZERO;
 
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;

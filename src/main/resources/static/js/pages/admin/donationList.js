@@ -2,8 +2,6 @@ import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
 
-const canApproveDonations = window.__CAN_APPROVE_DONATIONS__ === true;
-
 const state = {
     page: 1,
     size: 50,
@@ -146,29 +144,9 @@ const getViaLabel = (donationVia) => {
     return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
 };
 
-const getActionButtons = (item) => {
-    const actions = [];
-
-    if (canApproveDonations && item.status === 'PENDING_APPROVED') {
-        actions.push(`
-            <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        `);
-        actions.push(`
-            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-white hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1" title="Duyệt">
-                <span class="material-symbols-outlined text-[16px]">check</span>
-                Duyệt
-            </button>
-        `);
-    }
-
-    return actions.join('');
-};
-
 const renderTable = (donations) => {
     if (!donations || donations.length === 0) {
-        elements.tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
+        elements.tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
         return;
     }
 
@@ -215,11 +193,6 @@ const renderTable = (donations) => {
                     ${statusStyle.dot}
                     ${statusStyle.text}
                 </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end gap-2">
-                    ${getActionButtons(item)}
-                </div>
             </td>
         </tr>
         `;
@@ -332,41 +305,6 @@ const loadDonations = async () => {
         });
     } catch (error) {
         console.error('Lỗi khi tải danh sách quyên góp:', error);
-    }
-};
-
-window.handleAction = async (id, action) => {
-    if (!canApproveDonations) return;
-    const isConfirm = action === 'CONFIRM';
-    const statusText = isConfirm ? 'duyệt' : 'từ chối';
-
-    const message = `Bạn có chắc chắn muốn ${statusText} khoản quyên góp này không?`;
-    if (!confirm(message)) return;
-
-    try {
-        let response;
-        if (isConfirm) {
-            response = await donationApi.changeStatus(id, 'CONFIRMED');
-        } else {
-            const reason = prompt('Nhập lý do từ chối khoản quyên góp này:');
-            if (reason === null) return;
-
-            const normalizedReason = reason.trim();
-            if (!normalizedReason) {
-                alert('Vui lòng nhập lý do từ chối.');
-                return;
-            }
-
-            response = await donationApi.rejectDonation(id, normalizedReason);
-        }
-
-        if (response.status === 200) {
-            alert(response.message || 'Cập nhật thành công!');
-            loadDonations();
-        }
-    } catch (error) {
-        console.error('Lỗi cập nhật trạng thái:', error);
-        alert(error.message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
     }
 };
 

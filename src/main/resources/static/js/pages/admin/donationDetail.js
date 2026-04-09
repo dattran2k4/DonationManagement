@@ -1,4 +1,8 @@
 import {auditLogApi} from "../../apis/auditLogApi.js";
+import {donationApi} from "../../apis/donationApi.js";
+import {donorApi} from "../../apis/donorApi.js";
+import {eventApi} from "../../apis/eventApi.js";
+import {activityApi} from "../../apis/activityApi.js";
 import {renderPagination} from "../../components/pagination.js";
 
 const state = {
@@ -8,6 +12,32 @@ const state = {
 };
 
 const elements = {
+    refreshBtn: document.getElementById("refreshBtn"),
+    saveDonationBtn: document.getElementById("saveDonationBtn"),
+    submitApprovalBtn: document.getElementById("submitApprovalBtn"),
+    approveBtn: document.getElementById("approveBtn"),
+    rejectBtn: document.getElementById("rejectBtn"),
+    paymentMethodSelect: document.getElementById("donationPaymentMethodSelect"),
+    editDonorId: document.getElementById("editDonorId"),
+    editDonorSearchWrapper: document.getElementById("editDonorSearchWrapper"),
+    editDonorSearchInput: document.getElementById("editDonorSearchInput"),
+    editDonorDropdown: document.getElementById("editDonorDropdown"),
+    editDonorDropdownList: document.getElementById("editDonorDropdownList"),
+    editAmount: document.getElementById("editAmount"),
+    editEventId: document.getElementById("editEventId"),
+    editEventSearchWrapper: document.getElementById("editEventSearchWrapper"),
+    editEventSearchInput: document.getElementById("editEventSearchInput"),
+    editEventDropdown: document.getElementById("editEventDropdown"),
+    editEventDropdownList: document.getElementById("editEventDropdownList"),
+    editActivityId: document.getElementById("editActivityId"),
+    editActivitySearchWrapper: document.getElementById("editActivitySearchWrapper"),
+    editActivitySearchInput: document.getElementById("editActivitySearchInput"),
+    editActivityDropdown: document.getElementById("editActivityDropdown"),
+    editActivityDropdownList: document.getElementById("editActivityDropdownList"),
+    editNeedReceipt: document.getElementById("editNeedReceipt"),
+    editReceiptName: document.getElementById("editReceiptName"),
+    editReceiptEmail: document.getElementById("editReceiptEmail"),
+    editMessage: document.getElementById("editMessage"),
     section: document.getElementById("donationDetailTabsSection"),
     infoBtn: document.getElementById("tabInfoBtn"),
     auditLogsBtn: document.getElementById("tabAuditLogsBtn"),
@@ -25,6 +55,21 @@ const auditActionLabels = {
     DELETE: "Xóa"
 };
 
+const debounce = (fn, delay = 350) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+const escapeHtml = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
 const formatDateTime = (value) => {
     if (!value) return "---";
     const date = new Date(value);
@@ -39,24 +84,256 @@ const formatDateTime = (value) => {
     });
 };
 
+const parseLongOrNull = (value) => {
+    if (value === undefined || value === null || value === "") return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const showDropdown = (el) => el?.classList.remove("hidden");
+const hideDropdown = (el) => el?.classList.add("hidden");
+
+function renderDonorDropdown(donors) {
+    if (!elements.editDonorDropdownList) return;
+    if (!donors || donors.length === 0) {
+        elements.editDonorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Không tìm thấy nhà hảo tâm phù hợp</div>';
+        return;
+    }
+    elements.editDonorDropdownList.innerHTML = donors.map((donor) => `
+        <button type="button" data-donor-id="${donor.id}" data-donor-name="${escapeHtml(donor.fullName || "")}" data-donor-phone="${escapeHtml(donor.phone || "")}"
+                class="grid w-full grid-cols-2 gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors">
+            <span class="font-medium text-slate-900">${escapeHtml(donor.fullName || "Không rõ tên")}</span>
+            <span class="text-slate-600">${escapeHtml(donor.phone || "---")}</span>
+        </button>
+    `).join("");
+}
+
+function renderEventDropdown(events) {
+    if (!elements.editEventDropdownList) return;
+    if (!events || events.length === 0) {
+        elements.editEventDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Không tìm thấy sự kiện phù hợp</div>';
+        return;
+    }
+    elements.editEventDropdownList.innerHTML = events.map((eventItem) => `
+        <button type="button" data-event-id="${eventItem.id}" data-event-name="${escapeHtml(eventItem.name || "")}"
+                class="grid w-full grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors">
+            <span class="font-medium text-slate-900 truncate">${escapeHtml(eventItem.name || "Không rõ tên")}</span>
+            <span class="text-slate-600">#${escapeHtml(eventItem.id)}</span>
+        </button>
+    `).join("");
+}
+
+function renderActivityDropdown(activities) {
+    if (!elements.editActivityDropdownList) return;
+    if (!activities || activities.length === 0) {
+        elements.editActivityDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Không tìm thấy hoạt động phù hợp</div>';
+        return;
+    }
+    elements.editActivityDropdownList.innerHTML = activities.map((activity) => `
+        <button type="button"
+                data-activity-id="${activity.id}"
+                data-activity-name="${escapeHtml(activity.name || "")}"
+                data-activity-event-id="${escapeHtml(activity.event?.id || "")}"
+                data-activity-event-name="${escapeHtml(activity.event?.name || "")}"
+                class="grid w-full grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors">
+            <span class="min-w-0">
+                <span class="block font-medium text-slate-900 truncate">${escapeHtml(activity.name || "Không rõ tên")}</span>
+                <span class="block text-xs text-slate-500 truncate">${escapeHtml(activity.event?.name || "Không thuộc sự kiện")}</span>
+            </span>
+            <span class="text-slate-600">#${escapeHtml(activity.id)}</span>
+        </button>
+    `).join("");
+}
+
+async function loadDonors(search = "") {
+    if (!elements.editDonorDropdownList) return;
+    elements.editDonorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Đang tải danh sách nhà hảo tâm...</div>';
+    try {
+        const response = await donorApi.getAllDonors({page: 1, size: 20, search: search.trim(), type: ""});
+        renderDonorDropdown(response?.data?.data || []);
+        showDropdown(elements.editDonorDropdown);
+    } catch (error) {
+        elements.editDonorDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-red-500">Không thể tải danh sách nhà hảo tâm</div>';
+        showDropdown(elements.editDonorDropdown);
+    }
+}
+
+async function loadEvents(search = "") {
+    if (!elements.editEventDropdownList) return;
+    elements.editEventDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Đang tải danh sách sự kiện...</div>';
+    try {
+        const response = await eventApi.getEvents({page: 1, size: 20, search: search.trim(), sortBy: "name", sortDir: "asc"});
+        renderEventDropdown(response?.data?.data || []);
+        showDropdown(elements.editEventDropdown);
+    } catch (error) {
+        elements.editEventDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-red-500">Không thể tải danh sách sự kiện</div>';
+        showDropdown(elements.editEventDropdown);
+    }
+}
+
+async function loadActivities(search = "") {
+    if (!elements.editActivityDropdownList) return;
+    elements.editActivityDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-slate-500">Đang tải danh sách hoạt động...</div>';
+    try {
+        const response = await activityApi.getAllActivities({page: 1, size: 20, search: search.trim()});
+        renderActivityDropdown(response?.data?.data || []);
+        showDropdown(elements.editActivityDropdown);
+    } catch (error) {
+        elements.editActivityDropdownList.innerHTML = '<div class="px-3 py-3 text-sm text-red-500">Không thể tải danh sách hoạt động</div>';
+        showDropdown(elements.editActivityDropdown);
+    }
+}
+
+function bindLookupEvents() {
+    if (elements.editDonorSearchInput && !elements.editDonorSearchInput.disabled) {
+        elements.editDonorSearchInput.addEventListener("focus", () => loadDonors(elements.editDonorSearchInput.value || ""));
+        elements.editDonorSearchInput.addEventListener("input", debounce((e) => {
+            if (elements.editDonorId) elements.editDonorId.value = "";
+            loadDonors(e.target.value || "");
+        }));
+    }
+
+    if (elements.editEventSearchInput && !elements.editEventSearchInput.disabled) {
+        elements.editEventSearchInput.addEventListener("focus", () => loadEvents(elements.editEventSearchInput.value || ""));
+        elements.editEventSearchInput.addEventListener("input", debounce((e) => {
+            if (elements.editEventId) elements.editEventId.value = "";
+            loadEvents(e.target.value || "");
+        }));
+    }
+
+    if (elements.editActivitySearchInput && !elements.editActivitySearchInput.disabled) {
+        elements.editActivitySearchInput.addEventListener("focus", () => loadActivities(elements.editActivitySearchInput.value || ""));
+        elements.editActivitySearchInput.addEventListener("input", debounce((e) => {
+            if (elements.editActivityId) elements.editActivityId.value = "";
+            loadActivities(e.target.value || "");
+        }));
+    }
+
+    elements.editDonorDropdownList?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-donor-id]");
+        if (!button) return;
+        if (elements.editDonorId) elements.editDonorId.value = button.getAttribute("data-donor-id") || "";
+        if (elements.editDonorSearchInput) {
+            const name = button.getAttribute("data-donor-name") || "";
+            const phone = button.getAttribute("data-donor-phone") || "";
+            elements.editDonorSearchInput.value = phone ? `${name} - ${phone}` : name;
+        }
+        hideDropdown(elements.editDonorDropdown);
+    });
+
+    elements.editEventDropdownList?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-event-id]");
+        if (!button) return;
+        if (elements.editEventId) elements.editEventId.value = button.getAttribute("data-event-id") || "";
+        if (elements.editEventSearchInput) elements.editEventSearchInput.value = button.getAttribute("data-event-name") || "";
+        hideDropdown(elements.editEventDropdown);
+    });
+
+    elements.editActivityDropdownList?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-activity-id]");
+        if (!button) return;
+        if (elements.editActivityId) elements.editActivityId.value = button.getAttribute("data-activity-id") || "";
+        if (elements.editActivitySearchInput) elements.editActivitySearchInput.value = button.getAttribute("data-activity-name") || "";
+        const parentEventId = button.getAttribute("data-activity-event-id") || "";
+        const parentEventName = button.getAttribute("data-activity-event-name") || "";
+        if (elements.editEventId && parentEventId) elements.editEventId.value = parentEventId;
+        if (elements.editEventSearchInput && parentEventName) elements.editEventSearchInput.value = parentEventName;
+        hideDropdown(elements.editActivityDropdown);
+    });
+
+    document.addEventListener("click", (event) => {
+        if (elements.editDonorSearchWrapper && !elements.editDonorSearchWrapper.contains(event.target)) {
+            hideDropdown(elements.editDonorDropdown);
+        }
+        if (elements.editEventSearchWrapper && !elements.editEventSearchWrapper.contains(event.target)) {
+            hideDropdown(elements.editEventDropdown);
+        }
+        if (elements.editActivitySearchWrapper && !elements.editActivitySearchWrapper.contains(event.target)) {
+            hideDropdown(elements.editActivityDropdown);
+        }
+    });
+}
+
+const buildUpdatePayload = () => ({
+    donorId: parseLongOrNull(elements.editDonorId?.value ?? window.__DONATION_DONOR_ID__),
+    amount: Number(elements.editAmount?.value ?? window.__DONATION_AMOUNT__ ?? 0),
+    message: elements.editMessage?.value?.trim() || null,
+    needReceipt: elements.editNeedReceipt?.checked === true,
+    receiptName: elements.editNeedReceipt?.checked === true ? (elements.editReceiptName?.value?.trim() || null) : null,
+    receiptEmail: elements.editNeedReceipt?.checked === true ? (elements.editReceiptEmail?.value?.trim() || null) : null,
+    paymentMethod: elements.paymentMethodSelect?.value || null,
+    eventId: parseLongOrNull(elements.editEventId?.value),
+    activityId: parseLongOrNull(elements.editActivityId?.value)
+});
+
+const validatePayload = (payload) => {
+    if (!payload.donorId || payload.donorId < 1) {
+        alert("ID nhà hảo tâm không hợp lệ.");
+        return false;
+    }
+    if (!Number.isFinite(payload.amount) || payload.amount < 1000) {
+        alert("Số tiền tối thiểu là 1.000 đồng.");
+        return false;
+    }
+    if (!Number.isInteger(payload.amount)) {
+        alert("Vui lòng nhập số tiền nguyên.");
+        return false;
+    }
+    if (payload.needReceipt) {
+        if (!payload.receiptName?.trim()) {
+            alert("Vui lòng nhập tên trên biên lai.");
+            return false;
+        }
+        if (!payload.receiptEmail?.trim()) {
+            alert("Vui lòng nhập email nhận biên lai.");
+            return false;
+        }
+    }
+    return true;
+};
+
+async function saveDonationDetail(successMessage = "Cập nhật khoản quyên góp thành công") {
+    if (!state.donationId) return false;
+    const payload = buildUpdatePayload();
+    if (!validatePayload(payload)) return false;
+
+    try {
+        const response = await donationApi.updateStaffDonation(state.donationId, payload);
+        if (response?.status !== 200) {
+            throw new Error(response?.message || "Không thể cập nhật khoản quyên góp");
+        }
+        alert(successMessage);
+        return true;
+    } catch (error) {
+        alert(error.message || "Không thể cập nhật khoản quyên góp");
+        return false;
+    }
+}
+
 function setActiveTab(tab) {
     state.activeTab = tab;
     const isInfo = tab === "info";
     const isAuditLogs = tab === "auditLogs";
 
-    elements.infoPanel.classList.toggle("hidden", !isInfo);
-    elements.auditLogsPanel.classList.toggle("hidden", !isAuditLogs);
+    elements.infoPanel?.classList.toggle("hidden", !isInfo);
+    elements.auditLogsPanel?.classList.toggle("hidden", !isAuditLogs);
 
-    elements.infoBtn.className = isInfo
-        ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.auditLogsBtn.className = isAuditLogs
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
+    if (elements.infoBtn) {
+        elements.infoBtn.className = isInfo
+            ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
+            : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
+    }
+    if (elements.auditLogsBtn) {
+        elements.auditLogsBtn.className = isAuditLogs
+            ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
+            : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
+    }
 
-    elements.auditLogsCount.className = isAuditLogs
-        ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
-        : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
+    if (elements.auditLogsCount) {
+        elements.auditLogsCount.className = isAuditLogs
+            ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
+            : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100";
+    }
 }
 
 function getAuditActionBadge(action) {
@@ -70,6 +347,7 @@ function getAuditActionBadge(action) {
 }
 
 function renderAuditLogs(rows) {
+    if (!elements.auditLogsTableBody) return;
     if (!rows || rows.length === 0) {
         elements.auditLogsTableBody.innerHTML = `
             <tr>
@@ -109,6 +387,7 @@ function renderAuditLogs(rows) {
 }
 
 async function loadSummary() {
+    if (!elements.auditLogsCount) return;
     const response = await auditLogApi.getAuditLogs({
         page: 1,
         size: 1,
@@ -120,6 +399,7 @@ async function loadSummary() {
 }
 
 async function loadAuditLogs() {
+    if (!elements.auditLogsTableBody || !elements.auditLogsPagination) return;
     const response = await auditLogApi.getAuditLogs({
         page: state.auditLogs.page,
         size: state.auditLogs.size,
@@ -143,6 +423,57 @@ function bindTabEvents() {
     });
 }
 
+async function handleApprove() {
+    if (!state.donationId) return;
+    try {
+        const response = await donationApi.changeStatus(state.donationId, "CONFIRMED");
+        if (response?.status !== 200) {
+            throw new Error(response?.message || "Không thể duyệt khoản quyên góp");
+        }
+        alert("Duyệt khoản quyên góp thành công");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || "Không thể duyệt khoản quyên góp");
+    }
+}
+
+async function handleReject() {
+    if (!state.donationId) return;
+    const reason = window.prompt("Nhập lý do từ chối:");
+    if (reason == null) return;
+    if (!reason.trim()) {
+        alert("Lý do từ chối không được để trống");
+        return;
+    }
+    try {
+        const response = await donationApi.rejectDonation(state.donationId, reason.trim());
+        if (response?.status !== 200) {
+            throw new Error(response?.message || "Không thể từ chối khoản quyên góp");
+        }
+        alert("Từ chối khoản quyên góp thành công");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || "Không thể từ chối khoản quyên góp");
+    }
+}
+
+async function handleSubmitApproval() {
+    if (!state.donationId) return;
+    try {
+        const saved = await saveDonationDetail("Lưu chỉnh sửa thành công");
+        if (!saved) return;
+
+        const response = await donationApi.submitForApproval(state.donationId);
+        if (response?.status !== 200) {
+            throw new Error(response?.message || "Không thể gửi duyệt khoản quyên góp");
+        }
+        alert("Gửi duyệt khoản quyên góp thành công");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || "Không thể gửi duyệt khoản quyên góp");
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
     state.donationId = Number(elements.section.dataset.donationId || 0);
@@ -155,4 +486,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error("Không thể tải tổng quan tab lịch sử thao tác quyên góp:", error);
     }
+
+    elements.refreshBtn?.addEventListener("click", () => window.location.reload());
+    elements.approveBtn?.addEventListener("click", handleApprove);
+    elements.rejectBtn?.addEventListener("click", handleReject);
+    elements.saveDonationBtn?.addEventListener("click", async () => {
+        const saved = await saveDonationDetail();
+        if (saved) {
+            window.location.reload();
+        }
+    });
+    elements.submitApprovalBtn?.addEventListener("click", handleSubmitApproval);
+    bindLookupEvents();
 });

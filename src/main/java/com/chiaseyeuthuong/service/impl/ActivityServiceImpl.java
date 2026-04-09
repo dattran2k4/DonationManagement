@@ -127,8 +127,8 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setLocation(request.getLocation());
         activity.setStartDate(request.getStartDate());
         activity.setEndDate(request.getEndDate());
-        activity.setCurrentAmount(request.getCurrentAmount());
-        activity.setTargetAmount(request.getTargetAmount());
+        activity.setCurrentAmount(defaultAmount(request.getCurrentAmount()));
+        activity.setTargetAmount(defaultAmount(request.getTargetAmount()));
         activity.setThumbnailUrl(request.getThumbnailUrl());
         activity.setStatus(request.getStatus());
 
@@ -175,7 +175,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public void updateCurrentAmount(Activity activity, BigDecimal amount) {
-        BigDecimal newCurrentAmount = activity.getCurrentAmount().add(amount);
+        BigDecimal newCurrentAmount = defaultAmount(activity.getCurrentAmount()).add(amount);
         activity.setCurrentAmount(newCurrentAmount);
         activityRepository.save(activity);
 
@@ -267,5 +267,9 @@ public class ActivityServiceImpl implements ActivityService {
         values.put("currentAmount", activity.getCurrentAmount());
         values.put("thumbnailUrl", activity.getThumbnailUrl());
         return values;
+    }
+
+    private BigDecimal defaultAmount(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 }

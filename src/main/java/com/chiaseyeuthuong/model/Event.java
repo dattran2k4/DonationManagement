@@ -38,10 +38,10 @@ public class Event extends AbstractEntity {
     private LocalDate endDate;
 
     @Column(name = "current_amount")
-    private BigDecimal currentAmount;
+    private BigDecimal currentAmount = BigDecimal.ZERO;
 
     @Column(name = "target_amount")
-    private BigDecimal targetAmount;
+    private BigDecimal targetAmount = BigDecimal.ZERO;
 
     @Column(name = "short_description")
     private String shortDescription;

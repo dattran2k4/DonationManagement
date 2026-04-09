@@ -161,6 +161,8 @@ public class EventServiceImpl implements EventService {
         event.setCategory(category);
 
         BeanUtils.copyProperties(request, event);
+        event.setCurrentAmount(defaultAmount(request.getCurrentAmount()));
+        event.setTargetAmount(defaultAmount(request.getTargetAmount()));
         Slugify slugify = Slugify.builder().build();
         event.setSlug(slugify.slugify(request.getName()));
     }
@@ -273,7 +275,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void updateEventCurrentAmount(Event event, BigDecimal amount) {
-        BigDecimal newCurrentAmount = event.getCurrentAmount().add(amount);
+        BigDecimal newCurrentAmount = defaultAmount(event.getCurrentAmount()).add(amount);
         event.setCurrentAmount(newCurrentAmount);
         eventRepository.save(event);
 
@@ -418,5 +420,9 @@ public class EventServiceImpl implements EventService {
             return EEventStatus.COMPLETED;
         }
         return EEventStatus.ONGOING;
+    }
+
+    private BigDecimal defaultAmount(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 }
