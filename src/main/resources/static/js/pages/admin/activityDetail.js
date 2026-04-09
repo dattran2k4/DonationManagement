@@ -1,6 +1,7 @@
 import {activityApi} from "../../apis/activityApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
+import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from "../../utils/donationUi.js";
 
 const state = {
     activityId: null,
@@ -31,15 +32,6 @@ const elements = {
     auditLogsPagination: document.getElementById("activityAuditLogsPagination")
 };
 
-const donationStatusLabels = {
-    PENDING_PAYMENT: "Chờ thanh toán",
-    PENDING_APPROVED: "Chờ duyệt",
-    CONFIRMED: "Đã xác nhận",
-    REJECTED: "Từ chối",
-    CANCELLED: "Đã hủy",
-    FAILED: "Thất bại"
-};
-
 const auditActionLabels = {
     CREATE: "Tạo mới",
     UPDATE: "Cập nhật",
@@ -48,6 +40,12 @@ const auditActionLabels = {
 };
 
 const formatMoney = (amount) => `${Number(amount || 0).toLocaleString("vi-VN")} ₫`;
+const formatDateOnly = (value) => {
+    if (!value) return "---";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("vi-VN", {year: "numeric", month: "2-digit", day: "2-digit"});
+};
 const formatDateTime = (value) => {
     if (!value) return "---";
     const date = new Date(value);
@@ -120,7 +118,7 @@ function getAuditActionBadge(action) {
 function renderDonors(rows) {
     if (!rows || rows.length === 0) {
         elements.donorsTableBody.innerHTML = `
-            <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có nhà hảo tâm.</td></tr>
+            <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có nhà hảo tâm.</td></tr>
         `;
         return;
     }
@@ -129,10 +127,11 @@ function renderDonors(rows) {
         <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4">
                 <a href="/admin/donors/${donor.id}" class="font-semibold text-slate-900 hover:text-primary">${donor.displayName || donor.fullName || "---"}</a>
-                <div class="text-xs text-slate-500">${donor.fullName || ""}</div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600"><div>${donor.phone || "---"}</div><div>${donor.email || "---"}</div></td>
             <td class="px-6 py-4 text-sm text-slate-600">${getDonorTypeLabel(donor.type)}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${donor.phone || "---"}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${donor.email || "---"}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${formatDateTime(donor.createdAt)}</td>
             <td class="px-6 py-4 text-right font-semibold text-slate-900">${formatMoney(donor.totalDonationAmount)}</td>
         </tr>
     `).join("");
@@ -141,22 +140,35 @@ function renderDonors(rows) {
 function renderDonations(rows) {
     if (!rows || rows.length === 0) {
         elements.donationsTableBody.innerHTML = `
-            <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có khoản quyên góp.</td></tr>
+            <tr><td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có khoản quyên góp.</td></tr>
         `;
         return;
     }
 
-    elements.donationsTableBody.innerHTML = rows.map((donation) => `
+    elements.donationsTableBody.innerHTML = rows.map((donation) => {
+        const statusUi = getDonationStatusUi(donation.status);
+        const paymentLabel = donation.paymentMethodValue || DONATION_PAYMENT_METHOD_LABELS[donation.paymentMethod] || "---";
+        const donatedDate = formatDateOnly(donation.donatedAt || donation.createdAt);
+        return `
         <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4">
-                <a href="/admin/donations/${donation.id}" class="font-semibold text-slate-900 hover:text-primary">${donation.memoCode || `DN-${donation.id || ""}`}</a>
+                <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
+            </td>
+            <td class="px-6 py-4">
+                <a href="/admin/donations/${donation.id}" class="font-semibold text-slate-900 hover:text-primary">${formatDonationCode(donation.id)}</a>
             </td>
             <td class="px-6 py-4 text-sm text-slate-700">${donation.donorName || "---"}</td>
             <td class="px-6 py-4 text-right font-semibold text-slate-900">${formatMoney(donation.amount)}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${donationStatusLabels[donation.status] || "Chưa cập nhật"}</td>
-            <td class="px-6 py-4 text-right text-sm text-slate-600">${formatDateTime(donation.donatedAt || donation.createdAt)}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${paymentLabel}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${donatedDate}</td>
+            <td class="px-6 py-4">
+                <span class="${statusUi.className}">
+                    ${statusUi.text}
+                </span>
+            </td>
         </tr>
-    `).join("");
+    `;
+    }).join("");
 }
 
 function renderAuditLogs(rows) {

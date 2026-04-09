@@ -1,6 +1,7 @@
 import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from '../../utils/donationUi.js';
 
 const state = {
     page: 1,
@@ -87,34 +88,35 @@ const formatCurrency = (amount) => {
 };
 
 const getStatusBadge = (status) => {
+    const base = getDonationStatusUi(status);
     const styles = {
         PENDING_APPROVED: {
-            text: 'Chờ duyệt',
-            class: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800',
+            text: base.text,
+            class: base.className,
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>',
             rowClass: 'bg-amber-50/50 dark:bg-amber-900/10'
         },
         PENDING_PAYMENT: {
-            text: 'Chờ thanh toán',
-            class: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
+            text: base.text,
+            class: base.className,
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>',
             rowClass: ''
         },
         CONFIRMED: {
-            text: 'Đã xác nhận',
-            class: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: ''
         },
         REJECTED: {
-            text: 'Đã từ chối',
-            class: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: 'opacity-75'
         },
         FAILED: {
-            text: 'Thất bại',
-            class: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: 'opacity-75'
         }
@@ -124,9 +126,9 @@ const getStatusBadge = (status) => {
 
 const getPaymentMethodIcon = (method) => {
     const icons = {
-        CASH: {icon: 'payments', label: 'Tiền mặt'},
-        BANK_TRANSFER_ONLINE: {icon: 'account_balance', label: 'CK Online'},
-        BANK_TRANSFER_OFFLINE: {icon: 'receipt_long', label: 'Offline'}
+        CASH: {icon: 'payments', label: DONATION_PAYMENT_METHOD_LABELS.CASH},
+        BANK_TRANSFER_ONLINE: {icon: 'account_balance', label: DONATION_PAYMENT_METHOD_LABELS.BANK_TRANSFER_ONLINE},
+        BANK_TRANSFER_OFFLINE: {icon: 'receipt_long', label: DONATION_PAYMENT_METHOD_LABELS.BANK_TRANSFER_OFFLINE}
     };
     return icons[method] || {icon: 'help_outline', label: method};
 };
@@ -142,12 +144,6 @@ const getTargetLabel = (target) => {
 
 const getViaLabel = (donationVia) => {
     return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
-};
-
-const formatDonationCode = (id) => {
-    const numericId = Number(id || 0);
-    if (!Number.isFinite(numericId) || numericId <= 0) return 'DNT-00000000';
-    return `DNT-${String(Math.trunc(numericId)).padStart(8, '0')}`;
 };
 
 const renderTable = (donations) => {
@@ -195,7 +191,7 @@ const renderTable = (donations) => {
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${statusStyle.class}">
+                <span class="${statusStyle.class} gap-1.5">
                     ${statusStyle.dot}
                     ${statusStyle.text}
                 </span>

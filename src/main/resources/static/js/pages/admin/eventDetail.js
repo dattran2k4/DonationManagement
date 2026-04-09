@@ -1,6 +1,7 @@
 import {eventApi} from "../../apis/eventApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
+import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from "../../utils/donationUi.js";
 
 const state = {
     eventId: null,
@@ -67,21 +68,6 @@ const statusLabels = {
     DRAFT: "Bản nháp"
 };
 
-const donationStatusLabels = {
-    PENDING_PAYMENT: "Chờ thanh toán",
-    PENDING_APPROVED: "Chờ duyệt",
-    CONFIRMED: "Đã xác nhận",
-    REJECTED: "Từ chối",
-    CANCELLED: "Đã hủy",
-    FAILED: "Thất bại"
-};
-
-const donationTargetLabels = {
-    EVENT: "Sự kiện",
-    ACTIVITY: "Hoạt động",
-    NONE: "Không gắn mục tiêu"
-};
-
 const auditActionLabels = {
     CREATE: "Tạo mới",
     UPDATE: "Cập nhật",
@@ -90,6 +76,16 @@ const auditActionLabels = {
 };
 
 const formatMoney = (amount) => `${Number(amount || 0).toLocaleString("vi-VN")} ₫`;
+const formatDateOnly = (value) => {
+    if (!value) return "---";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+};
 const formatDateTime = (value) => {
     if (!value) return "---";
     const date = new Date(value);
@@ -220,7 +216,7 @@ function renderDonors(rows) {
     if (!rows || rows.length === 0) {
         elements.donorsTableBody.innerHTML = `
             <tr>
-                <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                     Sự kiện này chưa có nhà hảo tâm nào.
                 </td>
             </tr>
@@ -238,13 +234,11 @@ function renderDonors(rows) {
                     <a href="${donorLink}" class="font-semibold text-slate-900 hover:text-primary dark:text-white dark:hover:text-primary">
                         ${donorName}
                     </a>
-                    <div class="text-xs text-slate-500 dark:text-slate-400">${donor.fullName || ""}</div>
-                </td>
-                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                    <div>${donor.phone || "---"}</div>
-                    <div>${donor.email || "---"}</div>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${getDonorTypeLabel(donor.type)}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${donor.phone || "---"}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${donor.email || "---"}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${formatDateTime(donor.createdAt)}</td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900 dark:text-white">${formatMoney(donor.totalDonationAmount)}</td>
             </tr>
         `;
@@ -255,7 +249,7 @@ function renderDonations(rows) {
     if (!rows || rows.length === 0) {
         elements.donationsTableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                <td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                     Sự kiện này chưa có khoản quyên góp nào.
                 </td>
             </tr>
@@ -265,26 +259,30 @@ function renderDonations(rows) {
 
     elements.donationsTableBody.innerHTML = rows.map((donation) => {
         const donationLink = donation.id ? `/admin/donations/${donation.id}` : "#";
-        const donationCode = donation.memoCode || `DN-${donation.id || ""}`;
-        const targetLabel = donationTargetLabels[donation.target] || "Không gắn mục tiêu";
-        const objectName = donation.objectName || "";
-        const statusLabel = donationStatusLabels[donation.status] || "Chưa cập nhật";
-        const timeText = formatDateTime(donation.donatedAt || donation.createdAt);
+        const donationCode = formatDonationCode(donation.id);
+        const statusUi = getDonationStatusUi(donation.status);
+        const paymentLabel = donation.paymentMethodValue || DONATION_PAYMENT_METHOD_LABELS[donation.paymentMethod] || "---";
+        const donateDate = formatDateOnly(donation.donatedAt || donation.createdAt);
 
         return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                <td class="px-6 py-4">
+                    <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
+                </td>
                 <td class="px-6 py-4">
                     <a href="${donationLink}" class="font-semibold text-slate-900 hover:text-primary dark:text-white dark:hover:text-primary">
                         ${donationCode}
                     </a>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">${donation.donorName || "---"}</td>
-                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                    ${targetLabel}${objectName ? `: ${objectName}` : ""}
-                </td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900 dark:text-white">${formatMoney(donation.amount)}</td>
-                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${statusLabel}</td>
-                <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-300">${timeText}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${paymentLabel}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${donateDate}</td>
+                <td class="px-6 py-4">
+                    <span class="${statusUi.className}">
+                        ${statusUi.text}
+                    </span>
+                </td>
             </tr>
         `;
     }).join("");
@@ -384,7 +382,7 @@ async function loadDonors() {
         console.error("Không thể tải nhà hảo tâm của sự kiện:", error);
         elements.donorsTableBody.innerHTML = `
             <tr>
-                <td colspan="4" class="px-6 py-10 text-center text-sm text-red-500">
+                <td colspan="6" class="px-6 py-10 text-center text-sm text-red-500">
                     Không thể tải danh sách nhà hảo tâm.
                 </td>
             </tr>
@@ -409,7 +407,7 @@ async function loadDonations() {
         console.error("Không thể tải danh sách quyên góp của sự kiện:", error);
         elements.donationsTableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-10 text-center text-sm text-red-500">
+                <td colspan="7" class="px-6 py-10 text-center text-sm text-red-500">
                     Không thể tải danh sách quyên góp.
                 </td>
             </tr>

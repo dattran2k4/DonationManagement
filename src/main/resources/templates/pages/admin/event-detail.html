@@ -237,18 +237,23 @@
         </div>
 
         <div id="tabDonorsPanel" class="hidden pt-2">
+            <div class="px-6 pb-3 pt-2">
+                <h3 class="text-xl font-bold text-slate-900">Danh sách nhà hảo tâm tham gia sự kiện</h3>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-50">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Liên hệ</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Loại</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tổng đã xác nhận</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Số điện thoại</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày tham gia</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tổng tiền quyên góp</th>
                     </tr>
                     </thead>
                     <tbody id="eventDonorsTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
+                    <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -256,20 +261,26 @@
         </div>
 
         <div id="tabDonationsPanel" class="hidden pt-2">
+            <div class="px-6 pb-3 pt-2">
+                <h3 class="text-xl font-bold text-slate-900">Danh sách quyên góp cho sự kiện</h3>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-50">
                     <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
+                        </th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Mã đơn</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Mục tiêu</th>
                         <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Số tiền</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Phương thức</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày quyên góp</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Thời gian</th>
                     </tr>
                     </thead>
                     <tbody id="eventDonationsTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
+                    <tr><td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
                     </tbody>
                 </table>
             </div>
