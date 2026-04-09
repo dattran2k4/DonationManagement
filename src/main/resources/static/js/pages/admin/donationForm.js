@@ -56,6 +56,13 @@ const parseLongOrNull = (value) => {
     return Number.isNaN(parsed) ? null : parsed;
 };
 
+const prefillDonorContext = {
+    id: parseLongOrNull(window.__PREFILL_DONOR_ID__),
+    fullName: window.__PREFILL_DONOR_NAME__ || '',
+    phone: window.__PREFILL_DONOR_PHONE__ || ''
+};
+const returnToUrl = window.__DONATION_RETURN_TO__ || '/admin/donations';
+
 const debounce = (fn, delay = 350) => {
     let timeoutId;
     return (...args) => {
@@ -114,6 +121,14 @@ const selectDonor = (donor) => {
         donorSearchInput.value = `${donor.fullName || 'Không rõ tên'} - ${donor.phone || '---'}`;
     }
     hideDonorDropdown();
+};
+
+const applyPrefillDonorContext = () => {
+    if (isEditMode) return;
+    if (!prefillDonorContext.id) return;
+    if (donorIdInput?.value) return;
+
+    selectDonor(prefillDonorContext);
 };
 
 const resetEventSelection = () => {
@@ -485,7 +500,7 @@ const handleSubmit = async (event) => {
             : await donationApi.createStaffDonation(payload);
         if (response.status === 200) {
             alert(response.message || (isEditMode ? 'Cập nhật đơn quyên góp thành công.' : 'Tạo đơn quyên góp thành công.'));
-            window.location.href = isEditMode ? `/admin/donations/${donationId}` : '/admin/donations';
+            window.location.href = isEditMode ? `/admin/donations/${donationId}` : returnToUrl;
         }
     } catch (error) {
         const errorMessage = error?.message || (isEditMode
@@ -621,6 +636,7 @@ const init = async () => {
 
     form.addEventListener('submit', handleSubmit);
 
+    applyPrefillDonorContext();
     await loadDonationDetail();
 };
 

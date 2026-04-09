@@ -391,8 +391,31 @@ function initUpdateMode() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function openInitialTab() {
+    const url = new URL(window.location.href);
+    const requestedTab = (url.searchParams.get("tab") || "info").toLowerCase();
+
+    if (requestedTab === "history" && !isCreateMode && elements.historyBtn) {
+        setActiveTab("history");
+        if (!state.history.loaded) {
+            await loadHistory();
+        }
+        return;
+    }
+
+    if (requestedTab === "audit" && !isCreateMode && elements.auditBtn) {
+        setActiveTab("audit");
+        if (!state.audit.loaded) {
+            await loadAuditHistory();
+        }
+        return;
+    }
+
     setActiveTab("info");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    openInitialTab();
     if (!isCreateMode) {
         loadAuditSummary();
     }

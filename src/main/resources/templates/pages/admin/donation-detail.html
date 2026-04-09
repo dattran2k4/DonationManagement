@@ -20,7 +20,7 @@
                     Tạo mới
                 </a>
 
-                <a th:href="@{/admin/donations}"
+                <a th:href="${returnToUrl}"
                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
                     <span class="material-symbols-outlined text-[18px]">undo</span>
                     Hủy bỏ
@@ -563,6 +563,10 @@
     <script th:inline="javascript">
         window.__DONATION_ID__ = [[${donation != null ? donation.id : null}]];
         window.__DONATION_DONOR_ID__ = [[${donation != null ? donation.donorId : null}]];
+        window.__PREFILL_DONOR_ID__ = [[${prefillDonor != null ? prefillDonor.id : null}]];
+        window.__PREFILL_DONOR_NAME__ = [[${prefillDonor != null ? prefillDonor.fullName : null}]];
+        window.__PREFILL_DONOR_PHONE__ = [[${prefillDonor != null ? prefillDonor.phone : null}]];
+        window.__DONATION_RETURN_TO__ = [[${returnToUrl}]];
         window.__DONATION_AMOUNT__ = [[${donation != null && donation.amount != null ? donation.amount : 0}]];
         window.__DONATION_MESSAGE__ = [[${donation != null ? donation.message : null}]];
         window.__DONATION_NEED_RECEIPT__ = [[${donation != null && donation.needReceipt == true}]];

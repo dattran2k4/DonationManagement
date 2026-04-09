@@ -272,9 +272,11 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                     <h2 class="text-2xl font-bold text-slate-900">Lịch sử quyên góp</h2>
                     <div class="flex items-center gap-4 text-sm font-semibold text-slate-700">
-                        <button type="button" class="inline-flex items-center gap-1 text-slate-700 hover:text-primary">
+                        <a id="addDonationFromDonorBtn"
+                           th:href="@{/admin/donations/form(donorId=${donor.id},returnTo=${'/admin/donors/' + donor.id + '?tab=history'})}"
+                           class="inline-flex items-center gap-1 text-slate-700 hover:text-primary">
                             <span class="text-base">+</span> Thêm đơn Quyên góp
-                        </button>
+                        </a>
                         <button type="button" class="inline-flex items-center gap-1 text-slate-700 hover:text-red-600">
                             <span class="material-symbols-outlined text-[18px]">delete</span> Xóa đơn Quyên góp
                         </button>
