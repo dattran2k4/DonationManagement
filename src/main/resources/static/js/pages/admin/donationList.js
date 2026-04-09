@@ -144,6 +144,12 @@ const getViaLabel = (donationVia) => {
     return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
 };
 
+const formatDonationCode = (id) => {
+    const numericId = Number(id || 0);
+    if (!Number.isFinite(numericId) || numericId <= 0) return 'DNT-00000000';
+    return `DNT-${String(Math.trunc(numericId)).padStart(8, '0')}`;
+};
+
 const renderTable = (donations) => {
     if (!donations || donations.length === 0) {
         elements.tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
@@ -166,7 +172,7 @@ const renderTable = (donations) => {
         return `
         <tr class="${statusStyle.rowClass} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
-                <a href="/admin/donations/${item.id}" class="text-sm font-mono text-slate-900 dark:text-white font-medium hover:text-primary dark:hover:text-primary transition-colors">#${item.memoCode || `ORD-${item.id}`}</a>
+                <a href="/admin/donations/${item.id}" class="text-sm font-mono text-slate-900 dark:text-white font-medium hover:text-primary dark:hover:text-primary transition-colors">${formatDonationCode(item.id)}</a>
                 <div class="text-xs text-slate-500 mt-0.5">${donatedAt}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">

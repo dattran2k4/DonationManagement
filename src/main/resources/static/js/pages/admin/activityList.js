@@ -20,6 +20,11 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
 };
 
+const formatActivityCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `ACT-${String(id).padStart(8, '0')}`;
+};
+
 // 2. Hàm định dạng ngày tháng (VD: 12/05 - 15/05)
 const formatDateRange = (start, end) => {
     if (!start) return '---';
@@ -78,7 +83,7 @@ const renderActivityRow = (activity) => {
 
     return `
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
-        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">#${activity.id}</td>
+        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">${formatActivityCode(activity.id)}</td>
         <td class="px-6 py-4 whitespace-nowrap">
             <a href="/admin/activities/${activity.id}" class="text-sm font-medium text-text-main dark:text-white hover:text-primary transition-colors">${activity.name}</a>
         </td>

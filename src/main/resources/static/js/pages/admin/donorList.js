@@ -58,6 +58,11 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
 };
 
+const formatDonorCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `DON-${String(id).padStart(8, '0')}`;
+};
+
 const getTypeBadge = (type) => {
     const isOrg = type === 'ORGANIZATION';
     const config = isOrg
@@ -90,11 +95,15 @@ const renderDonorRow = (donor) => {
                             <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">
                                 ${orgInfo.name}
                             </a>
+                            <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
                             <div class="text-xs text-text-secondary mt-0.5 flex items-center">
                                 <span class="material-symbols-outlined text-[12px] mr-1">person_pin</span>
                                 Đại diện: ${orgInfo.representative || '---'}
                             </div>
-                    ` : `<a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">${donor.fullName}</a>`}
+                    ` : `
+                        <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">${donor.fullName}</a>
+                        <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
+                    `}
                     </div>
             </div>
         </td>

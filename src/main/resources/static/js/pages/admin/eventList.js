@@ -28,7 +28,7 @@ let searchDebounceId = null;
 
 const formatEventCode = (id) => {
     if (!id && id !== 0) return '---';
-    return `EVT-${String(id).padStart(5, '0')}`;
+    return `EVT-${String(id).padStart(8, '0')}`;
 };
 
 // Hàm tiện ích format tiền tệ rút gọn (VD: 650000000 -> 650tr)
@@ -84,14 +84,14 @@ const renderTable = (data) => {
         const isCompleted = percent >= 100;
         return `
         <tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-            <td class="px-6 py-4 font-mono text-sm text-slate-700 dark:text-slate-300">#${item.id}</td>
+            <td class="px-6 py-4 font-mono text-sm text-slate-700 dark:text-slate-300">${formatEventCode(item.id)}</td>
             <td class="px-6 py-4">
                 <div class="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" 
                      style="background-image: url('${item.thumbnailUrl || '/images/default-event.png'}')"></div>
             </td>
             <td class="px-6 py-4">
                 <a href="/admin/events/${item.id}" class="font-semibold text-slate-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors">${item.name}</a>
-                <div class="text-xs text-slate-500 mt-0.5">Mã: ${item.code || formatEventCode(item.id)}</div>
+                <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatEventCode(item.id)}</div>
             </td>
             <td class="px-6 py-4">
                 ${getStatusBadge(item.status)}
