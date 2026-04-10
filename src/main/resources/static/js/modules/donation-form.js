@@ -7,7 +7,7 @@ const btnSubmit = document.getElementById('submitDonation');
 const receiptCheckbox = document.getElementById('needReceipt');
 const receiptFields = document.getElementById('receipt-fields');
 const amountInput = document.getElementById('donationAmount');
-const WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
+const WHOLE_AMOUNT_MESSAGE = "Vui lòng nhập tiền chẳn";
 
 if (receiptCheckbox && receiptFields) {
     receiptCheckbox.addEventListener('change', (e) => {
