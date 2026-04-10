@@ -384,12 +384,22 @@ async function saveDonationDetail(successMessage = "Cập nhật khoản quyên 
 }
 
 function setActiveTab(tab) {
+    if (tab === "auditLogs" && (!elements.auditLogsBtn || !elements.auditLogsPanel)) {
+        tab = "info";
+    }
+
     state.activeTab = tab;
     const isInfo = tab === "info";
     const isAuditLogs = tab === "auditLogs";
 
-    elements.infoPanel?.classList.toggle("hidden", !isInfo);
-    elements.auditLogsPanel?.classList.toggle("hidden", !isAuditLogs);
+    if (elements.infoPanel) {
+        elements.infoPanel.classList.toggle("hidden", !isInfo);
+        elements.infoPanel.style.display = isInfo ? "" : "none";
+    }
+    if (elements.auditLogsPanel) {
+        elements.auditLogsPanel.classList.toggle("hidden", !isAuditLogs);
+        elements.auditLogsPanel.style.display = isAuditLogs ? "" : "none";
+    }
 
     if (elements.infoBtn) {
         elements.infoBtn.className = isInfo
@@ -491,9 +501,20 @@ async function loadAuditLogs() {
 function bindTabEvents() {
     elements.infoBtn?.addEventListener("click", () => setActiveTab("info"));
     elements.auditLogsBtn?.addEventListener("click", async () => {
+        if (!elements.auditLogsPanel) return;
         setActiveTab("auditLogs");
         if (!state.auditLogs.loaded) await loadAuditLogs();
     });
+}
+
+function normalizeTabPanelsLayout() {
+    if (!elements.infoPanel || !elements.auditLogsPanel) return;
+    if (!elements.infoPanel.contains(elements.auditLogsPanel)) return;
+
+    const parent = elements.infoPanel.parentElement;
+    if (!parent) return;
+
+    parent.insertBefore(elements.auditLogsPanel, elements.infoPanel.nextSibling);
 }
 
 async function handleApprove() {
@@ -551,6 +572,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
     state.donationId = Number(elements.section.dataset.donationId || 0);
 
+    normalizeTabPanelsLayout();
     bindTabEvents();
     setActiveTab("info");
     if (state.donationId) {

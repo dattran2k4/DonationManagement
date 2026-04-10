@@ -231,8 +231,7 @@
                                     <option value="CASH" th:selected="${donation.paymentMethod != null && donation.paymentMethod.toString() == 'CASH'}">Tiền mặt</option>
                                     <option value="BANK_TRANSFER_OFFLINE" th:selected="${donation.paymentMethod != null && donation.paymentMethod.toString() == 'BANK_TRANSFER_OFFLINE'}">Chuyển khoản thủ công</option>
                                 </select>
-                                <p class="mt-1 text-xs text-slate-500"
-                                   th:if="${canEdit != true}">
+                                <p class="mt-1 text-xs text-slate-500" th:if="${canEdit != true}">
                                     Chỉ chỉnh sửa được khi đơn ở trạng thái Từ chối hoặc Chờ duyệt.
                                 </p>
                             </div>
@@ -246,12 +245,11 @@
                                        th:value="${(donation.memoCode != null && !#strings.isEmpty(donation.memoCode)) ? donation.memoCode : ''}"
                                        placeholder="Nhập nội dung chuyển khoản"/>
                             </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-5 grid gap-5 xl:grid-cols-2 p-6">
+                <div class="mt-5 grid gap-5 xl:grid-cols-2">
                     <div class="rounded-2xl border border-slate-200 p-6">
                         <div class="grid grid-cols-12 items-center gap-y-4">
                             <label class="col-span-4 text-sm font-medium text-slate-700">Trạng thái</label>
@@ -336,7 +334,7 @@
                                       name="message"
                                       class="col-span-8 min-h-[220px] rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
-                                      th:disabled="${canEdit == true}"
+                                      th:disabled="${canEdit != true}"
                                       placeholder="Nhập lời nhắn..."
                                       th:text="${donation.message ?: ''}"></textarea>
                         </div>
