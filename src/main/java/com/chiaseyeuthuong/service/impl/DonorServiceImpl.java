@@ -499,10 +499,10 @@ public class DonorServiceImpl implements DonorService {
 
         if (EDonationTarget.EVENT.equals(donation.getTarget()) && donation.getEvent() != null) {
             response.setTargetTitle(donation.getEvent().getName());
-            response.setTargetUrl(donation.getEvent().getSlug() != null ? "/events/%s".formatted(donation.getEvent().getSlug()) : null);
+            response.setTargetUrl(donation.getEvent().getSlug() != null ? "/su-kien/%s".formatted(donation.getEvent().getSlug()) : null);
         } else if (EDonationTarget.ACTIVITY.equals(donation.getTarget()) && donation.getActivity() != null) {
             response.setTargetTitle(donation.getActivity().getName());
-            response.setTargetUrl(donation.getActivity().getSlug() != null ? "/activities/%s".formatted(donation.getActivity().getSlug()) : null);
+            response.setTargetUrl(donation.getActivity().getSlug() != null ? "/hoat-dong/%s".formatted(donation.getActivity().getSlug()) : null);
         } else {
             response.setTargetTitle(TARGET_NOT_FOUND);
             response.setTargetUrl(null);

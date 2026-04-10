@@ -37,7 +37,16 @@ import java.util.TimeZone;
 public class AppConfig {
 
     private static final String APP_TIME_ZONE = "Asia/Ho_Chi_Minh";
-    public static final List<String> WHITE_LIST_URL = List.of("/about", "/contact", "/events/*", "/activities/*", "/", "/donations");
+    public static final List<String> WHITE_LIST_URL = List.of(
+            "/",
+            "/about", "/ve-chung-toi",
+            "/contact", "/lien-he",
+            "/events", "/events/*",
+            "/su-kien", "/su-kien/*",
+            "/activities/*", "/hoat-dong/*",
+            "/donations", "/donations/**",
+            "/quyen-gop", "/quyen-gop/**"
+    );
     private final CustomUserDetailsService customUserDetailsService;
 
     @PostConstruct

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/donations")
+@RequestMapping({"/donations", "/quyen-gop"})
 public class DonationController {
 
     @GetMapping
