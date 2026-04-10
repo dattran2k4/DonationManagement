@@ -16,6 +16,7 @@ public class DonationRequest {
     @NotNull(message = "Số tiền không được để trống")
     @Positive
     @DecimalMin(value = "1000", message = "Số tiền tối thiểu là 1.000 đồng")
+    @DecimalMax(value = "100000000", message = "Số tiền tối đa là 100.000.000 đồng")
     private BigDecimal amount;
 
     private String message;
