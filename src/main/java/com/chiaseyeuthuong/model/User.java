@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.model;
 
 import com.chiaseyeuthuong.common.ERole;
+import com.chiaseyeuthuong.common.EUserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,4 +39,14 @@ public class User extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private EUserStatus status;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = EUserStatus.ACTIVE;
+        }
+    }
 }

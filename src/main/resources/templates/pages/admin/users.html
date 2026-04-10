@@ -1,0 +1,91 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Danh sách thành viên</title>
+</head>
+<body>
+<div layout:fragment="content" class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-text-main tracking-tight">Danh sách nhân viên</h1>
+        <p class="text-sm text-text-secondary mt-1">Danh sách tất cả thành viên trong tổ chức và vai trò tương ứng.</p>
+    </div>
+
+    <div class="bg-surface-light p-5 rounded-xl border border-border-light shadow-sm space-y-4">
+        <div class="flex flex-col lg:flex-row gap-3 lg:justify-between lg:items-center">
+            <div class="flex flex-wrap items-center gap-2">
+                <a th:href="@{/admin/users/form}" sec:authorize="hasRole('ADMIN')"
+                   class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Thêm thành viên
+                </a>
+                <button id="deleteSelectedUsersBtn"
+                        sec:authorize="hasRole('ADMIN')"
+                        type="button"
+                        class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-semibold text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled>
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                    Xóa đã chọn
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 lg:justify-end">
+            <div class="relative w-full lg:w-[300px]">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input id="userSearchInput"
+                       type="text"
+                       placeholder="Tìm kiếm nhân viên..."
+                       class="w-full h-11 rounded-full border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"/>
+            </div>
+
+            <div class="relative w-full lg:w-[170px]">
+                <select id="userStatusFilter"
+                        class="appearance-none w-full h-11 rounded-xl border border-slate-200 bg-white pl-4 pr-10 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">Trạng thái</option>
+                    <option value="ACTIVE">Đang hoạt động</option>
+                    <option value="INACTIVE">Tạm khóa</option>
+                </select>
+                <span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">expand_more</span>
+            </div>
+
+            <button id="userResetFilterBtn"
+                    type="button"
+                    class="h-11 w-11 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-colors"
+                    title="Đặt lại bộ lọc">
+                <span class="material-symbols-outlined text-[20px]">filter_list_off</span>
+            </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                <tr class="border-b border-border-light">
+                    <th class="px-6 py-4 w-14">
+                        <input id="selectAllUsersCheckbox" type="checkbox"
+                               class="h-6 w-6 rounded-md border-slate-300 text-primary focus:ring-primary/30"/>
+                    </th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Họ và tên</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Số điện thoại</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Vai trò</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="paginationContainer"></div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script type="module" th:src="@{/js/pages/admin/userList.js}"></script>
+</th:block>
+</body>
+</html>

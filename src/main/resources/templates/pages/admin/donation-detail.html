@@ -6,253 +6,389 @@
         layout:decorate="~{layouts/admin/admin-layout}"
 >
 <head>
-    <title>Chi tiết quyên góp</title>
+    <title th:text="${donation != null && donation.id != null} ? 'Chi tiết quyên góp' : 'Tạo đơn quyên góp'">Chi tiết quyên góp</title>
 </head>
 <body>
-<div layout:fragment="content" class="admin-page-stack">
-    <section class="admin-toolbar">
-        <div class="admin-toolbar-group">
-            <a th:href="@{/admin/donations/form}"
-               sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
-               class="admin-action-btn admin-action-btn--primary">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Tạo mới
-            </a>
-            <a th:href="@{/admin/donations}" class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">undo</span>
-                Quay lại
-            </a>
-            <a sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
-               th:if="${donation.donationVia != null && donation.donationVia.name() == 'STAFF' && donation.status != null && donation.status.name() != 'CONFIRMED'}"
-               th:href="@{/admin/donations/{id}/form(id=${donation.id})}"
-               class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                Chỉnh sửa
-            </a>
-            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">refresh</span>
-                Làm mới
-            </button>
-        </div>
-        <div class="admin-toolbar-group">
-            <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
-                  th:classappend="${donation.donationVia != null && donation.donationVia.name() == 'STAFF'} ? ' bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : ' bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'"
-                  th:text="${donation.donationVia != null && donation.donationVia.name() == 'STAFF'} ? 'Nội bộ' : 'Website'">
-                Website
-            </span>
-        </div>
-    </section>
+<div layout:fragment="content" class="space-y-6">
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã quyên góp</p>
-            <p class="mt-3 text-lg font-bold text-slate-900 dark:text-white"
-               th:text="${(donation.memoCode != null && !#strings.isEmpty(donation.memoCode)) ? donation.memoCode : 'ORD-' + donation.id}">
-                ORD-1
-            </p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Số tiền</p>
-            <p class="mt-3 text-2xl font-bold text-primary"
-               th:text="${#numbers.formatDecimal(donation.amount ?: 0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
-                0 ₫
-            </p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</p>
-            <span class="mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold"
-                  th:classappend="
-                    ${donation.status.name() == 'CONFIRMED'} ? ' bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                    (${donation.status.name() == 'PENDING_PAYMENT'} ? ' bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                    (${donation.status.name() == 'PENDING_APPROVED'} ? ' bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' :
-                    (${donation.status.name() == 'REJECTED'} ? ' bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                    ' bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300')))"
-                  th:text="
-                    ${donation.status.name() == 'CONFIRMED'} ? 'Đã xác nhận' :
-                    (${donation.status.name() == 'PENDING_PAYMENT'} ? 'Chờ thanh toán' :
-                    (${donation.status.name() == 'PENDING_APPROVED'} ? 'Chờ duyệt' :
-                    (${donation.status.name() == 'REJECTED'} ? 'Đã từ chối' :
-                    (${donation.status.name() == 'FAILED'} ? 'Thất bại' : 'Đã hủy'))))">
-                Đã xác nhận
-            </span>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mục tiêu</p>
-            <p class="mt-3 text-lg font-bold text-slate-900 dark:text-white"
-               th:text="${(donation.objectName != null && !#strings.isEmpty(donation.objectName)) ? donation.objectName : (donation.target != null ? donation.target.value : 'Thiện nguyện')}">
-                Thiện nguyện
-            </p>
-        </div>
-    </div>
+    <th:block th:if="${donation != null}">
+        <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-wrap items-center gap-3">
+                <a th:href="@{/admin/donations/form}"
+                   class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-lg font-semibold text-white hover:bg-emerald-700">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo mới
+                </a>
 
-    <section id="donationDetailTabsSection"
-             th:attr="data-donation-id=${donation.id}"
-             class="admin-detail-frame">
-        <div class="admin-detail-header">
-            <h1 class="admin-detail-title">Chi tiết quyên góp</h1>
-            <p class="admin-detail-subtitle">Theo dõi nhà hảo tâm, mục tiêu, trạng thái và lịch sử xử lý của khoản quyên góp này.</p>
-        </div>
-        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
-            <div class="admin-tab-strip">
-                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin chung</button>
-                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
-                    Lịch sử thao tác
-                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                <a th:href="${returnToUrl}"
+                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                    <span class="material-symbols-outlined text-[18px]">undo</span>
+                    Hủy bỏ
+                </a>
+
+                <button type="button" id="refreshBtn"
+                        class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                    <span class="material-symbols-outlined text-[18px]">refresh</span>
+                    Làm mới
+                </button>
+
+                <button sec:authorize="hasAnyRole('STAFF','ADMIN','ACCOUNTING')"
+                        th:if="${donation.id == null || (donation.donationVia != null && donation.donationVia.toString() == 'STAFF' && donation.status != null && (donation.status.toString() == 'REJECTED' || donation.status.toString() == 'PENDING_APPROVED'))}"
+                        type="button"
+                        id="saveDonationBtn"
+                        class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    Lưu
+                </button>
+
+                <button sec:authorize="hasRole('STAFF')"
+                        th:if="${donation.donationVia != null && donation.donationVia.toString() == 'STAFF' && donation.status != null && donation.status.toString() == 'REJECTED'}"
+                        type="button"
+                        id="submitApprovalBtn"
+                        class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 text-lg font-semibold text-white hover:bg-blue-700">
+                    Gửi duyệt
+                </button>
+
+                <button sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                        th:if="${donation.donationVia != null && donation.donationVia.toString() == 'STAFF' && donation.status != null && donation.status.toString() == 'PENDING_APPROVED'}"
+                        type="button"
+                        id="approveBtn"
+                        class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-lg font-semibold text-white hover:bg-emerald-700">
+                    Duyệt
+                </button>
+
+                <button sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                        th:if="${donation.donationVia != null && donation.donationVia.toString() == 'STAFF' && donation.status != null && donation.status.toString() == 'PENDING_APPROVED'}"
+                        type="button"
+                        id="rejectBtn"
+                        class="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-6 py-3 text-lg font-semibold text-white hover:bg-red-600">
+                    Từ chối
                 </button>
             </div>
-        </div>
+        </section>
 
-        <div id="tabInfoPanel" class="p-6">
-            <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-                <div class="space-y-6">
-                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nhà hảo tâm</h2>
-                        </div>
-                        <div class="grid gap-5 p-6 md:grid-cols-2">
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Tên nhà hảo tâm</p>
-                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorName ?: '---'}">---</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Số điện thoại</p>
-                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.donorPhone ?: '---'}">---</p>
-                            </div>
-                            <div class="space-y-1 md:col-span-2" th:if="${donation.donorId != null}">
-                                <a th:href="@{/admin/donors/{id}(id=${donation.donorId})}"
-                                   class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
-                                    <span class="material-symbols-outlined text-[18px]">arrow_outward</span>
-                                    Xem hồ sơ nhà hảo tâm
-                                </a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Thông tin quyên góp</h2>
-                        </div>
-                        <div class="grid gap-5 p-6 md:grid-cols-2">
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Phương thức thanh toán</p>
-                                <p class="font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.paymentMethod != null ? donation.paymentMethod.value : '---'}">
-                                    ---
-                                </p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Cần biên lai</p>
-                                <p class="font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.needReceipt == true ? 'Có' : 'Không'}">
-                                    Không
-                                </p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Tên trên biên lai</p>
-                                <p class="font-semibold text-slate-900 dark:text-white" th:text="${donation.receiptName ?: '---'}">---</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Email nhận biên lai</p>
-                                <p class="font-semibold break-all text-slate-900 dark:text-white" th:text="${donation.receiptEmail ?: '---'}">---</p>
-                            </div>
-                            <div class="space-y-1 md:col-span-2">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Lời nhắn / Ghi chú</p>
-                                <p class="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                                   th:text="${(donation.message != null && !#strings.isEmpty(donation.message)) ? donation.message : 'Chưa có lời nhắn.'}">
-                                    Chưa có lời nhắn.
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <div class="space-y-6">
-                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Mốc thời gian</h2>
-                        </div>
-                        <div class="space-y-4 p-6">
-                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày tạo</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.createdAt != null ? #temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                                    ---
-                                </p>
-                            </div>
-                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày quyên góp</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                                    ---
-                                </p>
-                            </div>
-                            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Ngày xác nhận</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.confirmedAt != null ? #temporals.format(donation.confirmedAt, 'dd/MM/yyyy HH:mm') : '---'}">
-                                    ---
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nguồn gốc xử lý</h2>
-                        </div>
-                        <div class="space-y-4 p-6">
-                            <div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Tạo bởi</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.createdBy != null && donation.createdBy.fullName != null ? donation.createdBy.fullName : 'Hệ thống / Website'}">
-                                    Hệ thống / Website
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Người xác nhận</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.confirmedBy != null && donation.confirmedBy.fullName != null ? donation.confirmedBy.fullName : '---'}">
-                                    ---
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400">Yêu cầu duyệt</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white"
-                                   th:text="${donation.approvalRequired == true ? 'Có' : 'Không'}">
-                                    Không
-                                </p>
-                            </div>
-                        </div>
-                    </section>
+        <section id="donationDetailTabsSection"
+                 th:attr="data-donation-id=${donation.id}"
+                 class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="px-6 pt-5 pb-2">
+                <h1 class="text-5xl font-black text-slate-900 dark:text-white">
+                    <span th:text="${donation.id != null ? 'DTN-' + #numbers.formatInteger(donation.id, 8) : 'Đơn quyên góp mới'}">Đơn quyên góp mới</span>
+                    <span th:if="${param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
+                </h1>
+            </div>
+            <div class="border-b border-slate-200 px-6 pt-5 dark:border-slate-800">
+                <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
+                    <button id="tabInfoBtn" data-tab="info" type="button"
+                            class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">
+                        Thông tin chung
+                    </button>
+                    <button th:if="${donation.id != null}" id="tabAuditLogsBtn" data-tab="auditLogs" type="button"
+                            class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                        Lịch sử thao tác
+                        <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div id="tabAuditLogsPanel" class="hidden pt-2">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                    <thead class="bg-slate-50 dark:bg-slate-800/50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Thời gian</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Người thao tác</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Nội dung</th>
-                    </tr>
-                    </thead>
-                    <tbody id="donationAuditLogsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr>
-                        <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                            Đang tải lịch sử thao tác...
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div id="tabInfoPanel" class="p-6"
+                 th:with="canEdit=${donation.id == null || (donation.donationVia != null && donation.donationVia.toString() == 'STAFF' && donation.status != null && (donation.status.toString() == 'REJECTED' || donation.status.toString() == 'PENDING_APPROVED'))}">
+                <div class="grid gap-5 xl:grid-cols-2">
+                    <div class="rounded-2xl border border-slate-200 p-6">
+                        <div class="grid grid-cols-12 items-center gap-y-4">
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Mã quyên góp</label>
+                            <div class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                                 th:text="${donation.id != null ? 'DTN-' + #numbers.formatInteger(donation.id, 8) : '---'}">---</div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Nhà hảo tâm <span class="text-red-500">*</span></label>
+                            <div class="col-span-8 space-y-1">
+                                <div id="editDonorSearchWrapper" class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <span class="material-symbols-outlined text-[20px]">person_search</span>
+                                    </span>
+                                    <input id="editDonorSearchInput" type="text"
+                                           class="block w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-10 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                           th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                           th:disabled="${canEdit != true}"
+                                           th:value="${donation.donorName != null ? (donation.donorPhone != null ? donation.donorName + ' - ' + donation.donorPhone : donation.donorName) : ''}"
+                                           placeholder="Nhập tên hoặc số điện thoại nhà hảo tâm..."/>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-700">
+                                        <span class="material-symbols-outlined text-[18px]">search</span>
+                                    </span>
+                                    <div id="editDonorDropdown"
+                                         class="absolute mt-1 hidden w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
+                                         style="z-index: 9999;">
+                                        <div class="grid grid-cols-2 gap-4 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                                            <span>Nhà hảo tâm</span>
+                                            <span>Số điện thoại</span>
+                                        </div>
+                                        <div id="editDonorDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <input id="editDonorId" type="hidden" th:value="${donation.donorId}"/>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Số điện thoại</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span id="editDonorPhoneText" th:text="${donation.donorPhone ?: '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Email</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span id="editDonorEmailText" th:text="${donation.donorEmail ?: '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Thuộc sự kiện <span class="text-red-500">*</span></label>
+                            <div class="col-span-8 space-y-1">
+                                <div id="editEventSearchWrapper" class="relative">
+                                    <input id="editEventSearchInput" type="text"
+                                           class="block w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                           th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                           th:disabled="${canEdit != true}"
+                                           th:value="${donation.eventName ?: ''}"
+                                           placeholder="Tìm theo tên sự kiện..."/>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-700">
+                                        <span class="material-symbols-outlined text-[18px]">search</span>
+                                    </span>
+                                    <div id="editEventDropdown"
+                                         class="absolute mt-1 hidden w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
+                                         style="z-index: 9999;">
+                                        <div class="grid grid-cols-[minmax(0,1fr)_110px] gap-4 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                                            <span>Sự kiện</span>
+                                            <span>ID sự kiện</span>
+                                        </div>
+                                        <div id="editEventDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <input id="editEventId" type="hidden" th:value="${donation.eventId}"/>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Thuộc hoạt động <span class="text-red-500">*</span></label>
+                            <div class="col-span-8 space-y-1">
+                                <div id="editActivitySearchWrapper" class="relative">
+                                    <input id="editActivitySearchInput" type="text"
+                                           class="block w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                           th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                           th:disabled="${canEdit != true}"
+                                           th:value="${donation.activityName ?: ''}"
+                                           placeholder="Tìm theo tên hoạt động..."/>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-700">
+                                        <span class="material-symbols-outlined text-[18px]">search</span>
+                                    </span>
+                                    <div id="editActivityDropdown"
+                                         class="absolute mt-1 hidden w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
+                                         style="z-index: 9999;">
+                                        <div class="grid grid-cols-[minmax(0,1fr)_110px] gap-4 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                                            <span>Hoạt động</span>
+                                            <span>ID hoạt động</span>
+                                        </div>
+                                        <div id="editActivityDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <input id="editActivityId" type="hidden" th:value="${donation.activityId}"/>
+                                <div class="pt-1">
+                                    <button id="resetTargetBtn" type="button"
+                                            class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-primary"
+                                            th:disabled="${canEdit != true}"
+                                            th:classappend="${canEdit != true} ? ' cursor-not-allowed opacity-60' : ''">
+                                        <span class="material-symbols-outlined text-[14px]">restart_alt</span>
+                                        Xóa sự kiện và hoạt động
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-slate-200 p-6">
+                        <h2 class="mb-5 text-3xl font-bold text-slate-900">Thông tin quyên góp</h2>
+                        <div class="grid grid-cols-12 items-center gap-y-4">
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Số tiền (vnđ)</label>
+                            <div class="col-span-8 relative">
+                                <input id="editAmount" type="text" inputmode="numeric"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 pr-12 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${donation.amount}"/>
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-500">vnđ</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Ngày quyên góp</label>
+                            <div class="col-span-8">
+                                <input id="editDonatedAt" type="date"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'yyyy-MM-dd') : ''}"/>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Hình thức quyên góp</label>
+                            <div class="col-span-8">
+                                <select id="donationPaymentMethodSelect"
+                                        th:disabled="${canEdit != true}"
+                                        class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                        th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'">
+                                    <option value="CASH" th:selected="${donation.paymentMethod != null && donation.paymentMethod.toString() == 'CASH'}">Tiền mặt</option>
+                                    <option value="BANK_TRANSFER_OFFLINE" th:selected="${donation.paymentMethod != null && donation.paymentMethod.toString() == 'BANK_TRANSFER_OFFLINE'}">Chuyển khoản thủ công</option>
+                                </select>
+                                <p class="mt-1 text-xs text-slate-500"
+                                   th:if="${canEdit != true}">
+                                    Chỉ chỉnh sửa được khi đơn ở trạng thái Từ chối hoặc Chờ duyệt.
+                                </p>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Nội dung chuyển khoản</label>
+                            <div class="col-span-8">
+                                <input id="editMemoCode" type="text"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${(donation.memoCode != null && !#strings.isEmpty(donation.memoCode)) ? donation.memoCode : ''}"
+                                       placeholder="Nhập nội dung chuyển khoản"/>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 grid gap-5 xl:grid-cols-2 p-6">
+                    <div class="rounded-2xl border border-slate-200 p-6">
+                        <div class="grid grid-cols-12 items-center gap-y-4">
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Trạng thái</label>
+                            <div class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span th:text="${donation.status != null ? donation.status.value : '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Người duyệt</label>
+                            <div class="col-span-8 flex items-center justify-between rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm">
+                                <span class="font-semibold text-primary underline underline-offset-2"
+                                      th:text="${donation.confirmedBy != null && donation.confirmedBy.fullName != null ? donation.confirmedBy.fullName : '---'}">---</span>
+                                <span class="material-symbols-outlined text-[18px] text-slate-700">search</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Ngày phê duyệt</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span th:text="${donation.confirmedAt != null ? #temporals.format(donation.confirmedAt, 'dd/MM/yyyy  HH:mm a') : '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Tạo lúc</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span th:text="${donation.createdAt != null ? #temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Tạo bởi</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span th:text="${donation.createdBy != null && !#strings.isEmpty(donation.createdBy) ? donation.createdBy : 'Hệ thống'}">Hệ thống</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Cập nhật lần cuối</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span th:text="${donation.updatedAt != null ? #temporals.format(donation.updatedAt, 'dd/MM/yyyy HH:mm') : '---'}">---</span>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Cập nhật bởi</label>
+                            <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                                <span class="material-symbols-outlined text-[16px] text-slate-500">lock</span>
+                                <span th:text="${donation.updatedBy != null && !#strings.isEmpty(donation.updatedBy) ? donation.updatedBy : 'Hệ thống'}">Hệ thống</span>
+                            </div>
+
+                            <label class="col-span-4 self-start pt-2 text-sm font-medium text-slate-700">Lý do từ chối <span class="text-red-500">*</span></label>
+                            <textarea class="col-span-8 min-h-[120px] rounded-lg border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-900"
+                                      readonly
+                                      th:text="${(donation.rejectionReason != null && !#strings.isEmpty(donation.rejectionReason)) ? donation.rejectionReason : '---'}">---</textarea>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Yêu cầu biên lai</label>
+                            <div class="col-span-8">
+                                <label class="relative inline-flex cursor-pointer items-center">
+                                    <input class="peer sr-only" id="editNeedReceipt" type="checkbox"
+                                           th:checked="${donation.needReceipt == true}" th:disabled="${canEdit != true}"/>
+                                    <div class="h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-primary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full"
+                                         th:classappend="${canEdit != true} ? ' opacity-70' : ''"></div>
+                                    <span class="ms-3 text-sm font-semibold text-slate-700">Nhận biên lai điện tử</span>
+                                </label>
+                            </div>
+
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Tên biên lai</label>
+                            <div id="editReceiptFields" class="col-span-8 space-y-3">
+                                <input id="editReceiptName" type="text"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${donation.receiptName}"/>
+                                <input id="editReceiptEmail" type="email"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${donation.receiptEmail}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-slate-200 p-6">
+                        <h2 class="mb-5 text-3xl font-bold text-slate-900">Thông tin khác</h2>
+                        <div class="grid grid-cols-12 items-start gap-y-4">
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Lời nhắn</label>
+                            <textarea id="editMessage"
+                                      name="message"
+                                      class="col-span-8 min-h-[220px] rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                      th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                      th:disabled="${canEdit == true}"
+                                      placeholder="Nhập lời nhắn..."
+                                      th:text="${donation.message ?: ''}"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="donationAuditLogsPagination"></div>
-        </div>
-    </section>
+
+            <div th:if="${donation.id != null}" id="tabAuditLogsPanel" class="hidden pt-2">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Thời gian</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Người thao tác</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Nội dung</th>
+                        </tr>
+                        </thead>
+                        <tbody id="donationAuditLogsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                                Đang tải lịch sử thao tác...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="donationAuditLogsPagination"></div>
+            </div>
+        </section>
+    </th:block>
 </div>
 <th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__DONATION_ID__ = [[${donation != null ? donation.id : null}]];
+        window.__DONATION_DONOR_ID__ = [[${donation != null ? donation.donorId : null}]];
+        window.__PREFILL_DONOR_ID__ = [[${prefillDonor != null ? prefillDonor.id : null}]];
+        window.__PREFILL_DONOR_NAME__ = [[${prefillDonor != null ? prefillDonor.fullName : null}]];
+        window.__PREFILL_DONOR_PHONE__ = [[${prefillDonor != null ? prefillDonor.phone : null}]];
+        window.__DONATION_RETURN_TO__ = [[${returnToUrl}]];
+        window.__DONATION_AMOUNT__ = [[${donation != null && donation.amount != null ? donation.amount : 0}]];
+        window.__DONATION_MESSAGE__ = [[${donation != null ? donation.message : null}]];
+        window.__DONATION_NEED_RECEIPT__ = [[${donation != null && donation.needReceipt == true}]];
+        window.__DONATION_RECEIPT_NAME__ = [[${donation != null ? donation.receiptName : null}]];
+        window.__DONATION_RECEIPT_EMAIL__ = [[${donation != null ? donation.receiptEmail : null}]];
+        window.__DONATION_ACTIVITY_ID__ = [[${donation != null ? donation.activityId : null}]];
+        window.__DONATION_EVENT_ID__ = [[${donation != null ? donation.eventId : null}]];
+        window.__DONATION_DONATED_AT__ = [[${donation != null && donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'yyyy-MM-dd''T''HH:mm:ss') : null}]];
+        window.__DONATION_STATUS__ = [[${donation != null && donation.status != null ? donation.status.name() : null}]];
+        window.__DONATION_VIA__ = [[${donation != null && donation.donationVia != null ? donation.donationVia.name() : null}]];
+        window.__DONATION_MEMO_CODE__ = [[${donation != null ? donation.memoCode : null}]];
+    </script>
     <script type="module" th:src="@{/js/pages/admin/donationDetail.js}"></script>
 </th:block>
 </body>

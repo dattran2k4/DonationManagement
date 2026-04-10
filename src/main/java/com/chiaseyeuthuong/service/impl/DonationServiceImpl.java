@@ -197,7 +197,8 @@ public class DonationServiceImpl implements DonationService {
         if (request.getDonatedAt() != null) {
             donation.setDonatedAt(request.getDonatedAt());
         }
-        donation.setMessage(request.getMessage());
+        donation.setMessage(request.getMessage() != null && !request.getMessage().isBlank() ? request.getMessage().trim() : null);
+        donation.setMemoCode(request.getMemoCode() != null && !request.getMemoCode().isBlank() ? request.getMemoCode().trim() : null);
         donation.setNeedReceipt(request.getNeedReceipt());
         if (Boolean.TRUE.equals(request.getNeedReceipt())) {
             if (request.getReceiptEmail() == null) {

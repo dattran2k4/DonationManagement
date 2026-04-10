@@ -78,8 +78,7 @@ public class DonorServiceImpl implements DonorService {
         String email = normalizeEmail(request.getEmail());
         log.info("Processing saving donor for donor phone: {}", phone);
 
-        validateUniqueContactForCreate(phone, email);
-        Donor donor = new Donor();
+        Donor donor = donorRepository.findByPhone(request.getPhone()).orElse(new Donor());
 
         toEntity(donor, request, phone, email);
 
@@ -97,8 +96,7 @@ public class DonorServiceImpl implements DonorService {
         String phone = normalizePhone(request.getPhone());
         String email = normalizeEmail(request.getEmail());
 
-        validateUniqueContactForCreate(phone, email);
-        Donor donor = new Donor();
+        Donor donor = donorRepository.findByPhone(request.getPhone()).orElse(new Donor());
 
         toEntity(donor, request, phone, email);
 
@@ -559,16 +557,6 @@ public class DonorServiceImpl implements DonorService {
             throw new InvalidDataException("Không thể xóa nhà hảo tâm đã phát sinh quyên góp");
         }
         donorRepository.delete(donor);
-    }
-
-    private void validateUniqueContactForCreate(String phone, String email) {
-        if (donorRepository.findByPhone(phone).isPresent()) {
-            throw new InvalidDataException("Số điện thoại đã được dùng cho nhà hảo tâm khác");
-        }
-
-        if (donorRepository.findByEmailIgnoreCase(email).isPresent()) {
-            throw new InvalidDataException("Email đã được dùng cho nhà hảo tâm khác");
-        }
     }
 
     private Donor getExistingDonor(Long donorId) {

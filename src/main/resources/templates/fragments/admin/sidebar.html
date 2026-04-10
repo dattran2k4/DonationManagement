@@ -5,71 +5,68 @@
       layout:decorate="~{layouts/admin/admin-layout}">
 <body>
 <!-- Sidebar -->
-<aside th:fragment="sidebar" class="admin-sidebar w-72 flex-shrink-0 flex flex-col h-full">
-    <div class="admin-brand-card">
-        <div class="admin-brand-pill">
+<aside th:fragment="sidebar" class="admin-sidebar w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200 h-full">
+    <div class="p-6 pb-2">
+        <div class="flex items-center gap-3">
             <img th:src="@{/images/logo.jpg}" alt="Logo dự án"
-                 class="w-11 h-11 rounded-2xl object-cover ring-1 ring-slate-200"/>
+                 class="w-10 h-10 rounded-xl object-cover ring-1 ring-slate-200"/>
             <div class="flex flex-col min-w-0">
-                <h1 class="text-slate-900 text-[1.05rem] font-extrabold leading-tight">Chia sẻ yêu thương</h1>
-                <p sec:authorize="hasRole('ADMIN')" class="text-slate-400 text-xs font-semibold mt-1">Quản trị viên</p>
-                <p sec:authorize="hasRole('STAFF')" class="text-slate-400 text-xs font-semibold mt-1">Nhân viên vận hành</p>
-                <p sec:authorize="hasRole('ACCOUNTING')" class="text-slate-400 text-xs font-semibold mt-1">Kế toán</p>
-                <p sec:authorize="hasRole('DONOR')" class="text-slate-400 text-xs font-semibold mt-1">Nhà hảo tâm</p>
+                <h1 class="text-slate-900 text-base font-bold leading-tight">Chia sẻ yêu thương</h1>
+                <p sec:authorize="hasRole('ADMIN')" class="text-slate-400 text-xs font-medium mt-1">Quản trị viên</p>
+                <p sec:authorize="hasRole('STAFF')" class="text-slate-400 text-xs font-medium mt-1">Nhân viên vận hành</p>
+                <p sec:authorize="hasRole('ACCOUNTING')" class="text-slate-400 text-xs font-medium mt-1">Kế toán</p>
+                <p sec:authorize="hasRole('DONOR')" class="text-slate-400 text-xs font-medium mt-1">Nhà hảo tâm</p>
             </div>
         </div>
     </div>
-    <nav class="admin-scrollbar flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1.5">
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/dashboard"
+    <nav class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/dashboard}">
-            <span class="material-symbols-outlined fill-1 text-slate-500">dashboard</span>
-            <span>Tổng quan</span>
+            <span class="material-symbols-outlined fill-1 text-slate-900">dashboard</span>
+            <span class="text-sm font-medium">Tổng quan</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/events"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/events}">
-            <span class="material-symbols-outlined text-slate-500">calendar_month</span>
-            <span>Sự kiện</span>
+            <span class="material-symbols-outlined text-slate-900">calendar_month</span>
+            <span class="text-sm font-medium">Sự kiện</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/activities"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/activities}">
-            <span class="material-symbols-outlined text-slate-500">monitoring</span>
-            <span>Hoạt động</span>
+            <span class="material-symbols-outlined text-slate-900">monitoring</span>
+            <span class="text-sm font-medium">Hoạt động</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/donors"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/donors}">
-            <span class="material-symbols-outlined text-slate-500">groups</span>
-            <span>Nhà hảo tâm</span>
+            <span class="material-symbols-outlined text-slate-900">groups</span>
+            <span class="text-sm font-medium">Nhà hảo tâm</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/donations"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
+           th:href="@{/admin/users}">
+            <span class="material-symbols-outlined text-slate-900">badge</span>
+            <span class="text-sm font-medium">Thành viên</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/donations}">
-            <span class="material-symbols-outlined text-slate-500">attach_money</span>
-            <span>Quyên góp</span>
+            <span class="material-symbols-outlined text-slate-900">attach_money</span>
+            <span class="text-sm font-medium">Quyên góp</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/transactions"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/transactions}">
-            <span class="material-symbols-outlined text-slate-500">payments</span>
-            <span>Lịch sử giao dịch</span>
+            <span class="material-symbols-outlined text-slate-900">payments</span>
+            <span class="text-sm font-medium">Lịch sử giao dịch</span>
         </a>
-        <a class="admin-nav-link"
-           data-admin-nav="/admin/settings"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-900 hover:bg-slate-50 transition-colors group"
            th:href="@{/admin/settings}">
-            <span class="material-symbols-outlined text-slate-500">settings</span>
-            <span>Cài đặt</span>
+            <span class="material-symbols-outlined text-slate-900">settings</span>
+            <span class="text-sm font-medium">Cài đặt</span>
         </a>
     </nav>
-    <div class="admin-profile-card">
-        <div class="admin-profile-inner">
-            <div class="flex items-center gap-3 rounded-xl cursor-pointer transition-colors">
-                <img alt="Admin Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-white"
+    <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+            <img alt="Admin Avatar" class="w-8 h-8 rounded-full object-cover ring-2 ring-white"
                  data-alt="Portrait of a smiling man with glasses"
                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoNo2YVQ2IcbLLDuoqgakI6B4M56BFnm-gk6_HgQZmm1RY9vVybNB8a73gsNunFzHpoTkE4G5XzrTa5DCPk13Dr1BI1Yg6ny-2CJP8JchmB66niybkMPtnU_R8OI_uiqIbTAZ2DeUARWpNobttEPuYOf3q8Q_Smil9ZseM_xCXwtzWPeVlct8nXQCjeSOIPML0pkTz-sPfJ61c6QBfvBtZDg78OlGHVepA8PiHag23TRmuSdOkT0XNW2KGHWVNtLkjah9hiKfkbEk"/>
-                <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-slate-900 truncate"
                    th:text="${!#strings.isEmpty(#authentication.principal.user.fullName) ? #authentication.principal.user.fullName : #authentication.name}">
                     Nguyễn Văn A
@@ -78,17 +75,16 @@
                    th:text="${!#strings.isEmpty(#authentication.principal.user.email) ? #authentication.principal.user.email : #authentication.name}">
                     admin@charity.org
                 </p>
-                </div>
-                <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
             </div>
-            <form class="mt-4" method="post" th:action="@{/logout}">
-                <button type="submit"
-                    class="admin-action-btn admin-action-btn--ghost w-full justify-center text-[0.95rem]">
+            <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
+        </div>
+        <form class="mt-3" method="post" th:action="@{/logout}">
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors">
                 <span class="material-symbols-outlined text-[18px]">logout</span>
                 <span>Đăng xuất</span>
             </button>
         </form>
-        </div>
     </div>
 </aside>
 </body>
