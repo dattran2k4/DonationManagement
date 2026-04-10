@@ -493,7 +493,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.saveDonationBtn?.addEventListener("click", async () => {
         const saved = await saveDonationDetail();
         if (saved) {
-            window.location.reload();
+            window.location.href = `/admin/donations/${state.donationId}?saved=1`;
         }
     });
     elements.submitApprovalBtn?.addEventListener("click", handleSubmitApproval);

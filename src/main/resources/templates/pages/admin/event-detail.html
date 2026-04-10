@@ -55,7 +55,7 @@
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 class="text-5xl font-black text-slate-900">
             <span id="eventHeaderTitle" th:text="${event.name ?: 'Chi tiết sự kiện'}">Chi tiết sự kiện</span>
-            <span class="text-lg font-semibold text-slate-400">- Đã lưu</span>
+            <span th:if="${param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
         </h1>
     </section>
 
@@ -398,10 +398,10 @@
                 if (response.status === 200) {
                     alert('Lưu sự kiện thành công.');
                     if (!eventId && response.data) {
-                        window.location.href = `/admin/events/${response.data}`;
+                        window.location.href = `/admin/events/${response.data}?saved=1`;
                         return;
                     }
-                    initialState = collectFormState();
+                    window.location.href = `/admin/events/${eventId}?saved=1`;
                 } else {
                     alert(response.message || 'Lưu sự kiện thất bại.');
                 }

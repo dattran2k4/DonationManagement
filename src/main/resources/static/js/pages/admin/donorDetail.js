@@ -346,7 +346,7 @@ async function handleCreateDonor() {
     try {
         const savedDonorId = await createDonor(donorType, rawData, {});
         alert("Tạo mới nhà hảo tâm thành công");
-        window.location.href = `/admin/donors/${savedDonorId}`;
+        window.location.href = `/admin/donors/${savedDonorId}?saved=1`;
     } catch (error) {
         alert(error.message || "Không thể tạo mới nhà hảo tâm");
     }
@@ -359,7 +359,7 @@ async function handleUpdateDonor() {
     try {
         await createDonor(donorType, rawData, {donorId});
         alert("Cập nhật nhà hảo tâm thành công");
-        window.location.reload();
+        window.location.href = `/admin/donors/${donorId}?saved=1`;
     } catch (error) {
         alert(error.message || "Không thể cập nhật nhà hảo tâm");
     }

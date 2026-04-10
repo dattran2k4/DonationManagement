@@ -28,7 +28,8 @@
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 class="text-5xl font-black text-slate-900">
             <span th:text="${donor.id == null ? 'Tạo mới Nhà hảo tâm' : ((donor.displayName != null && !#strings.isEmpty(donor.displayName)) ? donor.displayName : donor.fullName)}">Nhà hảo tâm</span>
-            <span class="text-lg font-semibold text-slate-400" th:text="${donor.id == null ? '- Mới' : '- Đã lưu'}">- Đã lưu</span>
+            <span th:if="${donor.id == null}" class="text-lg font-semibold text-slate-400">- Mới</span>
+            <span th:if="${donor.id != null and param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
         </h1>
     </section>
 
