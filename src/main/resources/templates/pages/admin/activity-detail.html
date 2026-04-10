@@ -198,12 +198,12 @@
                     <label class="col-span-5 text-sm font-medium text-slate-700">Mục tiêu gây quỹ</label>
                     <input id="activityTargetAmount" th:value="${targetRaw}"
                            class="activity-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="number" min="0" step="1">
+                           type="text" inputmode="numeric">
 
                     <label class="col-span-5 text-sm font-medium text-slate-700">Đã đạt được</label>
                     <input id="activityCurrentAmount" th:value="${current}"
                            class="activity-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="number" min="0" step="1">
+                           type="text" inputmode="numeric">
 
                     <label class="col-span-5 text-sm font-medium text-slate-700">Tiến độ</label>
                     <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
@@ -310,6 +310,7 @@
     <script type="module" th:src="@{/js/pages/admin/activityDetail.js}"></script>
     <script type="module" th:inline="javascript">
         import {activityApi} from '/js/apis/activityApi.js';
+        import {formatVnd, parseVndInput} from '/js/utils/currency.js';
 
         const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
         const activityId = /*[[${activity.id}]]*/ null;
@@ -328,6 +329,8 @@
         const activityEventDropdown = document.getElementById('activityEventDropdown');
         const activityEventOptions = Array.from(document.querySelectorAll('.activity-event-option'));
         const activityStartDateInput = document.getElementById('activityStartDate');
+        const activityTargetAmountInput = document.getElementById('activityTargetAmount');
+        const activityCurrentAmountInput = document.getElementById('activityCurrentAmount');
 
         let editorInstance = null;
         let currentThumbnailUrl = thumbPreview && !thumbPreview.classList.contains('hidden')
@@ -341,6 +344,21 @@
             return `ACT-${String(id).padStart(5, '0')}`;
         }
 
+        function setFormattedAmountValue(inputEl, value) {
+            if (!inputEl) return;
+            inputEl.value = formatVnd(parseVndInput(value));
+        }
+
+        function bindAmountInputFormatting(inputEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', () => {
+                setFormattedAmountValue(inputEl, inputEl.value);
+            });
+            inputEl.addEventListener('blur', () => {
+                setFormattedAmountValue(inputEl, inputEl.value);
+            });
+        }
+
         function collectFormState() {
             return {
                 id: activityId || null,
@@ -352,8 +370,8 @@
                 location: document.getElementById('activityLocation')?.value || '',
                 startDate: document.getElementById('activityStartDate')?.value || null,
                 endDate: document.getElementById('activityEndDate')?.value || null,
-                targetAmount: parseFloat(document.getElementById('activityTargetAmount')?.value || '0') || 0,
-                currentAmount: parseFloat(document.getElementById('activityCurrentAmount')?.value || '0') || 0,
+                targetAmount: parseVndInput(activityTargetAmountInput?.value),
+                currentAmount: parseVndInput(activityCurrentAmountInput?.value),
                 content: editorInstance ? editorInstance.getData() : '',
                 thumbnailUrl: currentThumbnailUrl
             };
@@ -464,8 +482,8 @@
             document.getElementById('activityLocation').value = initialState.location;
             document.getElementById('activityStartDate').value = initialState.startDate || '';
             document.getElementById('activityEndDate').value = initialState.endDate || '';
-            document.getElementById('activityTargetAmount').value = initialState.targetAmount;
-            document.getElementById('activityCurrentAmount').value = initialState.currentAmount;
+            setFormattedAmountValue(activityTargetAmountInput, initialState.targetAmount);
+            setFormattedAmountValue(activityCurrentAmountInput, initialState.currentAmount);
             if (editorInstance) editorInstance.setData(initialState.content || '');
             currentThumbnailUrl = initialState.thumbnailUrl || '';
             if (thumbPreview) {
@@ -514,6 +532,11 @@
                     titleHeader.textContent = titleInput.value?.trim() || 'Chi tiết hoạt động';
                 });
             }
+
+            bindAmountInputFormatting(activityTargetAmountInput);
+            bindAmountInputFormatting(activityCurrentAmountInput);
+            setFormattedAmountValue(activityTargetAmountInput, activityTargetAmountInput?.value);
+            setFormattedAmountValue(activityCurrentAmountInput, activityCurrentAmountInput?.value);
 
             if (typeof ClassicEditor !== 'undefined') {
                 editorInstance = await ClassicEditor.create(document.querySelector('#editor'), {

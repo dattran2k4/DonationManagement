@@ -1,6 +1,7 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {
     page: 1,
@@ -55,7 +56,7 @@ const getInitials = (name) => {
 };
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+    return formatVnd(amount);
 };
 
 const formatDonorCode = (id) => {

@@ -307,8 +307,8 @@
         }
 
         function formatCurrency(value) {
-            return new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'})
-                .format(value || 0);
+            const number = Number(value || 0);
+            return `${new Intl.NumberFormat('vi-VN').format(number)} vnđ`;
         }
     </script>
 </th:block>

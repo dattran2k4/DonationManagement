@@ -1,6 +1,7 @@
 import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {page: 1, size: 50, search: '', status: ''};
 let latestRequestId = 0;
@@ -17,7 +18,7 @@ const elements = {
 
 // 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
+    return formatVnd(amount);
 };
 
 const formatActivityCode = (id) => {

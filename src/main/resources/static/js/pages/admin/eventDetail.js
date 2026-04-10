@@ -2,6 +2,7 @@ import {eventApi} from "../../apis/eventApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
 import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from "../../utils/donationUi.js";
+import {formatVnd} from "../../utils/currency.js";
 
 const state = {
     eventId: null,
@@ -75,7 +76,7 @@ const auditActionLabels = {
     DELETE: "Xóa"
 };
 
-const formatMoney = (amount) => `${Number(amount || 0).toLocaleString("vi-VN")} ₫`;
+const formatMoney = (amount) => formatVnd(amount);
 const formatDateOnly = (value) => {
     if (!value) return "---";
     const date = new Date(value);

@@ -141,12 +141,12 @@
                     <div class="rounded-2xl border border-slate-200 p-6">
                         <h2 class="mb-5 text-3xl font-bold text-slate-900">Thông tin quyên góp</h2>
                         <div class="grid grid-cols-12 items-center gap-y-4">
-                            <label class="col-span-4 text-sm font-medium text-slate-700">Số tiền (VND) <span class="text-red-500">*</span></label>
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Số tiền (vnđ) <span class="text-red-500">*</span></label>
                             <div class="col-span-8 relative">
                                 <input id="amount" name="amount" min="1000" required step="1" inputmode="numeric" type="number"
                                        class="block w-full rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 pr-12 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                                        placeholder="Nhập số tiền"/>
-                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-semibold text-slate-500">VND</span>
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-500">vnđ</span>
                             </div>
 
                             <label class="col-span-4 text-sm font-medium text-slate-700">Hình thức quyên góp <span class="text-red-500">*</span></label>
@@ -400,14 +400,14 @@
                     <div class="rounded-2xl border border-slate-200 p-6">
                         <h2 class="mb-5 text-3xl font-bold text-slate-900">Thông tin quyên góp</h2>
                         <div class="grid grid-cols-12 items-center gap-y-4">
-                            <label class="col-span-4 text-sm font-medium text-slate-700">Số tiền (VND)</label>
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Số tiền (vnđ)</label>
                             <div class="col-span-8 relative">
-                                <input id="editAmount" type="number" min="1000" step="1" inputmode="numeric"
+                                <input id="editAmount" type="text" inputmode="numeric"
                                        class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 pr-12 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                                        th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
                                        th:disabled="${canEdit != true}"
                                        th:value="${donation.amount}"/>
-                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-semibold text-slate-500">VND</span>
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-500">vnđ</span>
                             </div>
 
                             <label class="col-span-4 text-sm font-medium text-slate-700">Ngày quyên góp</label>

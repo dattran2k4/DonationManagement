@@ -183,12 +183,12 @@
                     <label class="col-span-5 text-sm font-medium text-slate-700">Mục tiêu gây quỹ</label>
                     <input id="eventTargetAmount" th:value="${targetRaw}"
                            class="event-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="number" min="0" step="1">
+                           type="text" inputmode="numeric">
 
                     <label class="col-span-5 text-sm font-medium text-slate-700">Đã đạt được</label>
                     <input id="eventCurrentAmount" th:value="${current}"
                            class="event-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="number" min="0" step="1">
+                           type="text" inputmode="numeric">
 
                     <label class="col-span-5 text-sm font-medium text-slate-700">Tiến độ</label>
                     <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
@@ -313,6 +313,7 @@
     <script type="module" th:src="@{/js/pages/admin/eventDetail.js}"></script>
     <script type="module" th:inline="javascript">
         import {eventApi} from '/js/apis/eventApi.js';
+        import {formatVnd, parseVndInput} from '/js/utils/currency.js';
 
         const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
         const eventId = /*[[${event.id}]]*/ null;
@@ -326,6 +327,8 @@
         const titleInput = document.getElementById('eventName');
         const titleHeader = document.getElementById('eventHeaderTitle');
         const eventCodeInput = document.getElementById('eventCode');
+        const eventTargetAmountInput = document.getElementById('eventTargetAmount');
+        const eventCurrentAmountInput = document.getElementById('eventCurrentAmount');
 
         let editorInstance = null;
         let currentThumbnailUrl = thumbPreview && !thumbPreview.classList.contains('hidden')
@@ -339,6 +342,21 @@
             return `EVT-${String(id).padStart(5, '0')}`;
         }
 
+        function setFormattedAmountValue(inputEl, value) {
+            if (!inputEl) return;
+            inputEl.value = formatVnd(parseVndInput(value));
+        }
+
+        function bindAmountInputFormatting(inputEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', () => {
+                setFormattedAmountValue(inputEl, inputEl.value);
+            });
+            inputEl.addEventListener('blur', () => {
+                setFormattedAmountValue(inputEl, inputEl.value);
+            });
+        }
+
         function collectFormState() {
             return {
                 name: document.getElementById('eventName')?.value?.trim() || '',
@@ -348,8 +366,8 @@
                 location: document.getElementById('eventLocation')?.value || '',
                 startDate: document.getElementById('eventStartDate')?.value || null,
                 endDate: document.getElementById('eventEndDate')?.value || null,
-                targetAmount: parseFloat(document.getElementById('eventTargetAmount')?.value || '0') || 0,
-                currentAmount: parseFloat(document.getElementById('eventCurrentAmount')?.value || '0') || 0,
+                targetAmount: parseVndInput(eventTargetAmountInput?.value),
+                currentAmount: parseVndInput(eventCurrentAmountInput?.value),
                 content: editorInstance ? editorInstance.getData() : '',
                 thumbnailUrl: currentThumbnailUrl
             };
@@ -420,8 +438,8 @@
             document.getElementById('eventLocation').value = initialState.location;
             document.getElementById('eventStartDate').value = initialState.startDate || '';
             document.getElementById('eventEndDate').value = initialState.endDate || '';
-            document.getElementById('eventTargetAmount').value = initialState.targetAmount;
-            document.getElementById('eventCurrentAmount').value = initialState.currentAmount;
+            setFormattedAmountValue(eventTargetAmountInput, initialState.targetAmount);
+            setFormattedAmountValue(eventCurrentAmountInput, initialState.currentAmount);
             if (editorInstance) editorInstance.setData(initialState.content || '');
             currentThumbnailUrl = initialState.thumbnailUrl || '';
             if (thumbPreview) {
@@ -445,6 +463,11 @@
                     titleHeader.textContent = titleInput.value?.trim() || 'Chi tiết sự kiện';
                 });
             }
+
+            bindAmountInputFormatting(eventTargetAmountInput);
+            bindAmountInputFormatting(eventCurrentAmountInput);
+            setFormattedAmountValue(eventTargetAmountInput, eventTargetAmountInput?.value);
+            setFormattedAmountValue(eventCurrentAmountInput, eventCurrentAmountInput?.value);
 
             if (typeof ClassicEditor !== 'undefined') {
                 editorInstance = await ClassicEditor.create(document.querySelector('#editor'), {

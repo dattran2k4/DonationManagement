@@ -1,6 +1,7 @@
 import {transactionApi} from '../../apis/transactionApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {page: 1, size: 50, search: '', method: ''};
 
@@ -17,7 +18,7 @@ const elements = {
 
 // 1. Format tiền tệ
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+    return formatVnd(amount);
 };
 
 // 2. Format Thời gian

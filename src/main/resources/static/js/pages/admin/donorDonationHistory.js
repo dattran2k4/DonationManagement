@@ -1,6 +1,7 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {getDonationStatusUi, formatDonationCode} from '../../utils/donationUi.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const donorId = window.__DONOR_ID__;
 const state = {
@@ -13,7 +14,7 @@ const elements = {
     paginationContainer: document.getElementById('paginationContainer')
 };
 
-const formatCurrency = (amount) => `${new Intl.NumberFormat('vi-VN').format(amount || 0)} đ`;
+const formatCurrency = (amount) => formatVnd(amount);
 
 const formatDateTime = (dateTime) => {
     if (!dateTime) return '---';

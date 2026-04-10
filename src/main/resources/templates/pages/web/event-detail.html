@@ -198,15 +198,15 @@
                     <div class="flex items-start justify-between gap-6">
                         <div class="min-w-0">
                             <p class="text-base font-semibold text-slate-700 dark:text-slate-200"
-                               th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                0 VNĐ
+                               th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' vnđ'">
+                                0 vnđ
                             </p>
                             <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Đã quyên góp</p>
                         </div>
                         <div class="min-w-0 text-right">
                             <p class="text-base font-semibold text-slate-700 dark:text-slate-200"
-                               th:text="${#numbers.formatDecimal(event.targetAmount != null ? event.targetAmount : 0, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                                0 VNĐ
+                               th:text="${#numbers.formatDecimal(event.targetAmount != null ? event.targetAmount : 0, 0, 'COMMA', 0, 'POINT')} + ' vnđ'">
+                                0 vnđ
                             </p>
                             <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Mục tiêu</p>
                         </div>
@@ -250,7 +250,7 @@
                         <input name="amount" id="donationAmount"
                                class="block w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-lg font-bold text-primary shadow-sm transition-all"
                                placeholder="Nhập số tiền..." type="number" min="1000" step="1" inputmode="numeric" required/>
-                        <span class="absolute inset-y-0 right-4 flex items-center text-slate-500 font-bold">VND</span>
+                        <span class="absolute inset-y-0 right-4 flex items-center text-slate-500 text-sm font-medium">vnđ</span>
                     </div>
 
                     <!-- Optional bill -->

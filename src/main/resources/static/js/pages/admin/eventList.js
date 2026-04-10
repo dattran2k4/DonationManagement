@@ -1,6 +1,7 @@
 import {eventApi} from '../../apis/eventApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {
     page: 1,
@@ -31,11 +32,8 @@ const formatEventCode = (id) => {
     return `EVT-${String(id).padStart(8, '0')}`;
 };
 
-// Hàm tiện ích format tiền tệ rút gọn (VD: 650000000 -> 650tr)
 const formatMoney = (amount) => {
-    if (amount >= 1000000000) return (amount / 1000000000).toFixed(1).replace('.0', '') + ' tỷ';
-    if (amount >= 1000000) return (amount / 1000000).toFixed(0) + 'tr';
-    return amount.toLocaleString('vi-VN') + 'đ';
+    return formatVnd(amount);
 };
 
 // Hàm tiện ích lấy style cho Badge Trạng thái

@@ -1,4 +1,5 @@
 import {dashboardApi} from '../../apis/dashboardApi.js';
+import {formatNumberVi, formatVnd} from '../../utils/currency.js';
 
 const state = {
     period: 'WEEK'
@@ -29,15 +30,8 @@ const elements = {
     periodButtons: document.querySelectorAll('[data-dashboard-period]')
 };
 
-const formatCompactMoney = (amount) => {
-    const value = Number(amount || 0);
-    if (value >= 1000000000) return `${(value / 1000000000).toFixed(1).replace('.0', '')} tỷ`;
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace('.0', '')}tr`;
-    if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-    return value.toLocaleString('vi-VN');
-};
-
-const formatFullMoney = (amount) => Number(amount || 0).toLocaleString('vi-VN') + ' VNĐ';
+const formatCompactMoney = (amount) => formatNumberVi(amount);
+const formatFullMoney = (amount) => formatVnd(amount);
 
 const getNiceUpperBound = (value) => {
     if (value <= 0) return 1000000;

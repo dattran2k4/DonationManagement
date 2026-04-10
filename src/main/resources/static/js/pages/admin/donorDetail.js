@@ -2,6 +2,7 @@ import {donorApi} from "../../apis/donorApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
 import {createDonor} from "../../modules/donor-submit.js";
+import {formatVnd} from "../../utils/currency.js";
 
 const donorId = window.__DONOR_ID__;
 const donorTypeFromServer = window.__DONOR_TYPE__ || "INDIVIDUAL";
@@ -47,7 +48,7 @@ const elements = {
     donorOrganizationSection: document.getElementById("donorOrganizationSection")
 };
 
-const formatCurrency = (amount) => `${new Intl.NumberFormat("vi-VN").format(amount || 0)} đ`;
+const formatCurrency = (amount) => formatVnd(amount);
 
 const formatDateTime = (dateTime) => {
     if (!dateTime) return "---";

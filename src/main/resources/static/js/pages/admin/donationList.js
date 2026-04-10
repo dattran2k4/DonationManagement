@@ -2,6 +2,7 @@ import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
 import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from '../../utils/donationUi.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {
     page: 1,
@@ -84,7 +85,7 @@ const clearAmountFilter = () => {
 };
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+    return formatVnd(amount);
 };
 
 const getStatusBadge = (status) => {

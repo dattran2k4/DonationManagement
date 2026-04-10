@@ -4,6 +4,7 @@ import {donorApi} from "../../apis/donorApi.js";
 import {eventApi} from "../../apis/eventApi.js";
 import {activityApi} from "../../apis/activityApi.js";
 import {renderPagination} from "../../components/pagination.js";
+import {formatVnd, parseVndInput} from "../../utils/currency.js";
 
 const state = {
     donationId: null,
@@ -88,6 +89,11 @@ const parseLongOrNull = (value) => {
     if (value === undefined || value === null || value === "") return null;
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
+};
+
+const setFormattedAmountValue = (inputEl, value) => {
+    if (!inputEl) return;
+    inputEl.value = formatVnd(parseVndInput(value));
 };
 
 const showDropdown = (el) => el?.classList.remove("hidden");
@@ -256,7 +262,7 @@ function bindLookupEvents() {
 
 const buildUpdatePayload = () => ({
     donorId: parseLongOrNull(elements.editDonorId?.value ?? window.__DONATION_DONOR_ID__),
-    amount: Number(elements.editAmount?.value ?? window.__DONATION_AMOUNT__ ?? 0),
+    amount: parseVndInput(elements.editAmount?.value ?? window.__DONATION_AMOUNT__ ?? 0),
     message: elements.editMessage?.value?.trim() || null,
     needReceipt: elements.editNeedReceipt?.checked === true,
     receiptName: elements.editNeedReceipt?.checked === true ? (elements.editReceiptName?.value?.trim() || null) : null,
@@ -498,4 +504,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     elements.submitApprovalBtn?.addEventListener("click", handleSubmitApproval);
     bindLookupEvents();
+
+    if (elements.editAmount) {
+        setFormattedAmountValue(elements.editAmount, elements.editAmount.value || window.__DONATION_AMOUNT__ || 0);
+        if (!elements.editAmount.disabled) {
+            elements.editAmount.addEventListener("input", () => {
+                setFormattedAmountValue(elements.editAmount, elements.editAmount.value);
+            });
+            elements.editAmount.addEventListener("blur", () => {
+                setFormattedAmountValue(elements.editAmount, elements.editAmount.value);
+            });
+        }
+    }
 });
