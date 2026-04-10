@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -38,4 +39,6 @@ public class DonationRequest {
     @NotNull(message = "Người tài trợ không được để trống")
     @Min(1)
     private Long donorId;
+
+    private LocalDateTime donatedAt;
 }

@@ -149,6 +149,12 @@
                                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-500">vnđ</span>
                             </div>
 
+                            <label class="col-span-4 text-sm font-medium text-slate-700">Ngày quyên góp <span class="text-red-500">*</span></label>
+                            <div class="col-span-8">
+                                <input id="donatedAt" name="donatedAt" required type="date"
+                                       class="block w-full rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"/>
+                            </div>
+
                             <label class="col-span-4 text-sm font-medium text-slate-700">Hình thức quyên góp <span class="text-red-500">*</span></label>
                             <div class="col-span-8">
                                 <select id="paymentMethod" name="paymentMethod"
@@ -411,9 +417,12 @@
                             </div>
 
                             <label class="col-span-4 text-sm font-medium text-slate-700">Ngày quyên góp</label>
-                            <div class="col-span-8 flex items-center justify-between rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
-                                <span th:text="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'dd/MM/yyyy') : '---'}">---</span>
-                                <span class="material-symbols-outlined text-[18px] text-slate-700">calendar_month</span>
+                            <div class="col-span-8">
+                                <input id="editDonatedAt" type="date"
+                                       class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                                       th:classappend="${canEdit == true} ? ' bg-white' : ' bg-slate-100 cursor-not-allowed'"
+                                       th:disabled="${canEdit != true}"
+                                       th:value="${donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'yyyy-MM-dd') : ''}"/>
                             </div>
 
                             <label class="col-span-4 text-sm font-medium text-slate-700">Hình thức quyên góp</label>
@@ -574,6 +583,7 @@
         window.__DONATION_RECEIPT_EMAIL__ = [[${donation != null ? donation.receiptEmail : null}]];
         window.__DONATION_ACTIVITY_ID__ = [[${donation != null ? donation.activityId : null}]];
         window.__DONATION_EVENT_ID__ = [[${donation != null ? donation.eventId : null}]];
+        window.__DONATION_DONATED_AT__ = [[${donation != null && donation.donatedAt != null ? #temporals.format(donation.donatedAt, 'yyyy-MM-dd''T''HH:mm:ss') : null}]];
         window.__DONATION_STATUS__ = [[${donation != null && donation.status != null ? donation.status.name() : null}]];
         window.__DONATION_VIA__ = [[${donation != null && donation.donationVia != null ? donation.donationVia.name() : null}]];
     </script>

@@ -194,6 +194,9 @@ public class DonationServiceImpl implements DonationService {
         }
 
         donation.setAmount(request.getAmount());
+        if (request.getDonatedAt() != null) {
+            donation.setDonatedAt(request.getDonatedAt());
+        }
         donation.setMessage(request.getMessage());
         donation.setNeedReceipt(request.getNeedReceipt());
         if (Boolean.TRUE.equals(request.getNeedReceipt())) {
@@ -544,6 +547,7 @@ public class DonationServiceImpl implements DonationService {
         values.put("receiptName", donation.getReceiptName());
         values.put("receiptEmail", donation.getReceiptEmail());
         values.put("paymentMethod", donation.getPaymentMethod() != null ? donation.getPaymentMethod().name() : null);
+        values.put("donatedAt", donation.getDonatedAt());
         values.put("status", donation.getStatus() != null ? donation.getStatus().name() : null);
         values.put("rejectionReason", donation.getRejectionReason());
         values.put("donationVia", donation.getDonationVia() != null ? donation.getDonationVia().name() : null);

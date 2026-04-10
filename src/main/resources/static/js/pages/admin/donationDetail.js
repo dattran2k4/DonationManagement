@@ -5,6 +5,7 @@ import {eventApi} from "../../apis/eventApi.js";
 import {activityApi} from "../../apis/activityApi.js";
 import {renderPagination} from "../../components/pagination.js";
 import {formatVnd, parseVndInput} from "../../utils/currency.js";
+import {toDateInputValue, toStartOfDayLocalDateTime, todayDateInputValue} from "../../utils/date.js";
 
 const state = {
     donationId: null,
@@ -25,6 +26,7 @@ const elements = {
     editDonorDropdown: document.getElementById("editDonorDropdown"),
     editDonorDropdownList: document.getElementById("editDonorDropdownList"),
     editAmount: document.getElementById("editAmount"),
+    editDonatedAt: document.getElementById("editDonatedAt"),
     editEventId: document.getElementById("editEventId"),
     editEventSearchWrapper: document.getElementById("editEventSearchWrapper"),
     editEventSearchInput: document.getElementById("editEventSearchInput"),
@@ -263,6 +265,7 @@ function bindLookupEvents() {
 const buildUpdatePayload = () => ({
     donorId: parseLongOrNull(elements.editDonorId?.value ?? window.__DONATION_DONOR_ID__),
     amount: parseVndInput(elements.editAmount?.value ?? window.__DONATION_AMOUNT__ ?? 0),
+    donatedAt: toStartOfDayLocalDateTime(elements.editDonatedAt?.value),
     message: elements.editMessage?.value?.trim() || null,
     needReceipt: elements.editNeedReceipt?.checked === true,
     receiptName: elements.editNeedReceipt?.checked === true ? (elements.editReceiptName?.value?.trim() || null) : null,
@@ -283,6 +286,10 @@ const validatePayload = (payload) => {
     }
     if (!Number.isInteger(payload.amount)) {
         alert("Vui lòng nhập số tiền nguyên.");
+        return false;
+    }
+    if (!payload.donatedAt) {
+        alert("Vui lòng chọn ngày quyên góp.");
         return false;
     }
     if (payload.needReceipt) {
@@ -515,5 +522,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setFormattedAmountValue(elements.editAmount, elements.editAmount.value);
             });
         }
+    }
+
+    if (elements.editDonatedAt) {
+        const initialDonatedAt = window.__DONATION_DONATED_AT__ || todayDateInputValue();
+        elements.editDonatedAt.value = toDateInputValue(initialDonatedAt);
     }
 });

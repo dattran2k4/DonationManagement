@@ -2,6 +2,7 @@ import {donationApi} from '../../apis/donationApi.js';
 import {donorApi} from '../../apis/donorApi.js';
 import {eventApi} from '../../apis/eventApi.js';
 import {activityApi} from '../../apis/activityApi.js';
+import {toDateInputValue, toStartOfDayLocalDateTime, todayDateInputValue} from '../../utils/date.js';
 
 const form = document.getElementById('donationForm');
 const donorSearchWrapper = document.getElementById('donorSearchWrapper');
@@ -10,6 +11,7 @@ const donorDropdown = document.getElementById('donorDropdown');
 const donorDropdownList = document.getElementById('donorDropdownList');
 const donorIdInput = document.getElementById('donorId');
 const amountInput = document.getElementById('amount');
+const donatedAtInput = document.getElementById('donatedAt');
 const paymentMethodInput = document.getElementById('paymentMethod');
 const messageInput = document.getElementById('message');
 const targetNoneCheckbox = document.getElementById('targetNone');
@@ -380,6 +382,10 @@ const validatePayload = (payload, target) => {
         alert('Vui lòng chọn phương thức thanh toán.');
         return false;
     }
+    if (!payload.donatedAt) {
+        alert('Vui lòng chọn ngày quyên góp.');
+        return false;
+    }
     if (target === 'event' && !payload.eventId) {
         alert('Vui lòng chọn sự kiện đang diễn ra.');
         return false;
@@ -413,6 +419,7 @@ const fillForm = (donation) => {
         donorSearchInput.value = `${donation.donorName || 'Không rõ tên'} - ${donation.donorPhone || '---'}`;
     }
     if (amountInput) amountInput.value = donation.amount ?? '';
+    if (donatedAtInput) donatedAtInput.value = toDateInputValue(donation.donatedAt) || todayDateInputValue();
     if (paymentMethodInput) paymentMethodInput.value = donation.paymentMethod || 'BANK_TRANSFER_ONLINE';
     if (messageInput) messageInput.value = donation.message || '';
 
@@ -481,6 +488,7 @@ const handleSubmit = async (event) => {
     const payload = {
         donorId: parseLongOrNull(rawData.donorId),
         amount: Number(rawData.amount),
+        donatedAt: toStartOfDayLocalDateTime(rawData.donatedAt),
         paymentMethod: rawData.paymentMethod,
         message: rawData.message?.trim() || null,
         needReceipt,
@@ -531,6 +539,10 @@ const init = async () => {
     activateTarget('none');
     toggleReceiptFields();
     bindTargetEvents();
+
+    if (donatedAtInput && !donatedAtInput.value) {
+        donatedAtInput.value = todayDateInputValue();
+    }
 
     if (donorSearchInput) {
         donorSearchInput.addEventListener('focus', () => {
