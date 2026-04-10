@@ -38,9 +38,14 @@ const elements = {
     editActivityDropdown: document.getElementById("editActivityDropdown"),
     editActivityDropdownList: document.getElementById("editActivityDropdownList"),
     editNeedReceipt: document.getElementById("editNeedReceipt"),
+    editReceiptFields: document.getElementById("editReceiptFields"),
     editReceiptName: document.getElementById("editReceiptName"),
     editReceiptEmail: document.getElementById("editReceiptEmail"),
     editMessage: document.getElementById("editMessage"),
+    editMemoCode: document.getElementById("editMemoCode"),
+    editDonorPhoneText: document.getElementById("editDonorPhoneText"),
+    editDonorEmailText: document.getElementById("editDonorEmailText"),
+    resetTargetBtn: document.getElementById("resetTargetBtn"),
     section: document.getElementById("donationDetailTabsSection"),
     infoBtn: document.getElementById("tabInfoBtn"),
     auditLogsBtn: document.getElementById("tabAuditLogsBtn"),
@@ -98,6 +103,37 @@ const setFormattedAmountValue = (inputEl, value) => {
     inputEl.value = formatVnd(parseVndInput(value));
 };
 
+const setDonorReadonlyInfo = (phone, email) => {
+    if (elements.editDonorPhoneText) {
+        elements.editDonorPhoneText.textContent = phone && String(phone).trim() ? phone : "---";
+    }
+    if (elements.editDonorEmailText) {
+        elements.editDonorEmailText.textContent = email && String(email).trim() ? email : "---";
+    }
+};
+
+const toggleReceiptFields = () => {
+    if (!elements.editNeedReceipt) return;
+    const checked = elements.editNeedReceipt.checked === true;
+    const locked = elements.editNeedReceipt.disabled === true;
+    const canWrite = !locked;
+
+    if (elements.editReceiptFields) {
+        elements.editReceiptFields.classList.toggle("hidden", !checked);
+    }
+
+    if (elements.editReceiptName) {
+        elements.editReceiptName.disabled = !canWrite || !checked;
+        elements.editReceiptName.required = checked;
+        if (!checked) elements.editReceiptName.value = "";
+    }
+    if (elements.editReceiptEmail) {
+        elements.editReceiptEmail.disabled = !canWrite || !checked;
+        elements.editReceiptEmail.required = checked;
+        if (!checked) elements.editReceiptEmail.value = "";
+    }
+};
+
 const showDropdown = (el) => el?.classList.remove("hidden");
 const hideDropdown = (el) => el?.classList.add("hidden");
 
@@ -108,7 +144,7 @@ function renderDonorDropdown(donors) {
         return;
     }
     elements.editDonorDropdownList.innerHTML = donors.map((donor) => `
-        <button type="button" data-donor-id="${donor.id}" data-donor-name="${escapeHtml(donor.fullName || "")}" data-donor-phone="${escapeHtml(donor.phone || "")}"
+        <button type="button" data-donor-id="${donor.id}" data-donor-name="${escapeHtml(donor.fullName || "")}" data-donor-phone="${escapeHtml(donor.phone || "")}" data-donor-email="${escapeHtml(donor.email || "")}"
                 class="grid w-full grid-cols-2 gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors">
             <span class="font-medium text-slate-900">${escapeHtml(donor.fullName || "Không rõ tên")}</span>
             <span class="text-slate-600">${escapeHtml(donor.phone || "---")}</span>
@@ -225,6 +261,7 @@ function bindLookupEvents() {
             const name = button.getAttribute("data-donor-name") || "";
             const phone = button.getAttribute("data-donor-phone") || "";
             elements.editDonorSearchInput.value = phone ? `${name} - ${phone}` : name;
+            setDonorReadonlyInfo(phone, button.getAttribute("data-donor-email") || "");
         }
         hideDropdown(elements.editDonorDropdown);
     });
@@ -260,16 +297,29 @@ function bindLookupEvents() {
             hideDropdown(elements.editActivityDropdown);
         }
     });
+
+    elements.resetTargetBtn?.addEventListener("click", () => {
+        if (elements.editEventId) elements.editEventId.value = "";
+        if (elements.editEventSearchInput) elements.editEventSearchInput.value = "";
+        if (elements.editActivityId) elements.editActivityId.value = "";
+        if (elements.editActivitySearchInput) elements.editActivitySearchInput.value = "";
+    });
 }
 
 const buildUpdatePayload = () => ({
     donorId: parseLongOrNull(elements.editDonorId?.value ?? window.__DONATION_DONOR_ID__),
     amount: parseVndInput(elements.editAmount?.value ?? window.__DONATION_AMOUNT__ ?? 0),
     donatedAt: toStartOfDayLocalDateTime(elements.editDonatedAt?.value),
-    message: elements.editMessage?.value?.trim() || null,
+    message: (() => {
+        const value = elements.editMessage?.value;
+        if (value == null) return null;
+        const normalized = value.trim();
+        return normalized.length > 0 ? normalized : null;
+    })(),
     needReceipt: elements.editNeedReceipt?.checked === true,
     receiptName: elements.editNeedReceipt?.checked === true ? (elements.editReceiptName?.value?.trim() || null) : null,
     receiptEmail: elements.editNeedReceipt?.checked === true ? (elements.editReceiptEmail?.value?.trim() || null) : null,
+    memoCode: elements.editMemoCode?.value?.trim() || null,
     paymentMethod: elements.paymentMethodSelect?.value || null,
     eventId: parseLongOrNull(elements.editEventId?.value),
     activityId: parseLongOrNull(elements.editActivityId?.value)
@@ -306,19 +356,29 @@ const validatePayload = (payload) => {
 };
 
 async function saveDonationDetail(successMessage = "Cập nhật khoản quyên góp thành công") {
-    if (!state.donationId) return false;
     const payload = buildUpdatePayload();
     if (!validatePayload(payload)) return false;
 
     try {
-        const response = await donationApi.updateStaffDonation(state.donationId, payload);
+        const response = state.donationId
+            ? await donationApi.updateStaffDonation(state.donationId, payload)
+            : await donationApi.createStaffDonation(payload);
         if (response?.status !== 200) {
-            throw new Error(response?.message || "Không thể cập nhật khoản quyên góp");
+            throw new Error(response?.message || (state.donationId ? "Không thể cập nhật khoản quyên góp" : "Không thể tạo khoản quyên góp"));
         }
         alert(successMessage);
+        if (!state.donationId) {
+            const createdId = Number(response?.data || 0);
+            if (createdId) {
+                window.location.href = `/admin/donations/${createdId}?saved=1`;
+                return true;
+            }
+            window.location.href = "/admin/donations";
+            return true;
+        }
         return true;
     } catch (error) {
-        alert(error.message || "Không thể cập nhật khoản quyên góp");
+        alert(error.message || (state.donationId ? "Không thể cập nhật khoản quyên góp" : "Không thể tạo khoản quyên góp"));
         return false;
     }
 }
@@ -490,27 +550,34 @@ async function handleSubmitApproval() {
 document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
     state.donationId = Number(elements.section.dataset.donationId || 0);
-    if (!state.donationId) return;
 
     bindTabEvents();
     setActiveTab("info");
-    try {
-        await loadSummary();
-    } catch (error) {
-        console.error("Không thể tải tổng quan tab lịch sử thao tác quyên góp:", error);
+    if (state.donationId) {
+        try {
+            await loadSummary();
+        } catch (error) {
+            console.error("Không thể tải tổng quan tab lịch sử thao tác quyên góp:", error);
+        }
     }
 
     elements.refreshBtn?.addEventListener("click", () => window.location.reload());
     elements.approveBtn?.addEventListener("click", handleApprove);
     elements.rejectBtn?.addEventListener("click", handleReject);
     elements.saveDonationBtn?.addEventListener("click", async () => {
-        const saved = await saveDonationDetail();
+        const saved = await saveDonationDetail(state.donationId ? "Cập nhật khoản quyên góp thành công" : "Tạo khoản quyên góp thành công");
         if (saved) {
-            window.location.href = `/admin/donations/${state.donationId}?saved=1`;
+            if (state.donationId) {
+                window.location.href = `/admin/donations/${state.donationId}?saved=1`;
+            }
         }
     });
-    elements.submitApprovalBtn?.addEventListener("click", handleSubmitApproval);
+    if (state.donationId) {
+        elements.submitApprovalBtn?.addEventListener("click", handleSubmitApproval);
+    }
     bindLookupEvents();
+
+    elements.editNeedReceipt?.addEventListener("change", toggleReceiptFields);
 
     if (elements.editAmount) {
         setFormattedAmountValue(elements.editAmount, elements.editAmount.value || window.__DONATION_AMOUNT__ || 0);
@@ -528,4 +595,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         const initialDonatedAt = window.__DONATION_DONATED_AT__ || todayDateInputValue();
         elements.editDonatedAt.value = toDateInputValue(initialDonatedAt);
     }
+
+    if (!state.donationId) {
+        setDonorReadonlyInfo("", "");
+        if (elements.editNeedReceipt) {
+            elements.editNeedReceipt.disabled = false;
+            elements.editNeedReceipt.checked = false;
+        }
+        if (elements.editMessage) {
+            elements.editMessage.disabled = false;
+            elements.editMessage.value = "";
+        }
+        if (elements.paymentMethodSelect && !elements.paymentMethodSelect.value) {
+            elements.paymentMethodSelect.value = "CASH";
+        }
+        if (elements.editMemoCode) {
+            elements.editMemoCode.value = "";
+        }
+    }
+
+    toggleReceiptFields();
 });

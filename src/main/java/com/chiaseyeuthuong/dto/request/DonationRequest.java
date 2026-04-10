@@ -26,6 +26,8 @@ public class DonationRequest {
 
     private String receiptEmail;
 
+    private String memoCode;
+
     @EnumValue(name = "paymentMethod", enumClass = EPaymentMethod.class)
     @NotNull(message = "Chọn phương thức thanh toán")
     private EPaymentMethod paymentMethod;
