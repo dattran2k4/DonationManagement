@@ -218,6 +218,16 @@
              class="rounded-2xl border border-slate-200 bg-white shadow-sm">
 
         <div id="tabActivitiesPanel" class="hidden pt-2">
+            <div class="px-6 pb-3 pt-2">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-xl font-bold text-slate-900">Danh sách hoạt động của sự kiện</h3>
+                    <a th:if="${event.id != null}"
+                       th:href="@{/admin/activities/form(eventId=${event.id})}"
+                       class="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-primary">
+                        <span class="text-base">+</span> Thêm hoạt động
+                    </a>
+                </div>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-50">
@@ -313,7 +323,7 @@
     <script type="module" th:src="@{/js/pages/admin/eventDetail.js}"></script>
     <script type="module" th:inline="javascript">
         import {eventApi} from '/js/apis/eventApi.js';
-        import {formatVnd, parseVndInput} from '/js/utils/currency.js';
+        import {formatNumberVi, parseVndInput} from '/js/utils/currency.js';
 
         const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
         const eventId = /*[[${event.id}]]*/ null;
@@ -344,7 +354,7 @@
 
         function setFormattedAmountValue(inputEl, value) {
             if (!inputEl) return;
-            inputEl.value = formatVnd(parseVndInput(value));
+            inputEl.value = formatNumberVi(parseVndInput(value));
         }
 
         function bindAmountInputFormatting(inputEl) {

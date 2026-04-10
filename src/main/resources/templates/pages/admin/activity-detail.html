@@ -310,7 +310,7 @@
     <script type="module" th:src="@{/js/pages/admin/activityDetail.js}"></script>
     <script type="module" th:inline="javascript">
         import {activityApi} from '/js/apis/activityApi.js';
-        import {formatVnd, parseVndInput} from '/js/utils/currency.js';
+        import {formatNumberVi, parseVndInput} from '/js/utils/currency.js';
 
         const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
         const activityId = /*[[${activity.id}]]*/ null;
@@ -346,7 +346,7 @@
 
         function setFormattedAmountValue(inputEl, value) {
             if (!inputEl) return;
-            inputEl.value = formatVnd(parseVndInput(value));
+            inputEl.value = formatNumberVi(parseVndInput(value));
         }
 
         function bindAmountInputFormatting(inputEl) {

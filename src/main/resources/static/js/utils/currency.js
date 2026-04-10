@@ -13,27 +13,34 @@ export function parseVndInput(value) {
         return Number.isFinite(value) ? Math.round(value) : 0;
     }
 
-    let normalized = String(value || "")
+    const raw = String(value || "")
         .toLowerCase()
         .replaceAll('vnđ', "")
         .replaceAll(/\s/g, "");
 
-    if (!normalized) return 0;
+    if (!raw) return 0;
 
-    const dotCount = (normalized.match('.') || []).length;
-    const commaCount = (normalized.match(/,/g) || []).length;
+    const groupedThousandsRegex = /^\d{1,3}(\.\d{3})+$/;
+    const decimalDotRegex = /^\d+\.\d{1,2}$/;
+    const decimalCommaRegex = /^\d+,\d{1,2}$/;
+    const digitsOnlyRegex = /^\d+$/;
 
-    if (dotCount > 1 && commaCount === 0) {
-        normalized = normalized.replaceAll('.', "");
-    } else if (commaCount > 1 && dotCount === 0) {
-        normalized = normalized.replaceAll(',', "");
-    } else if (commaCount === 1 && dotCount === 0) {
-        normalized = normalized.replaceAll(",", ".");
+    let normalized = raw;
+    if (groupedThousandsRegex.test(raw)) {
+        normalized = raw.replaceAll(".", "");
+    } else if (decimalDotRegex.test(raw)) {
+        normalized = raw;
+    } else if (decimalCommaRegex.test(raw)) {
+        normalized = raw.replace(",", ".");
+    } else if (digitsOnlyRegex.test(raw)) {
+        normalized = raw;
+    } else {
+        normalized = raw.replaceAll(/\D/g, "");
     }
 
     const numeric = Number(normalized);
     if (Number.isFinite(numeric)) return Math.round(numeric);
 
-    const fallback = Number(String(value || "").replaceAll(/\D/g, ""));
+    const fallback = Number(raw.replaceAll(/\D/g, ""));
     return Number.isFinite(fallback) ? fallback : 0;
 }

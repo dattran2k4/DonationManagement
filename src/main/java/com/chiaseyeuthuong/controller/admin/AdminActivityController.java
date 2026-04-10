@@ -32,8 +32,10 @@ public class AdminActivityController {
     public String showAdminActivityCreateFormPage(@RequestParam(required = false) Long eventId, Model model) {
         ActivityResponse activityResponse = new ActivityResponse();
         if (eventId != null) {
+            var event = eventService.getEventById(eventId);
             activityResponse.setEventId(eventId);
-            activityResponse.setStartDate(eventService.getEventById(eventId).getStartDate());
+            activityResponse.setEvent(event);
+            activityResponse.setStartDate(event.getStartDate());
         }
 
         model.addAttribute("activity", activityResponse);
