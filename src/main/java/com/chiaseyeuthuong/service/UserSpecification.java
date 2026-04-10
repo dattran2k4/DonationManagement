@@ -32,6 +32,7 @@ public class UserSpecification {
                 String pattern = "%" + search.trim().toLowerCase() + "%";
                 predicate = cb.and(predicate, cb.or(
                         cb.like(cb.lower(root.get("fullName")), pattern),
+                        cb.like(cb.lower(root.get("username")), pattern),
                         cb.like(cb.lower(root.get("email")), pattern),
                         cb.like(cb.lower(root.get("phone")), pattern)
                 ));

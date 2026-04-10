@@ -30,7 +30,7 @@ import java.util.Set;
 @Slf4j(topic = "USER-SERVICE")
 public class UserServiceImpl implements UserService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "fullName", "email", "phone", "role", "status");
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "fullName", "username", "email", "phone", "role", "status");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public long createUser(UserCreateRequest request) {
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         String normalizedPhone = request.getPhone().trim();
-        String normalizedUsername = normalizedEmail;
+        String normalizedUsername = request.getUsername().trim().toLowerCase();
 
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new InvalidDataException("Email đã tồn tại");
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         String normalizedPhone = request.getPhone().trim();
-        String normalizedUsername = normalizedEmail;
+        String normalizedUsername = request.getUsername().trim().toLowerCase();
 
         if (userRepository.existsByEmailIgnoreCaseAndIdNot(normalizedEmail, id)) {
             throw new InvalidDataException("Email đã tồn tại");

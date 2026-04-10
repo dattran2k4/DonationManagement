@@ -17,6 +17,9 @@ public class UserUpdateRequest {
     @NotBlank(message = "Số điện thoại không được để trống")
     private String phone;
 
+    @NotBlank(message = "Username không được để trống")
+    private String username;
+
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;

@@ -14,6 +14,7 @@ const elements = {
     statusToggle: document.getElementById("userStatusToggle"),
     fullNameInput: document.getElementById("fullNameInput"),
     memberCodeText: document.getElementById("memberCodeText"),
+    usernameInput: document.getElementById("usernameInput"),
     phoneInput: document.getElementById("phoneInput"),
     emailInput: document.getElementById("emailInput"),
     roleSelect: document.getElementById("roleSelect"),
@@ -41,6 +42,7 @@ const formatDateTime = (value) => {
 
 const resetCreateForm = () => {
     if (elements.fullNameInput) elements.fullNameInput.value = "";
+    if (elements.usernameInput) elements.usernameInput.value = "";
     if (elements.phoneInput) elements.phoneInput.value = "";
     if (elements.emailInput) elements.emailInput.value = "";
     if (elements.passwordInput) elements.passwordInput.value = "";
@@ -54,6 +56,7 @@ const resetCreateForm = () => {
 const setReadOnlyMode = (readonly) => {
     [
         elements.fullNameInput,
+        elements.usernameInput,
         elements.phoneInput,
         elements.emailInput,
         elements.roleSelect,
@@ -86,6 +89,7 @@ const fillUserDetail = (user) => {
     if (elements.formTitle) elements.formTitle.textContent = user.fullName || "Chi tiết thành viên";
     if (elements.memberCodeText) elements.memberCodeText.textContent = user.id ? formatMemberCode(user.id) : "TV-000000";
     if (elements.fullNameInput) elements.fullNameInput.value = user.fullName || "";
+    if (elements.usernameInput) elements.usernameInput.value = user.username || "";
     if (elements.phoneInput) elements.phoneInput.value = user.phone || "";
     if (elements.emailInput) elements.emailInput.value = user.email || "";
     if (elements.roleSelect && user.role) elements.roleSelect.value = user.role;
@@ -103,6 +107,10 @@ const validatePayload = (payload) => {
         alert("Vui lòng nhập số điện thoại.");
         return false;
     }
+    if (!payload.username) {
+        alert("Vui lòng nhập username.");
+        return false;
+    }
     if (!payload.email) {
         alert("Vui lòng nhập email.");
         return false;
@@ -116,6 +124,7 @@ const validatePayload = (payload) => {
 
 const buildPayload = () => ({
     fullName: elements.fullNameInput?.value?.trim() || "",
+    username: elements.usernameInput?.value?.trim() || "",
     phone: elements.phoneInput?.value?.trim() || "",
     email: elements.emailInput?.value?.trim() || "",
     password: elements.passwordInput?.value || "",
@@ -130,6 +139,7 @@ const saveUser = async () => {
         if (state.userId) {
             const updatePayload = {
                 fullName: payload.fullName,
+                username: payload.username,
                 phone: payload.phone,
                 email: payload.email,
                 role: payload.role
