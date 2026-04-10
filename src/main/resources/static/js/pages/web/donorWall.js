@@ -1,4 +1,5 @@
 import {donationApi} from "../../apis/donationApi.js";
+import {formatVnd} from "../../utils/currency.js";
 
 const state = {
     period: "MONTH",
@@ -21,7 +22,7 @@ const elements = {
     emptyState: document.getElementById("donorWallEmptyState")
 };
 
-const formatMoney = (amount) => `${new Intl.NumberFormat("vi-VN").format(amount || 0)} đ`;
+const formatMoney = (amount) => formatVnd(amount);
 
 const formatDate = (value) => {
     if (!value) return "---";

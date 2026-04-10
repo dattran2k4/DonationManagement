@@ -1,7 +1,7 @@
 package com.chiaseyeuthuong.controller.admin;
 
 import com.chiaseyeuthuong.common.EActivityStatus;
-import com.chiaseyeuthuong.dto.request.ActivityRequest;
+import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.service.ActivityService;
 import com.chiaseyeuthuong.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -30,31 +30,32 @@ public class AdminActivityController {
     @GetMapping("/form")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showAdminActivityCreateFormPage(@RequestParam(required = false) Long eventId, Model model) {
-        ActivityRequest activityRequest = new ActivityRequest();
+        ActivityResponse activityResponse = new ActivityResponse();
         if (eventId != null) {
-            activityRequest.setEventId(eventId);
-            activityRequest.setStartDate(eventService.getEventById(eventId).getStartDate());
+            var event = eventService.getEventById(eventId);
+            activityResponse.setEventId(eventId);
+            activityResponse.setEvent(event);
+            activityResponse.setStartDate(event.getStartDate());
         }
 
-        model.addAttribute("activity", activityRequest);
+        model.addAttribute("activity", activityResponse);
         model.addAttribute("statuses", EActivityStatus.values());
         model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
-        return "pages/admin/activity-form";
+        return "pages/admin/activity-detail";
     }
 
     @GetMapping("/{id}/form")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public String showAdminActivityEditFormPage(@PathVariable Long id, Model model) {
-        model.addAttribute("activity", activityService.getActivityById(id));
-        model.addAttribute("statuses", EActivityStatus.values());
-        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
-        return "pages/admin/activity-form";
+        return "redirect:/admin/activities/" + id;
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public String showAdminActivityDetailPage(@PathVariable Long id, Model model) {
         model.addAttribute("activity", activityService.getActivityById(id));
+        model.addAttribute("statuses", EActivityStatus.values());
+        model.addAttribute("events", eventService.getAllEvents(0, 9999, null, null, null, null, false, (String[]) null));
         return "pages/admin/activity-detail";
     }
 }

@@ -60,14 +60,14 @@
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <a
-                            th:href="@{/donations}"
+                            th:href="@{/quyen-gop}"
                             class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 transition-colors"
                             th:text="${systemConfig['HOME_HERO_PRIMARY_CTA'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_PRIMARY_CTA']) ? systemConfig['HOME_HERO_PRIMARY_CTA'] : 'Quyên góp'}"
                     >
                         Quyên góp
                     </a>
                     <a
-                            th:href="@{/events}"
+                            th:href="@{/su-kien}"
                             class="inline-flex items-center justify-center px-8 py-3.5 border-2 border-slate-200 dark:border-slate-700 text-base font-semibold rounded-lg text-slate-700 dark:text-white bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                             th:text="${systemConfig['HOME_HERO_SECONDARY_CTA'] != null and !#strings.isEmpty(systemConfig['HOME_HERO_SECONDARY_CTA']) ? systemConfig['HOME_HERO_SECONDARY_CTA'] : 'Tổng hợp các sự kiện'}"
                     >
@@ -136,7 +136,7 @@
                     </p>
                 </div>
                 <a class="hidden md:inline-flex items-center text-primary font-semibold"
-                   th:href="@{/events}">
+                   th:href="@{/su-kien}">
                     Xem tất cả sự kiện
                     <span class="material-icons text-sm ml-1">arrow_forward</span>
                 </a>
@@ -164,9 +164,9 @@
                         <div class="mb-6">
                             <div class="flex justify-between text-sm mb-2">
                                 <span class="font-semibold text-slate-700 dark:text-slate-300"
-                                      th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                                      th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' vnđ'">0 vnđ</span>
                                 <span class="text-slate-500 dark:text-slate-500"
-                                      th:text="'Mục tiêu: ' + ${#numbers.formatDecimal(target, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Mục tiêu: 0 VNĐ</span>
+                                      th:text="'Mục tiêu: ' + ${#numbers.formatDecimal(target, 0, 'COMMA', 0, 'POINT')} + ' vnđ'">Mục tiêu: 0 vnđ</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5">
                                 <div class="bg-primary h-2.5 rounded-full"
@@ -176,7 +176,7 @@
                                th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%
                                 đạt</p>
                         </div>
-                        <a th:href="@{/events/{slug}(slug=${ev.slug})}"
+                        <a th:href="@{/su-kien/{slug}(slug=${ev.slug})}"
                            class="w-full inline-flex items-center justify-center py-2.5 rounded-lg border border-primary/20 bg-primary/5 text-primary font-semibold hover:bg-primary hover:text-white transition-colors">
                             Xem chi tiết
                         </a>
@@ -188,7 +188,7 @@
             </div>
             <div class="mt-8 text-center md:hidden">
                 <a class="inline-flex items-center text-primary font-semibold hover:underline"
-                   th:href="@{/events}">
+                   th:href="@{/su-kien}">
                     Xem tất cả sự kiện
                     <span class="material-icons text-sm ml-1">arrow_forward</span>
                 </a>

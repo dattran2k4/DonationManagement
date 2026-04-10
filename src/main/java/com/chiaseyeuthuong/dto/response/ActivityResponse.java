@@ -29,8 +29,6 @@ public class ActivityResponse {
 
     private String shortDescription;
 
-    private String description;
-
     private String location;
 
     private String content;
@@ -44,6 +42,8 @@ public class ActivityResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String createdBy;
 
     private LocalDateTime completedAt;
 

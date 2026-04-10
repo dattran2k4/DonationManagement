@@ -36,7 +36,7 @@
                 <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs uppercase font-semibold tracking-wider">
                     Total Amount</p>
                 <p class="text-text-primary-light dark:text-text-primary-dark text-3xl font-bold font-mono text-primary"
-                   th:text="${transaction.amount} + 'VND'">
+                   th:text="${#numbers.formatDecimal(transaction.amount != null ? transaction.amount : 0, 0, 'COMMA', 0, 'POINT')} + ' vnđ'">
                 </p>
             </div>
             <div class="bg-background-light dark:bg-background-dark p-4 rounded-lg border border-border-light dark:border-border-dark flex flex-col gap-1">

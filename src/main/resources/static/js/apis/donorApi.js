@@ -63,5 +63,8 @@ export const donorApi = {
     },
     deactivateOrganizationRelationship: async (id, relationshipId) => {
         return await apiClient.delete(`${BASE_URL}/${id}/relationships/organizations/${relationshipId}`);
+    },
+    deleteDonor: async (id) => {
+        return await apiClient.delete(`${BASE_URL}/${id}`);
     }
 };

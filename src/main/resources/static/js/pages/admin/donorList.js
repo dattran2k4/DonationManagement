@@ -1,8 +1,7 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
-
-const canManageDonors = window.__CAN_MANAGE_DONORS__ === true;
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {
     page: 1,
@@ -57,7 +56,12 @@ const getInitials = (name) => {
 };
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+    return formatVnd(amount);
+};
+
+const formatDonorCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `DON-${String(id).padStart(8, '0')}`;
 };
 
 const getTypeBadge = (type) => {
@@ -89,14 +93,18 @@ const renderDonorRow = (donor) => {
                 <div class="h-10 w-10 shrink-0">${avatarHtml}</div>
                     <div class="ml-4">
                         ${isOrg && orgInfo ? `
-                            <div class="text-sm font-semibold text-text-main dark:text-white">
+                            <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">
                                 ${orgInfo.name}
-                            </div>
+                            </a>
+                            <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
                             <div class="text-xs text-text-secondary mt-0.5 flex items-center">
                                 <span class="material-symbols-outlined text-[12px] mr-1">person_pin</span>
                                 Đại diện: ${orgInfo.representative || '---'}
                             </div>
-                    ` : `<div class="text-sm font-semibold text-text-main dark:text-white">${donor.fullName}</div>`}
+                    ` : `
+                        <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">${donor.fullName}</a>
+                        <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
+                    `}
                     </div>
             </div>
         </td>
@@ -124,21 +132,6 @@ const renderDonorRow = (donor) => {
         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-text-main dark:text-white">
             ${formatCurrency(donor.totalDonationAmount)}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium sticky right-0 bg-surface-light dark:bg-surface-dark group-hover:bg-slate-50 dark:group-hover:bg-white/5 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.45)] transition-colors">
-            <div class="flex items-center justify-center gap-2">
-                <button onclick="viewDonorProfile(${donor.id})" class="text-slate-400 hover:text-primary p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem hồ sơ">
-                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                </button>
-                ${canManageDonors ? `
-                    <button onclick="editDonor(${donor.id})" class="text-slate-400 hover:text-blue-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                ` : ''}
-                <button onclick="viewDonationHistory(${donor.id})" class="text-slate-400 hover:text-orange-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Lịch sử quyên góp">
-                    <span class="material-symbols-outlined text-[20px]">history</span>
-                </button>
-            </div>
-        </td>
     </tr>`;
 };
 
@@ -150,7 +143,7 @@ const loadDonors = async () => {
         const donors = pageData.data || [];
 
         if (donors.length === 0) {
-            elements.tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-text-secondary">Không tìm thấy nhà hảo tâm nào</td></tr>`;
+            elements.tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-text-secondary">Không tìm thấy nhà hảo tâm nào</td></tr>`;
         } else {
             elements.tableBody.innerHTML = donors.map(d => renderDonorRow(d)).join('');
         }
@@ -234,10 +227,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.viewDonorProfile = (id) => {
     window.location.href = `/admin/donors/${id}`;
-};
-window.editDonor = (id) => {
-    window.location.href = `/admin/donors/${id}/form`;
-};
-window.viewDonationHistory = (id) => {
-    window.location.href = `/admin/donors/${id}/donations`;
 };

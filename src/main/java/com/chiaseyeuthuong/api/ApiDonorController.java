@@ -235,4 +235,14 @@ public class ApiDonorController {
                 .message("Đã ngừng sử dụng mối quan hệ tổ chức")
                 .build();
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse deleteDonor(@PathVariable Long id) {
+        donorService.deleteDonor(id);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Xóa nhà hảo tâm thành công")
+                .build();
+    }
 }

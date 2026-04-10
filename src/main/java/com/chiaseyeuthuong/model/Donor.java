@@ -6,10 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "donors")
-public class Donor {
+public class Donor extends AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,23 +40,11 @@ public class Donor {
     @Column(name = "note", columnDefinition = "TEXT", length = 1000)
     private String note;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
-    private User createdBy;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private EDonorType type;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "donor", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private Organization organization;
 

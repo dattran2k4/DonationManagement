@@ -20,6 +20,33 @@ body {
     font-family: Inter, sans-serif;
 }
 
+@layer components {
+    .donation-status-badge {
+        @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold;
+    }
+
+    .donation-status-pending-approved {
+        @apply border-amber-200 bg-amber-100 text-amber-800;
+    }
+
+    .donation-status-pending-payment {
+        @apply border-yellow-200 bg-yellow-100 text-yellow-800;
+    }
+
+    .donation-status-confirmed {
+        @apply border-emerald-200 bg-emerald-100 text-emerald-800;
+    }
+
+    .donation-status-rejected {
+        @apply border-red-200 bg-red-100 text-red-700;
+    }
+
+    .donation-status-failed,
+    .donation-status-cancelled {
+        @apply border-slate-200 bg-slate-100 text-slate-700;
+    }
+}
+
 /* CKEditor content readability and list marker fix */
 .ck-content,
 .prose.ck-content {

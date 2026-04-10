@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.config;
 
 import com.chiaseyeuthuong.security.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,22 +17,42 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
+import java.util.TimeZone;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableAsync
+@EnableScheduling
+@EnableJpaAuditing(auditorAwareRef = "securityAuditorAware")
 @RequiredArgsConstructor
 public class AppConfig {
 
-    public static final List<String> WHITE_LIST_URL = List.of("/about", "/contact", "/events/*", "/activities/*", "/", "/donations");
+    private static final String APP_TIME_ZONE = "Asia/Ho_Chi_Minh";
+    public static final List<String> WHITE_LIST_URL = List.of(
+            "/",
+            "/about", "/ve-chung-toi",
+            "/contact", "/lien-he",
+            "/events", "/events/*",
+            "/su-kien", "/su-kien/*",
+            "/activities/*", "/hoat-dong/*",
+            "/donations", "/donations/**",
+            "/quyen-gop", "/quyen-gop/**"
+    );
     private final CustomUserDetailsService customUserDetailsService;
+
+    @PostConstruct
+    public void initTimezone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(APP_TIME_ZONE));
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -91,7 +112,9 @@ public class AppConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setTimeZone(TimeZone.getTimeZone(APP_TIME_ZONE));
+        return objectMapper;
     }
 
     @Bean

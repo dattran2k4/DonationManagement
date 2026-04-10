@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum EPaymentMethod {
     CASH("Tiền mặt"),
-    BANK_TRANSFER_ONLINE("Chuyển Khoản Online"),
-    BANK_TRANSFER_OFFLINE("Chuyển Khoản");
+    BANK_TRANSFER_ONLINE("Chuyển khoản qua website"),
+    BANK_TRANSFER_OFFLINE("Chuyển khoản không qua website");
 
     private final String value;
 }

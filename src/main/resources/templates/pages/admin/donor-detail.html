@@ -10,159 +10,320 @@
 </head>
 <body>
 <div layout:fragment="content" class="space-y-6"
-     th:attr="data-donor-id=${donor.id}"
+     th:attr="data-donor-id=${donor.id},data-donor-type=${donor.type != null ? donor.type.name() : 'INDIVIDUAL'}"
      id="donorDetailPage">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-                <div class="flex items-center gap-2 text-sm text-slate-500">
-                    <a th:href="@{/admin/donors}" class="hover:text-primary">Nhà hảo tâm</a>
-                    <span>/</span>
-                    <span class="text-slate-700">Hồ sơ chi tiết</span>
-                </div>
-                <h1 class="mt-1 text-3xl font-black text-slate-900">Hồ sơ Nhà hảo tâm</h1>
-                <p class="mt-1 text-sm text-slate-500">Theo dõi thông tin và lịch sử quyên góp của nhà hảo tâm.</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold"
-                      th:classappend="${donor.type.name() == 'ORGANIZATION'} ? ' bg-emerald-100 text-emerald-700' : ' bg-blue-100 text-blue-700'"
-                      th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Tổ chức' : 'Cá nhân'">
-                    Cá nhân
-                </span>
-                <a sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
-                   th:href="@{/admin/donors/{id}/form(id=${donor.id})}"
-                   class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105">
-                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                    Chỉnh sửa
-                </a>
-            </div>
-        </div>
+    <section th:replace="~{fragments/admin/action-toolbar :: adminActionToolbar(
+            createUrl=@{/admin/donors/form},
+            showCreate=${true},
+            showCancel=${donor.id == null},
+            cancelUrl=@{/admin/donors},
+            showSave=${#authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')},
+            showRefresh=${true},
+            showWebsite=${false},
+            websiteUrl=${null},
+            showDelete=${donor.id != null and #authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')}
+        )}">
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-200 px-6 pt-5">
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-5xl font-black text-slate-900">
+            <span th:text="${donor.id == null ? 'Tạo mới Nhà hảo tâm' : ((donor.displayName != null && !#strings.isEmpty(donor.displayName)) ? donor.displayName : donor.fullName)}">Nhà hảo tâm</span>
+            <span th:if="${donor.id == null}" class="text-lg font-semibold text-slate-400">- Mới</span>
+            <span th:if="${donor.id != null and param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
+        </h1>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white px-6 pt-4 shadow-sm">
+        <div class="border-b border-slate-200">
             <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
                 <button id="tabInfoBtn" data-tab="info" type="button"
                         class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">
-                    Thông tin
+                    Thông tin chung
                 </button>
-                <button id="tabHistoryBtn" data-tab="history" type="button"
+                <button th:if="${donor.id != null}" id="tabHistoryBtn" data-tab="history" type="button"
                         class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Lịch sử quyên góp
                 </button>
-                <button id="tabRelationshipBtn" data-tab="relationship" type="button"
+                <button th:if="${donor.id != null}" id="tabRelationshipBtn" data-tab="relationship" type="button"
                         class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Mối quan hệ
                 </button>
-                <button id="tabAuditBtn" data-tab="audit" type="button"
+                <button th:if="${donor.id != null}" id="tabAuditBtn" data-tab="audit" type="button"
                         class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
                     Lịch sử thao tác
                     <span id="tabAuditCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
                 </button>
             </div>
         </div>
+    </section>
 
-        <div id="tabInfoPanel" class="p-6">
-            <div class="grid gap-8 lg:grid-cols-2">
-                <div class="space-y-6">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Thông tin liên hệ</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Họ và tên</p>
-                        <p class="mt-1 text-2xl font-bold text-slate-900" th:text="${donor.fullName}">---</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Tên hiển thị</p>
-                        <p class="mt-1 text-xl font-semibold text-slate-900"
-                           th:text="${(donor.displayName != null && !#strings.isEmpty(donor.displayName)) ? donor.displayName : '---'}">
-                            ---
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Email</p>
-                        <p class="mt-1 text-xl font-semibold text-slate-900 break-all" th:text="${donor.email}">---</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Số điện thoại</p>
-                        <p class="mt-1 text-xl font-semibold text-slate-900" th:text="${donor.phone}">---</p>
-                    </div>
+    <section id="tabInfoPanel" class="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div th:if="${donor.id == null}" class="grid gap-6 xl:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 p-6 space-y-5">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-1 flex items-center gap-1">
+                    <button id="donorTypeIndividualBtn" type="button"
+                            class="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">
+                        Cá nhân
+                    </button>
+                    <button id="donorTypeOrganizationBtn" type="button"
+                            class="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900">
+                        Tổ chức
+                    </button>
                 </div>
 
-                <div class="space-y-6">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Pháp lý và ghi chú</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Loại nhà hảo tâm</p>
-                        <p class="mt-1 text-xl font-semibold text-slate-900"
-                           th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Tổ chức' : 'Cá nhân'">---</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500">Nguồn giới thiệu</p>
-                        <p class="mt-1 text-xl font-semibold text-slate-900"
-                           th:text="${(donor.referralSource != null && !#strings.isEmpty(donor.referralSource)) ? donor.referralSource : '---'}">
-                            ---
-                        </p>
-                    </div>
+                <div id="donorIndividualSection" class="grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Họ và tên <span class="text-red-500">*</span></label>
+                    <input id="fullName" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập họ và tên đầy đủ">
 
-                    <div th:if="${donor.type.name() == 'ORGANIZATION' && donor.organization != null}" class="space-y-4">
-                        <div>
-                            <p class="text-sm text-slate-500">Tên tổ chức</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-900"
-                               th:text="${donor.organization.name ?: '---'}">---</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-500">Mã số thuế</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-900"
-                               th:text="${donor.organization.taxCode ?: '---'}">---</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-500">Người đại diện</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-900"
-                               th:text="${donor.organization.representative ?: '---'}">---</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-500">Địa chỉ xuất hóa đơn</p>
-                            <p class="mt-1 text-lg font-semibold text-slate-900"
-                               th:text="${(donor.organization.billingAddress != null && !#strings.isEmpty(donor.organization.billingAddress)) ? donor.organization.billingAddress : 'Chưa cập nhật'}">
-                                Chưa cập nhật
-                            </p>
-                        </div>
-                    </div>
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên hiển thị</label>
+                    <input id="displayName" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Biệt danh hoặc tên hiển thị">
+                </div>
 
-                    <div>
-                        <p class="text-sm text-slate-500">Ghi chú nội bộ</p>
-                        <div class="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-lg leading-relaxed text-slate-700"
-                             th:text="${(donor.note != null && !#strings.isEmpty(donor.note)) ? donor.note : 'Chưa có ghi chú.'}">
-                            Chưa có ghi chú.
-                        </div>
-                    </div>
+                <div id="donorOrganizationSection" class="hidden grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên tổ chức <span class="text-red-500">*</span></label>
+                    <input id="orgName" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập tên tổ chức">
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Mã số thuế <span class="text-red-500">*</span></label>
+                    <input id="taxCode" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập mã số thuế">
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Người đại diện <span class="text-red-500">*</span></label>
+                    <input id="representative" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập người đại diện">
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Địa chỉ xuất hóa đơn</label>
+                    <textarea id="billingAddress"
+                              class="col-span-8 min-h-[90px] rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                              placeholder="Nhập địa chỉ xuất hóa đơn"></textarea>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 p-6">
+                <div class="grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Số điện thoại <span class="text-red-500">*</span></label>
+                    <input id="phone" type="text"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập số điện thoại">
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Email <span class="text-red-500">*</span></label>
+                    <input id="email" type="email"
+                           class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           placeholder="Nhập email">
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Nguồn giới thiệu</label>
+                    <select id="referralSource"
+                            class="col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                        <option value="">Chọn nguồn giới thiệu</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="Website">Website</option>
+                        <option value="Email">Email</option>
+                        <option value="Bạn bè giới thiệu">Bạn bè giới thiệu</option>
+                        <option value="Sự kiện offline">Sự kiện offline</option>
+                        <option value="Đối tác">Đối tác</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+
+                    <label class="col-span-4 self-start pt-2 text-sm font-medium text-slate-700">Ghi chú nội bộ</label>
+                    <textarea id="note"
+                              class="col-span-8 min-h-[140px] rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                              placeholder="Nhập ghi chú nội bộ"></textarea>
                 </div>
             </div>
         </div>
 
-        <div id="tabHistoryPanel" class="hidden pt-2">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Mã đơn</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Mục tiêu</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Tiêu đề</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Số tiền</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Thời gian</th>
-                    </tr>
-                    </thead>
-                    <tbody id="donorDonationHistoryBody" class="divide-y divide-slate-100">
-                    <tr>
-                        <td class="px-6 py-8 text-center text-slate-500" colspan="6">Đang tải dữ liệu...</td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div th:if="${donor.id != null}" class="grid gap-5 xl:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 p-6">
+                <div class="grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên nhà hảo tâm <span class="text-red-500">*</span></label>
+                    <input id="fullName" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.fullName ?: ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Mã nhà hảo tâm</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.id != null ? 'DON-' + #numbers.formatInteger(donor.id, 6) : '---'}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Số điện thoại <span class="text-red-500">*</span></label>
+                    <input id="phone" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.phone ?: ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Email</label>
+                    <input id="email" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.email ?: ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Loại nhà hảo tâm</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.type != null && donor.type.name() == 'ORGANIZATION'} ? 'Tổ chức' : 'Cá nhân'" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Nickname</label>
+                    <input id="displayName" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${(donor.displayName != null && !#strings.isEmpty(donor.displayName)) ? donor.displayName : ''}" readonly>
+                </div>
             </div>
-            <div id="donorDonationPagination"></div>
+
+            <div class="rounded-2xl border border-slate-200 p-6">
+                <div class="grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Nguồn giới thiệu</label>
+                    <select id="referralSource" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900" disabled>
+                        <option value="">Chọn nguồn giới thiệu</option>
+                        <option value="Facebook" th:selected="${donor.referralSource == 'Facebook'}">Facebook</option>
+                        <option value="Website" th:selected="${donor.referralSource == 'Website'}">Website</option>
+                        <option value="Email" th:selected="${donor.referralSource == 'Email'}">Email</option>
+                        <option value="Bạn bè giới thiệu" th:selected="${donor.referralSource == 'Bạn bè giới thiệu'}">Bạn bè giới thiệu</option>
+                        <option value="Sự kiện offline" th:selected="${donor.referralSource == 'Sự kiện offline'}">Sự kiện offline</option>
+                        <option value="Đối tác" th:selected="${donor.referralSource == 'Đối tác'}">Đối tác</option>
+                        <option value="Khác" th:selected="${donor.referralSource == 'Khác'}">Khác</option>
+                    </select>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tạo lúc</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.createdAt != null ? #temporals.format(donor.createdAt, 'dd/MM/yyyy hh:mm a') : '---'}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tạo bởi</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${donor.createdBy ?: 'Hệ thống'}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tổng số sự kiện đã tham gia</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${joinedEventCount}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tổng số hoạt động đã tham gia</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${joinedActivityCount}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tổng số tiền đã quyên góp</label>
+                    <input class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text"
+                           th:value="${#numbers.formatDecimal(donor.totalDonationAmount != null ? donor.totalDonationAmount : 0, 0, 'COMMA', 0, 'POINT')} + ' vnđ'" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${donor.id != null}" class="grid gap-5 xl:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 p-6">
+                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin khác</h2>
+                <div class="grid grid-cols-12 items-start gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Sự kiện tham gia gần đây</label>
+                    <div class="col-span-8 flex items-center justify-between rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                        <span th:text="${recentEventDonation != null && recentEventDonation.objectName != null ? recentEventDonation.objectName : '---'}">---</span>
+                        <a th:if="${recentEventDonation != null && recentEventDonation.eventId != null}"
+                           th:href="@{/admin/events/{id}(id=${recentEventDonation.eventId})}"
+                           class="inline-flex items-center text-slate-700 hover:text-primary">
+                            <span class="material-symbols-outlined text-[18px]">search</span>
+                        </a>
+                    </div>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Hoạt động tham gia gần đây</label>
+                    <div class="col-span-8 flex items-center justify-between rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900">
+                        <span th:text="${recentActivityDonation != null && recentActivityDonation.objectName != null ? recentActivityDonation.objectName : '---'}">---</span>
+                        <a th:if="${recentActivityDonation != null && recentActivityDonation.activityId != null}"
+                           th:href="@{/admin/activities/{id}(id=${recentActivityDonation.activityId})}"
+                           class="inline-flex items-center text-slate-700 hover:text-primary">
+                            <span class="material-symbols-outlined text-[18px]">search</span>
+                        </a>
+                    </div>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Ghi chú nội bộ</label>
+                    <textarea id="note" class="donor-updatable col-span-8 min-h-[140px] rounded-lg border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-900"
+                              readonly
+                              th:text="${(donor.note != null && !#strings.isEmpty(donor.note)) ? donor.note : ''}"></textarea>
+                </div>
+            </div>
+
+            <div th:if="${donor.type.name() == 'ORGANIZATION'}" class="rounded-2xl border border-slate-200 p-6">
+                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin tổ chức</h2>
+                <div class="grid grid-cols-12 items-center gap-y-4">
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên tổ chức</label>
+                    <input id="orgName" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text" th:value="${donor.organization != null ? donor.organization.name : ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Mã số thuế</label>
+                    <input id="taxCode" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text" th:value="${donor.organization != null ? donor.organization.taxCode : ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Người đại diện</label>
+                    <input id="representative" class="donor-updatable col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
+                           type="text" th:value="${donor.organization != null ? donor.organization.representative : ''}" readonly>
+
+                    <label class="col-span-4 text-sm font-medium text-slate-700">Địa chỉ xuất hóa đơn</label>
+                    <textarea id="billingAddress" class="donor-updatable col-span-8 min-h-[100px] rounded-lg border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-900"
+                              readonly
+                              th:text="${donor.organization != null && donor.organization.billingAddress != null && !#strings.isEmpty(donor.organization.billingAddress) ? donor.organization.billingAddress : ''}"></textarea>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${donor.id != null}" class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div id="tabHistoryPanel" class="hidden p-6">
+            <div class="rounded-2xl border border-slate-200 bg-white">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                    <h2 class="text-2xl font-bold text-slate-900">Lịch sử quyên góp</h2>
+                    <div class="flex items-center gap-4 text-sm font-semibold text-slate-700">
+                        <a id="addDonationFromDonorBtn"
+                           th:href="@{/admin/donations/form(donorId=${donor.id},returnTo=${'/admin/donors/' + donor.id + '?tab=history'})}"
+                           class="inline-flex items-center gap-1 text-slate-700 hover:text-primary">
+                            <span class="text-base">+</span> Thêm đơn Quyên góp
+                        </a>
+                        <button type="button" class="inline-flex items-center gap-1 text-slate-700 hover:text-red-600">
+                            <span class="material-symbols-outlined text-[18px]">delete</span> Xóa đơn Quyên góp
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                            <tr>
+                                <th class="w-14 px-4 py-4 text-left">
+                                    <input id="donorDonationSelectAll"
+                                           type="checkbox"
+                                           class="h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary">
+                                </th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Mã quyên góp</th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Loại quyên góp</th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Tên mục tiêu</th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày quyên góp</th>
+                                <th class="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Số tiền</th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Phương thức</th>
+                                <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
+                            </tr>
+                            </thead>
+                            <tbody id="donorDonationHistoryBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="px-6 py-8 text-center text-slate-500" colspan="8">Đang tải dữ liệu...</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-4">
+                    <div class="text-sm text-slate-500">
+                        Cột: <span id="donorDonationTotalCount" class="font-semibold text-slate-700">0</span>
+                        <span class="mx-4">Đã chọn: <span id="donorDonationSelectedCount" class="font-semibold text-slate-700">0</span></span>
+                    </div>
+                    <div id="donorDonationPagination"></div>
+                </div>
+            </div>
         </div>
 
         <div id="tabRelationshipPanel" class="hidden p-6 space-y-8">
@@ -398,9 +559,9 @@
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
         window.__DONOR_ID__ = [[${donor.id}]];
-        window.__DONOR_TYPE__ = [[${donor.type.name()}]];
-        window.__CAN_EDIT_RELATIONSHIPS__ = [[${canEditRelationships}]];
-        window.__DONOR_FULL_NAME__ = [[${donor.fullName}]];
+        window.__DONOR_TYPE__ = [[${donor.type != null ? donor.type.name() : 'INDIVIDUAL'}]];
+        window.__CAN_MANAGE_DONOR__ = [[${#authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')}]];
+        window.__CAN_EDIT_RELATIONSHIPS__ = [[${#authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')}]];
     </script>
     <script type="module" th:src="@{/js/pages/admin/donorDetail.js}"></script>
 </th:block>

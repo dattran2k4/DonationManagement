@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/contact")
+@RequestMapping({"/contact", "/lien-he"})
 public class ContactController {
 
     @GetMapping

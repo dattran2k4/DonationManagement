@@ -1,9 +1,8 @@
 import {donationApi} from '../../apis/donationApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
-
-const canApproveDonations = window.__CAN_APPROVE_DONATIONS__ === true;
-const canManageDonations = window.__CAN_MANAGE_DONATIONS__ === true;
+import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from '../../utils/donationUi.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {
     page: 1,
@@ -86,38 +85,39 @@ const clearAmountFilter = () => {
 };
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+    return formatVnd(amount);
 };
 
 const getStatusBadge = (status) => {
+    const base = getDonationStatusUi(status);
     const styles = {
         PENDING_APPROVED: {
-            text: 'Chờ duyệt',
-            class: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800',
+            text: base.text,
+            class: base.className,
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>',
             rowClass: 'bg-amber-50/50 dark:bg-amber-900/10'
         },
         PENDING_PAYMENT: {
-            text: 'Chờ thanh toán',
-            class: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
+            text: base.text,
+            class: base.className,
             dot: '<span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>',
             rowClass: ''
         },
         CONFIRMED: {
-            text: 'Đã xác nhận',
-            class: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: ''
         },
         REJECTED: {
-            text: 'Đã từ chối',
-            class: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: 'opacity-75'
         },
         FAILED: {
-            text: 'Thất bại',
-            class: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+            text: base.text,
+            class: base.className,
             dot: '',
             rowClass: 'opacity-75'
         }
@@ -127,9 +127,9 @@ const getStatusBadge = (status) => {
 
 const getPaymentMethodIcon = (method) => {
     const icons = {
-        CASH: {icon: 'payments', label: 'Tiền mặt'},
-        BANK_TRANSFER_ONLINE: {icon: 'account_balance', label: 'CK Online'},
-        BANK_TRANSFER_OFFLINE: {icon: 'receipt_long', label: 'Offline'}
+        CASH: {icon: 'payments', label: DONATION_PAYMENT_METHOD_LABELS.CASH},
+        BANK_TRANSFER_ONLINE: {icon: 'account_balance', label: DONATION_PAYMENT_METHOD_LABELS.BANK_TRANSFER_ONLINE},
+        BANK_TRANSFER_OFFLINE: {icon: 'receipt_long', label: DONATION_PAYMENT_METHOD_LABELS.BANK_TRANSFER_OFFLINE}
     };
     return icons[method] || {icon: 'help_outline', label: method};
 };
@@ -147,47 +147,9 @@ const getViaLabel = (donationVia) => {
     return donationVia === 'STAFF' ? 'Nội bộ' : 'Website';
 };
 
-const canEditDonation = (item) => {
-    return canManageDonations && item.donationVia === 'STAFF' && item.status !== 'CONFIRMED';
-};
-
-const getActionButtons = (item) => {
-    const actions = [
-        `
-            <button onclick="viewDonation(${item.id})" class="text-slate-400 hover:text-primary p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem chi tiết">
-                <span class="material-symbols-outlined text-[20px]">visibility</span>
-            </button>
-        `
-    ];
-
-    if (canEditDonation(item)) {
-        actions.push(`
-            <button onclick="editDonation(${item.id})" class="text-slate-400 hover:text-blue-500 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
-                <span class="material-symbols-outlined text-[20px]">edit</span>
-            </button>
-        `);
-    }
-
-    if (canApproveDonations && item.status === 'PENDING_APPROVED') {
-        actions.push(`
-            <button onclick="handleAction(${item.id}, 'REJECT')" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Từ chối">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        `);
-        actions.push(`
-            <button onclick="handleAction(${item.id}, 'CONFIRM')" class="bg-primary text-white hover:bg-primary/90 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1" title="Duyệt">
-                <span class="material-symbols-outlined text-[16px]">check</span>
-                Duyệt
-            </button>
-        `);
-    }
-
-    return actions.join('');
-};
-
 const renderTable = (donations) => {
     if (!donations || donations.length === 0) {
-        elements.tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
+        elements.tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-500">Chưa có dữ liệu quyên góp nào.</td></tr>';
         return;
     }
 
@@ -207,7 +169,7 @@ const renderTable = (donations) => {
         return `
         <tr class="${statusStyle.rowClass} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-mono text-slate-900 dark:text-white font-medium">#${item.memoCode || `ORD-${item.id}`}</span>
+                <a href="/admin/donations/${item.id}" class="text-sm font-mono text-slate-900 dark:text-white font-medium hover:text-primary dark:hover:text-primary transition-colors">${formatDonationCode(item.id)}</a>
                 <div class="text-xs text-slate-500 mt-0.5">${donatedAt}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
@@ -230,15 +192,10 @@ const renderTable = (donations) => {
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${statusStyle.class}">
+                <span class="${statusStyle.class} gap-1.5">
                     ${statusStyle.dot}
                     ${statusStyle.text}
                 </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end gap-2">
-                    ${getActionButtons(item)}
-                </div>
             </td>
         </tr>
         `;
@@ -352,37 +309,6 @@ const loadDonations = async () => {
     } catch (error) {
         console.error('Lỗi khi tải danh sách quyên góp:', error);
     }
-};
-
-window.handleAction = async (id, action) => {
-    if (!canApproveDonations) return;
-    const isConfirm = action === 'CONFIRM';
-    const statusText = isConfirm ? 'duyệt' : 'từ chối';
-    const statusEnum = isConfirm ? 'CONFIRMED' : 'REJECTED';
-
-    const message = `Bạn có chắc chắn muốn ${statusText} khoản quyên góp này không?`;
-    if (!confirm(message)) return;
-
-    try {
-        const response = await donationApi.changeStatus(id, statusEnum);
-
-        if (response.status === 200) {
-            alert(response.message || 'Cập nhật thành công!');
-            loadDonations();
-        }
-    } catch (error) {
-        console.error('Lỗi cập nhật trạng thái:', error);
-        alert(error.message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
-    }
-};
-
-window.viewDonation = (id) => {
-    window.location.href = `/admin/donations/${id}`;
-};
-
-window.editDonation = (id) => {
-    if (!canManageDonations) return;
-    window.location.href = `/admin/donations/${id}/form`;
 };
 
 document.addEventListener('DOMContentLoaded', () => {

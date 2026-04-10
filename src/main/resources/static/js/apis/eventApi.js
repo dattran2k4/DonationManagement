@@ -10,8 +10,23 @@ export const eventApi = {
         return await apiClient.get(`${BASE_URL}?${queryString}`);
     },
 
+    createEvent: async (eventData) => {
+        const payload = {...eventData};
+        delete payload.id;
+        return await apiClient.post(`${BASE_URL}`, payload);
+    },
+
+    updateEvent: async (id, eventData) => {
+        const payload = {...eventData};
+        delete payload.id;
+        return await apiClient.put(`${BASE_URL}/${id}`, payload);
+    },
+
     saveEvent: async (eventData) => {
-        return await apiClient.post(`${BASE_URL}/save`, eventData);
+        if (eventData?.id) {
+            return await eventApi.updateEvent(eventData.id, eventData);
+        }
+        return await eventApi.createEvent(eventData);
     },
 
     // Ví dụ các API khác (bạn có thể mở rộng sau)

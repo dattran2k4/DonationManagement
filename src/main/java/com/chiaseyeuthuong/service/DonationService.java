@@ -23,7 +23,11 @@ public interface DonationService {
 
     void updateStaffDonation(Long id, DonationRequest request);
 
+    void submitForApproval(Long id);
+
     void changeStatusDonation(EDonationStatus status, Long id);
+
+    void rejectDonation(Long id, String reason, String username);
 
     void confirmDonation(Long id, WebhookData webhookData);
 

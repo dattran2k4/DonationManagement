@@ -6,6 +6,7 @@ import com.chiaseyeuthuong.common.EDonationType;
 import com.chiaseyeuthuong.common.EDonorWallPeriod;
 import com.chiaseyeuthuong.common.EPaymentMethod;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
+import com.chiaseyeuthuong.dto.request.RejectDonationRequest;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
 import com.chiaseyeuthuong.service.DonationService;
 import jakarta.validation.Valid;
@@ -82,7 +83,7 @@ public class ApiDonationController {
         donationService.createStaffDonation(request, principal.getName());
         return ApiResponse.builder()
                 .status(200)
-                .message("Tạo đơn từ thiện thành công từ staff")
+                .message("Tạo đơn từ thiện nội bộ thành công")
                 .build();
     }
 
@@ -96,6 +97,16 @@ public class ApiDonationController {
                 .build();
     }
 
+    @PatchMapping("/{id}/submit-approval")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse submitForApproval(@Min(1) @PathVariable Long id) {
+        donationService.submitForApproval(id);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Gửi duyệt khoản quyên góp thành công")
+                .build();
+    }
+
     @PatchMapping("/{id}/change-status")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse updateState(@Min(1) @PathVariable Long id, @RequestParam EDonationStatus status) {
@@ -103,6 +114,18 @@ public class ApiDonationController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Cập nhật trạng thái đơn từ thiện thành công")
+                .build();
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
+    public ApiResponse rejectDonation(@Min(1) @PathVariable Long id,
+                                      @Valid @RequestBody RejectDonationRequest request,
+                                      Principal principal) {
+        donationService.rejectDonation(id, request.getReason(), principal.getName());
+        return ApiResponse.builder()
+                .status(200)
+                .message("Từ chối đơn từ thiện thành công")
                 .build();
     }
 }

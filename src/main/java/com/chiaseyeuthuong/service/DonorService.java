@@ -67,4 +67,6 @@ public interface DonorService {
     BigDecimal getConfirmedDonationTotalAmount(Long donorId, EDonationStatus status);
 
     void sendLookupCodeIfEmailExists(String email);
+
+    void deleteDonor(Long donorId);
 }

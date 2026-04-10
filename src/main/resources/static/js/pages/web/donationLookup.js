@@ -1,4 +1,5 @@
 import {donorApi} from "../../apis/donorApi.js";
+import {formatVnd} from "../../utils/currency.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const state = {
@@ -57,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function formatCurrency(amount) {
-        return `${Number(amount || 0).toLocaleString("vi-VN")} VND`;
+        return formatVnd(amount);
     }
 
     function formatDateTime(dateTime) {

@@ -12,8 +12,11 @@ export const donationApi = {
         return await apiClient.get(`${BASE_URL}/${id}`);
     },
     changeStatus: async (id, status) => {
-        // status truyền vào phải là 'CONFIRMED' hoặc 'REJECTED'
+        // status truyền vào cho API này nên là 'CONFIRMED'
         return await apiClient.patch(`${BASE_URL}/${id}/change-status?status=${status}`);
+    },
+    rejectDonation: async (id, reason) => {
+        return await apiClient.patch(`${BASE_URL}/${id}/reject`, {reason});
     },
     createWebDonation: async (data) => {
         return await apiClient.post(`${BASE_URL}/donor-create`, data);
@@ -23,6 +26,9 @@ export const donationApi = {
     },
     updateStaffDonation: async (id, data) => {
         return await apiClient.put(`${BASE_URL}/${id}/staff-update`, data);
+    },
+    submitForApproval: async (id) => {
+        return await apiClient.patch(`${BASE_URL}/${id}/submit-approval`);
     },
     getDonorWall: async (params) => {
         const queryString = buildQuery(params);

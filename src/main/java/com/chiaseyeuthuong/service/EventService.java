@@ -17,7 +17,9 @@ public interface EventService {
 
     PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, boolean excludeDraft, String... categoryIds);
 
-    long saveEvent(EventRequest request);
+    long createEvent(EventRequest request);
+
+    long updateEvent(Long id, EventRequest request);
 
     EventResponse getEventById(Long id);
 
@@ -27,9 +29,9 @@ public interface EventService {
 
     EventResponse getPublicEventBySlug(String slug);
 
-    void updateStatus(EEventStatus status, Long id);
-
     long getEventCount(EEventStatus status);
+
+    int syncStatusesBySchedule();
 
     void updateEventCurrentAmount(Event event, BigDecimal amount);
 

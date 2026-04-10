@@ -2,6 +2,7 @@ server:
   port: ${SERVER_PORT:8080}
 app:
   base-url: ${APP_BASE_URL:http://localhost:${SERVER_PORT:8080}}
+  timezone: ${APP_TIMEZONE:Asia/Ho_Chi_Minh}
   token:
     expiry-minutes: 10
 
@@ -17,7 +18,7 @@ spring:
       password: "{noop}123456"
   datasource:
     url:
-      ${MYSQL_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/donation?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci}
+      ${MYSQL_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/donation?useSSL=false&serverTimezone=${app.timezone}&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci}
     username: ${DATABASE_USERNAME:csyt_user}
     password: ${DATABASE_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -30,10 +31,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          time_zone: ${app.timezone}
+
+  jackson:
+    time-zone: ${app.timezone}
 
   thymeleaf:
     cache: false

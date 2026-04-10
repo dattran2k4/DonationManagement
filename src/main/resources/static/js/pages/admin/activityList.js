@@ -1,7 +1,7 @@
 import {activityApi} from '../../apis/activityApi.js';
 import {renderPagination} from '../../components/pagination.js';
 import {bindExcelActions} from '../../utils/excelTransfer.js';
-const canManageActivities = window.__CAN_MANAGE_ACTIVITIES__ === true;
+import {formatVnd} from '../../utils/currency.js';
 
 const state = {page: 1, size: 50, search: '', status: ''};
 let latestRequestId = 0;
@@ -11,7 +11,6 @@ const elements = {
     searchInput: document.getElementById('activitySearchInput'),
     statusFilter: document.getElementById('activityStatusFilter'),
     resetFilterBtn: document.getElementById('activityResetFilterBtn'),
-    actionHeader: document.getElementById('activityActionHeader'),
     exportBtn: document.getElementById('activityExportBtn'),
     importBtn: document.getElementById('activityImportBtn'),
     importInput: document.getElementById('activityImportInput')
@@ -19,7 +18,12 @@ const elements = {
 
 // 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
+    return formatVnd(amount);
+};
+
+const formatActivityCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `ACT-${String(id).padStart(8, '0')}`;
 };
 
 // 2. Hàm định dạng ngày tháng (VD: 12/05 - 15/05)
@@ -35,7 +39,7 @@ const formatDateRange = (start, end) => {
     return `${startStr} - ${endStr}`;
 };
 
-const getColumnCount = () => canManageActivities ? 8 : 7;
+const getColumnCount = () => 7;
 
 const setTableMessage = (message) => {
     elements.tableBody.innerHTML = `
@@ -80,7 +84,7 @@ const renderActivityRow = (activity) => {
 
     return `
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
-        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">#${activity.id}</td>
+        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-700 dark:text-slate-300">${formatActivityCode(activity.id)}</td>
         <td class="px-6 py-4 whitespace-nowrap">
             <a href="/admin/activities/${activity.id}" class="text-sm font-medium text-text-main dark:text-white hover:text-primary transition-colors">${activity.name}</a>
         </td>
@@ -117,18 +121,6 @@ const renderActivityRow = (activity) => {
         <td class="px-6 py-4 whitespace-nowrap">
             ${getStatusBadge(activity.status)}
         </td>
-        ${canManageActivities ? `
-            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <div class="flex items-center justify-center">
-                    <a href="/admin/activities/${activity.id}" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Chi tiết">
-                        <span class="material-symbols-outlined text-[20px]">visibility</span>
-                    </a>
-                    <button onclick="editActivity(${activity.id})" class="group/btn flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-all duration-200" title="Cập nhật">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                </div>
-            </td>
-        ` : ``}
     </tr>`;
 };
 
@@ -207,9 +199,6 @@ const bindFilters = () => {
 
 // Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
-    if (!canManageActivities && elements.actionHeader) {
-        elements.actionHeader.remove();
-    }
     bindFilters();
     syncStateFromFilters();
     bindExcelActions({
@@ -242,6 +231,3 @@ window.addEventListener('pageshow', (event) => {
     state.page = 1;
     loadActivities();
 });
-
-// Các hàm toàn cục
-window.editActivity = (id) => window.location.href = `/admin/activities/${id}/form`;
