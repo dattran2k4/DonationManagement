@@ -226,8 +226,32 @@
         }
 
         function appendEvents(events) {
+            const statusConfig = {
+                DRAFT: {
+                    text: "Bản nháp",
+                    badgeClass: "bg-slate-500/90",
+                    iconHtml: `<span class="material-icons text-[10px]">draft</span>`
+                },
+                UPCOMING: {
+                    text: "Sắp diễn ra",
+                    badgeClass: "bg-amber-500/90",
+                    iconHtml: `<span class="material-icons text-[10px]">schedule</span>`
+                },
+                ONGOING: {
+                    text: "Đang diễn ra",
+                    badgeClass: "bg-emerald-500/90",
+                    iconHtml: `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>`
+                },
+                COMPLETED: {
+                    text: "Hoàn thành",
+                    badgeClass: "bg-slate-600/90",
+                    iconHtml: `<span class="material-icons text-[10px]">check_circle</span>`
+                }
+            };
+
             events.forEach(event => {
                 const isCompleted = event.status === 'COMPLETED';
+                const statusMeta = statusConfig[event.status] || statusConfig.UPCOMING;
                 const currentAmount = Number(event.currentAmount || 0);
                 const targetAmount = Number(event.targetAmount || 0);
                 const progress = targetAmount > 0 ? Math.min((currentAmount / targetAmount) * 100, 100).toFixed(2) : 0;
@@ -246,10 +270,8 @@
                              alt="${event.name}"
                              class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ${isCompleted ? 'grayscale-[50%] group-hover:grayscale-0' : ''}">
 
-                        <div class="absolute top-4 left-4 ${isCompleted ? 'bg-slate-600/90' : 'bg-emerald-500/90'} backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
-                            ${isCompleted ?
-                    `<span class="material-icons text-[10px]">check_circle</span> ${event.status.value || 'Hoàn thành'}` :
-                    `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> ${event.status.value || 'Đang diễn ra'}`}
+                        <div class="absolute top-4 left-4 ${statusMeta.badgeClass} backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
+                            ${statusMeta.iconHtml} ${statusMeta.text}
                         </div>
                     </div>
 
