@@ -20,5 +20,9 @@ export const userApi = {
     updateStatus: async (id, status) => {
         const query = new URLSearchParams({status}).toString();
         return await apiClient.patch(`${BASE_URL}/${id}/status?${query}`);
+    },
+    deleteUsers: async (ids) => {
+        const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
+        return await apiClient.delete(`${BASE_URL}?${query}`);
     }
 };

@@ -7,7 +7,8 @@ const state = {
     search: '',
     status: '',
     sortBy: 'id',
-    sortDir: 'desc'
+    sortDir: 'desc',
+    selectedIds: new Set()
 };
 
 const elements = {
@@ -15,7 +16,9 @@ const elements = {
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('userSearchInput'),
     statusFilter: document.getElementById('userStatusFilter'),
-    resetFilterBtn: document.getElementById('userResetFilterBtn')
+    resetFilterBtn: document.getElementById('userResetFilterBtn'),
+    selectAllCheckbox: document.getElementById('selectAllUsersCheckbox'),
+    deleteSelectedUsersBtn: document.getElementById('deleteSelectedUsersBtn')
 };
 
 const roleLabels = {
@@ -62,13 +65,17 @@ const renderRows = (users) => {
                 <td colspan="6" class="px-6 py-10 text-center text-text-secondary">Không tìm thấy thành viên phù hợp</td>
             </tr>
         `;
+        if (elements.selectAllCheckbox) elements.selectAllCheckbox.checked = false;
+        updateDeleteButtonState();
         return;
     }
 
     elements.tableBody.innerHTML = users.map((user) => `
         <tr class="border-b border-border-light hover:bg-slate-50 transition-colors">
             <td class="px-6 py-5">
-                <input type="checkbox" class="h-6 w-6 rounded-md border-slate-300 text-primary focus:ring-primary/30"/>
+                <input type="checkbox" data-user-checkbox data-user-id="${user.id}"
+                       class="h-6 w-6 rounded-md border-slate-300 text-primary focus:ring-primary/30"
+                       ${state.selectedIds.has(user.id) ? 'checked' : ''}/>
             </td>
             <td class="px-6 py-5 text-lg font-semibold text-slate-900">
                 <a href="/admin/users/${user.id}" class="hover:text-primary">${user.fullName || '---'}</a>
@@ -79,6 +86,76 @@ const renderRows = (users) => {
             <td class="px-6 py-5">${renderStatusBadge(user.status)}</td>
         </tr>
     `).join('');
+
+    bindRowCheckboxEvents();
+    syncSelectAllState();
+    updateDeleteButtonState();
+};
+
+const getVisibleCheckboxes = () => Array.from(document.querySelectorAll('[data-user-checkbox]'));
+
+const syncSelectAllState = () => {
+    if (!elements.selectAllCheckbox) return;
+    const checkboxes = getVisibleCheckboxes();
+    if (!checkboxes.length) {
+        elements.selectAllCheckbox.checked = false;
+        return;
+    }
+    elements.selectAllCheckbox.checked = checkboxes.every((cb) => cb.checked);
+};
+
+const updateDeleteButtonState = () => {
+    if (!elements.deleteSelectedUsersBtn) return;
+    elements.deleteSelectedUsersBtn.disabled = state.selectedIds.size === 0;
+};
+
+const bindRowCheckboxEvents = () => {
+    getVisibleCheckboxes().forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            const userId = Number(checkbox.dataset.userId);
+            if (!userId) return;
+            if (checkbox.checked) {
+                state.selectedIds.add(userId);
+            } else {
+                state.selectedIds.delete(userId);
+            }
+            syncSelectAllState();
+            updateDeleteButtonState();
+        });
+    });
+};
+
+const bindSelectAllEvent = () => {
+    elements.selectAllCheckbox?.addEventListener('change', () => {
+        const shouldSelectAll = elements.selectAllCheckbox.checked;
+        getVisibleCheckboxes().forEach((checkbox) => {
+            checkbox.checked = shouldSelectAll;
+            const userId = Number(checkbox.dataset.userId);
+            if (!userId) return;
+            if (shouldSelectAll) {
+                state.selectedIds.add(userId);
+            } else {
+                state.selectedIds.delete(userId);
+            }
+        });
+        updateDeleteButtonState();
+    });
+};
+
+const handleDeleteSelectedUsers = async () => {
+    if (!state.selectedIds.size) return;
+    const ids = Array.from(state.selectedIds);
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa ${ids.length} thành viên đã chọn?`);
+    if (!confirmed) return;
+
+    try {
+        await userApi.deleteUsers(ids);
+        state.selectedIds.clear();
+        if (elements.selectAllCheckbox) elements.selectAllCheckbox.checked = false;
+        await loadUsers();
+    } catch (error) {
+        alert(error?.message || 'Không thể xóa thành viên đã chọn.');
+    }
 };
 
 const loadUsers = async () => {
@@ -128,9 +205,12 @@ const bindEvents = () => {
 
         loadUsers();
     });
+
+    elements.deleteSelectedUsersBtn?.addEventListener('click', handleDeleteSelectedUsers);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
+    bindSelectAllEvent();
     loadUsers();
 });

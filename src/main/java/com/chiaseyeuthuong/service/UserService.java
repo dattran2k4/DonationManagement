@@ -16,4 +16,6 @@ public interface UserService {
     void updateUser(Long id, UserUpdateRequest request);
 
     void updateUserStatus(Long id, EUserStatus status);
+
+    void deleteUsers(Iterable<Long> ids, String currentUsername);
 }

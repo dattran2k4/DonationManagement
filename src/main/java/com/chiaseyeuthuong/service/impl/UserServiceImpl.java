@@ -12,6 +12,7 @@ import com.chiaseyeuthuong.repository.UserRepository;
 import com.chiaseyeuthuong.service.UserService;
 import com.chiaseyeuthuong.service.UserSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,12 +20,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "USER-SERVICE")
 public class UserServiceImpl implements UserService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "fullName", "email", "phone", "role", "status");
@@ -82,8 +85,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thành viên"));
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thành viên"));
         return toResponse(user);
     }
 
@@ -117,10 +119,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserStatus(Long id, EUserStatus status) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thành viên"));
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thành viên"));
         user.setStatus(status);
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUsers(Iterable<Long> ids, String currentUsername) {
+        for (Long id : ids) {
+            User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thành viên"));
+            validateDeletePermission(user, currentUsername);
+            userRepository.delete(user);
+        }
+
+        log.info("Deleted users");
     }
 
     private String resolveSortBy(String sortBy) {
@@ -137,5 +150,11 @@ public class UserServiceImpl implements UserService {
             response.setStatus(EUserStatus.ACTIVE);
         }
         return response;
+    }
+
+    private void validateDeletePermission(User user, String currentUsername) {
+        if (currentUsername != null && currentUsername.equalsIgnoreCase(user.getUsername())) {
+            throw new InvalidDataException("Không thể tự xóa tài khoản đang đăng nhập");
+        }
     }
 }
