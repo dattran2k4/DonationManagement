@@ -458,8 +458,13 @@
                 const response = await activityApi.saveActivity(payload);
                 if (response.status === 200) {
                     alert('Lưu hoạt động thành công.');
-                    if (!activityId && response.data) {
-                        window.location.href = `/admin/activities/${response.data}?saved=1`;
+                    if (!activityId) {
+                        const createdId = Number(response?.data);
+                        if (!Number.isFinite(createdId) || createdId <= 0) {
+                            alert('Không lấy được ID hoạt động mới từ phản hồi hệ thống.');
+                            return;
+                        }
+                        window.location.href = `/admin/activities/${createdId}?saved=1`;
                         return;
                     }
                     window.location.href = `/admin/activities/${activityId}?saved=1`;

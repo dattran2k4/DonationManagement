@@ -111,7 +111,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void saveActivity(ActivityRequest request) {
+    public Long saveActivity(ActivityRequest request) {
         log.info("Processing saving activity from eventId {} ", request.getEventId());
 
         Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
@@ -145,6 +145,7 @@ public class ActivityServiceImpl implements ActivityService {
         } else {
             auditLogService.logUpdate(EEntityType.ACTIVITY, result.getId(), "Cập nhật hoạt động", beforeValues, afterValues);
         }
+        return result.getId();
     }
 
     @Override

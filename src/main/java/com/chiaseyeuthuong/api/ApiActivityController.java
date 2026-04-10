@@ -89,10 +89,11 @@ public class ApiActivityController {
     @PostMapping("/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING')")
     public ApiResponse saveActivity(@RequestBody @Valid ActivityRequest request) {
-        activityService.saveActivity(request);
+        Long activityId = activityService.saveActivity(request);
         return ApiResponse.builder()
                 .status(200)
                 .message("Successfully saved activity")
+                .data(activityId)
                 .build();
     }
 

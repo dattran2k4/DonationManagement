@@ -21,7 +21,7 @@ public interface ActivityService {
 
     PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size);
 
-    void saveActivity(ActivityRequest request);
+    Long saveActivity(ActivityRequest request);
 
     Activity getActivity(Long id);
 
