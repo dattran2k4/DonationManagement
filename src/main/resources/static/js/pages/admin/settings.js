@@ -21,12 +21,7 @@ const applyReadOnlyMode = () => {
 const setActiveTab = (tabKey) => {
     elements.tabButtons.forEach((button) => {
         const isActive = button.dataset.tabTarget === tabKey;
-        button.classList.toggle('border-primary', isActive);
-        button.classList.toggle('text-primary', isActive);
-        button.classList.toggle('font-semibold', isActive);
-        button.classList.toggle('border-transparent', !isActive);
-        button.classList.toggle('text-slate-500', !isActive);
-        button.classList.toggle('font-medium', !isActive);
+        button.classList.toggle('is-active', isActive);
     });
 
     elements.tabPanels.forEach((panel) => {

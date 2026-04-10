@@ -158,12 +158,7 @@ const getAuditActionBadge = (action) => {
     return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${styles[action] || "bg-slate-100 text-slate-700"}">${labels[action] || action || "---"}</span>`;
 };
 
-const getTabButtonClass = (active, hasGap = false) => {
-    const base = `inline-flex items-center${hasGap ? " gap-2" : ""} border-b-2 px-4 py-2 text-sm font-semibold transition`;
-    return active
-        ? `${base} border-primary text-primary`
-        : `${base} border-transparent text-slate-600 hover:text-slate-900`;
-};
+const getTabButtonClass = (active, hasGap = false) => `admin-tab-link${hasGap ? " gap-2" : ""}${active ? " is-active" : ""}`;
 
 const getPersonDisplayName = (item) => item?.relatedDonorName || item?.relatedDonorDisplayName || "Không rõ tên";
 

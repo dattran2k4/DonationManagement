@@ -1,0 +1,389 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        .ck-editor {
+            height: 100% !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck-editor__main {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .ck-content.ck-editor__editable {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important; /* Quan trọng để flex-grow hoạt động */
+            border: 1px solid #cbd5e1 !important; /* Màu slate-300 */
+            padding: 1rem 1.25rem !important;
+            font-size: 16px !important;
+            line-height: 1.7 !important;
+        }
+
+        .ck.ck-editor__top .ck-sticky-panel .ck-toolbar {
+            border-bottom: 1px solid #cbd5e1 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/activities/form}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/activities}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Hủy bỏ
+            </a>
+            <button id="saveBtn" class="admin-action-btn admin-action-btn--ghost" type="button">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+            <button class="admin-action-btn admin-action-btn--ghost" type="button" onclick="window.location.reload()">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <div class="admin-detail-title-row">
+                    <h1 class="admin-detail-title"
+                        th:text="${activity?.id != null} ? (${activity?.name} ?: 'Chỉnh sửa hoạt động') : 'Tạo hoạt động mới'">
+                        Ánh sáng vùng cao
+                    </h1>
+                    <span th:if="${activity?.status != null}"
+                          class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                          th:text="${activity.status.value}">
+                        Đã lưu
+                    </span>
+                </div>
+                <p class="admin-detail-subtitle">
+                    Quản lý hoạt động con theo cùng một ngôn ngữ hiển thị với màn chi tiết sự kiện, ưu tiên sự rõ ràng và dễ cập nhật dữ liệu.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
+            <div class="space-y-6">
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin chung</div>
+                    <input type="hidden" id="activityId" th:value="${activity?.id}">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <label class="admin-form-label" for="activityEvent">Sự kiện cha <span class="text-red-500">*</span></label>
+                            <select id="activityEvent" class="admin-select-field">
+                                <option value="">-- Chọn sự kiện --</option>
+                                <option th:each="e : ${events.data}"
+                                        th:value="${e.id}"
+                                        th:attr="data-start-date=${e.startDate}"
+                                        th:text="${e.name}"
+                                        th:selected="${activity.eventId != null and activity.eventId == e.id}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="admin-form-label" for="activityName">Tên hoạt động</label>
+                            <input id="activityName"
+                                   th:value="${activity.name}"
+                                   class="admin-input-field"
+                                   placeholder="Ví dụ: Xây trường cho em tại Hà Giang"
+                                   type="text"/>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="admin-form-label" for="activityLocation">Địa điểm hoạt động</label>
+                            <input id="activityLocation"
+                                   th:value="${activity?.location}"
+                                   class="admin-input-field"
+                                   placeholder="Lê Duẩn, Đà Nẵng..."
+                                   type="text"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin hoạt động</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="activityShortDescription">Mô tả ngắn</label>
+                            <textarea id="activityShortDescription"
+                                      th:text="${activity.shortDescription}"
+                                      class="admin-textarea-field min-h-[120px]"
+                                      placeholder="Tóm tắt ngắn gọn về mục tiêu và ý nghĩa của hoạt động..."></textarea>
+                        </div>
+                        <div>
+                            <label class="admin-form-label">Nội dung chi tiết</label>
+                            <div id="editor" th:utext="${activity.content}"
+                                 class="h-[360px] w-full overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin tài chính</div>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="admin-form-label" for="activityTargetAmount">Mục tiêu gây quỹ</label>
+                            <div class="relative">
+                                <input id="activityTargetAmount"
+                                       th:value="${#numbers.formatDecimal(activity?.targetAmount, 0, 'COMMA', 0, 'POINT')}"
+                                       class="admin-input-field pr-16"
+                                       th:placeholder="${#numbers.formatDecimal(activity?.targetAmount, 0, 'COMMA', 0, 'POINT')}"
+                                       type="number"/>
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">VNĐ</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="activityCurrentAmount">Đã đạt được</label>
+                            <div class="relative">
+                                <input id="activityCurrentAmount"
+                                       th:value="${#numbers.formatDecimal(activity?.currentAmount, 0, 'COMMA', 0, 'POINT')}"
+                                       class="admin-input-field pr-16"
+                                       th:placeholder="${#numbers.formatDecimal(activity?.currentAmount, 0, 'COMMA', 0, 'POINT')}"
+                                       type="number"/>
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">VNĐ</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="space-y-6">
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin hiển thị</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="activityStatus">Trạng thái</label>
+                            <select id="activityStatus" class="admin-select-field">
+                                <option th:each="status : ${statuses}"
+                                        th:value="${status}"
+                                        th:text="${status.value}"
+                                        th:selected="${status == activity?.status}">
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="admin-form-label">Ảnh đại diện</label>
+                            <div onclick="document.getElementById('thumbnailInput').click()"
+                                 class="admin-upload-box aspect-[4/3]">
+                                <div id="thumbnailPreview"
+                                     th:style="${activity?.thumbnailUrl != null} ? |background-image:url('${activity.thumbnailUrl}')| : ''"
+                                     th:classappend="${activity?.thumbnailUrl != null} ? '' : ' hidden'"
+                                     class="absolute inset-0 bg-center bg-cover transition-opacity group-hover:opacity-40">
+                                </div>
+
+                                <div id="uploadInstruction"
+                                     th:class="${activity?.thumbnailUrl != null} ? 'relative z-10 flex flex-col items-center text-center p-4 transition-opacity opacity-0 group-hover:opacity-100' : 'relative z-10 flex flex-col items-center text-center p-4 transition-opacity'">
+                                    <span class="material-symbols-outlined mb-3 text-4xl text-slate-400">add_photo_alternate</span>
+                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-200">Tải ảnh lên</span>
+                                    <span class="mt-1 text-xs text-slate-400">PNG, JPG, GIF tối đa 5MB</span>
+                                </div>
+
+                                <input id="thumbnailInput" class="hidden" type="file" accept="image/*"
+                                       onchange="previewThumbnail(this)"/>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thời gian triển khai</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="activityStartDate">Ngày bắt đầu</label>
+                            <input id="activityStartDate"
+                                   th:value="${activity.startDate}"
+                                   class="admin-input-field"
+                                   type="date"/>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="activityEndDate">Ngày kết thúc</label>
+                            <input id="activityEndDate"
+                                   th:value="${activity.endDate}"
+                                   class="admin-input-field"
+                                   type="date"/>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script type="module">
+        import {activityApi} from "/js/apis/activityApi.js";
+
+        let myEditor;
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const activityIdInput = document.getElementById('activityId');
+        const activityEventSelect = document.getElementById('activityEvent');
+        const activityStartDateInput = document.getElementById('activityStartDate');
+        let currentThumbnailUrl = "";
+
+        if (thumbnailPreview && thumbnailPreview.style.backgroundImage) {
+            const bgImage = thumbnailPreview.style.backgroundImage;
+            currentThumbnailUrl = bgImage.startsWith("url(")
+                ? bgImage.slice(5, -2).replace(/["']/g, "")
+                : "";
+        }
+
+        // 1. Khởi tạo CKEditor
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'link', 'blockQuote', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'insertTable', 'mediaEmbed', '|',
+                    'undo', 'redo'
+                ],
+                heading: {
+                    options: [
+                        {model: 'paragraph', title: 'Đoạn văn', class: 'ck-heading_paragraph'},
+                        {model: 'heading2', view: 'h2', title: 'Tiêu đề lớn', class: 'ck-heading_heading2'},
+                        {model: 'heading3', view: 'h3', title: 'Tiêu đề vừa', class: 'ck-heading_heading3'}
+                    ]
+                },
+                placeholder: 'Hãy viết câu chuyện truyền cảm hứng cho chiến dịch của bạn...'
+            })
+            .then(editor => {
+                myEditor = editor; // Gán instance vào biến global của module
+            })
+            .catch(error => console.error(error));
+
+        window.previewThumbnail = async function (input) {
+            const preview = document.getElementById('thumbnailPreview');
+            const instruction = document.getElementById('uploadInstruction');
+            const activityId = document.getElementById('activityId')?.value;
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Kiểm tra dung lượng
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    if (preview) {
+                        preview.style.backgroundImage = `url('${e.target.result}')`;
+                        preview.classList.remove('hidden');
+                    }
+                    if (instruction) {
+                        instruction.classList.add('opacity-0');
+                        instruction.classList.add('group-hover:opacity-100');
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                try {
+                    const response = await activityApi.uploadThumbnail(file, activityId || null);
+
+                    if (response.status === 201 || response.status === 200) {
+                        currentThumbnailUrl = response.data;
+                    } else {
+                        alert("Server báo lỗi: " + response.message);
+                    }
+                } catch (error) {
+                    console.error("Lỗi upload ảnh:", error);
+                    alert("Không thể kết nối máy chủ để upload ảnh!");
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const saveBtn = document.getElementById('saveBtn');
+            const isCreateMode = !activityIdInput?.value;
+
+            const syncStartDateFromEvent = () => {
+                if (!isCreateMode || !activityEventSelect || !activityStartDateInput) return;
+
+                const selectedOption = activityEventSelect.options[activityEventSelect.selectedIndex];
+                const eventStartDate = selectedOption?.dataset?.startDate;
+
+                if (!eventStartDate) return;
+                if (activityStartDateInput.value) return;
+
+                activityStartDateInput.value = eventStartDate;
+            };
+
+            syncStartDateFromEvent();
+            activityEventSelect?.addEventListener('change', syncStartDateFromEvent);
+
+            saveBtn.addEventListener('click', async () => {
+                const editorData = myEditor ? myEditor.getData() : "";
+                // 1. Thu thập dữ liệu từ Form
+                const payload = {
+                    id: document.getElementById('activityId')?.value || null, // Nếu là edit sẽ có ID
+                    eventId: document.getElementById('activityEvent').value,
+                    name: document.getElementById('activityName').value,
+                    location: document.getElementById('activityLocation').value,
+                    shortDescription: document.getElementById('activityShortDescription').value,
+                    content: editorData,
+                    status: document.getElementById('activityStatus').value,
+                    startDate: document.getElementById('activityStartDate').value,
+                    endDate: document.getElementById('activityEndDate').value,
+                    targetAmount: document.getElementById('activityTargetAmount').value,
+                    currentAmount: document.getElementById('activityCurrentAmount').value,
+                    thumbnailUrl: currentThumbnailUrl
+                };
+
+                // 2. Validate cơ bản phía Client
+                if (!payload.eventId) {
+                    alert("Vui lòng chọn sự kiện cha!");
+                    return;
+                }
+                if (!payload.name.trim()) {
+                    alert("Tên hoạt động không được để trống!");
+                    return;
+                }
+
+                // 3. Hiệu ứng loading cho nút
+                const originalBtnContent = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<span class="material-icons animate-spin text-sm">sync</span> Đang lưu...`;
+
+                try {
+                    // 4. Gọi API
+                    const response = await activityApi.saveActivity(payload);
+
+                    if (response.status === 200) {
+                        alert("Lưu hoạt động thành công!");
+                        // Chuyển hướng về trang danh sách
+                        // window.location.href = '/admin/activities';
+                    }
+                } catch (error) {
+                    console.error("Error saving activity:", error);
+                    // Hiển thị lỗi từ Backend (nếu có validation error)
+                    const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi lưu dữ liệu.";
+                    alert("Lỗi: " + errorMsg);
+                } finally {
+                    // 5. Khôi phục trạng thái nút
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnContent;
+                }
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>

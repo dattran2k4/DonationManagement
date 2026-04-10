@@ -1,8 +1,6 @@
 import {activityApi} from "../../apis/activityApi.js";
 import {auditLogApi} from "../../apis/auditLogApi.js";
 import {renderPagination} from "../../components/pagination.js";
-import {formatDonationCode, getDonationStatusUi, DONATION_PAYMENT_METHOD_LABELS} from "../../utils/donationUi.js";
-import {formatVnd} from "../../utils/currency.js";
 
 const state = {
     activityId: null,
@@ -33,6 +31,15 @@ const elements = {
     auditLogsPagination: document.getElementById("activityAuditLogsPagination")
 };
 
+const donationStatusLabels = {
+    PENDING_PAYMENT: "Chờ thanh toán",
+    PENDING_APPROVED: "Chờ duyệt",
+    CONFIRMED: "Đã xác nhận",
+    REJECTED: "Từ chối",
+    CANCELLED: "Đã hủy",
+    FAILED: "Thất bại"
+};
+
 const auditActionLabels = {
     CREATE: "Tạo mới",
     UPDATE: "Cập nhật",
@@ -40,13 +47,7 @@ const auditActionLabels = {
     DELETE: "Xóa"
 };
 
-const formatMoney = (amount) => formatVnd(amount);
-const formatDateOnly = (value) => {
-    if (!value) return "---";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString("vi-VN", {year: "numeric", month: "2-digit", day: "2-digit"});
-};
+const formatMoney = (amount) => `${Number(amount || 0).toLocaleString("vi-VN")} ₫`;
 const formatDateTime = (value) => {
     if (!value) return "---";
     const date = new Date(value);
@@ -62,6 +63,8 @@ const getDonorTypeLabel = (type) => {
     return "Chưa cập nhật";
 };
 
+const getTabClass = (active, hasGap = false) => `admin-tab-link${hasGap ? " gap-2" : ""}${active ? " is-active" : ""}`;
+
 function setActiveTab(tab) {
     state.activeTab = tab;
     const isInfo = tab === "info";
@@ -69,39 +72,23 @@ function setActiveTab(tab) {
     const isDonations = tab === "donations";
     const isAuditLogs = tab === "auditLogs";
 
-    if (elements.infoPanel) {
-        elements.infoPanel.classList.toggle("hidden", !isInfo);
-    }
-    if (elements.section) {
-        elements.section.classList.toggle("hidden", isInfo);
-    }
+    elements.infoPanel.classList.toggle("hidden", !isInfo);
+    elements.donorsPanel.classList.toggle("hidden", !isDonors);
+    elements.donationsPanel.classList.toggle("hidden", !isDonations);
+    elements.auditLogsPanel.classList.toggle("hidden", !isAuditLogs);
 
-    [elements.donorsPanel, elements.donationsPanel, elements.auditLogsPanel]
-        .forEach((panel) => panel?.classList.add("hidden"));
-    if (isDonors) elements.donorsPanel?.classList.remove("hidden");
-    if (isDonations) elements.donationsPanel?.classList.remove("hidden");
-    if (isAuditLogs) elements.auditLogsPanel?.classList.remove("hidden");
+    elements.infoBtn.className = getTabClass(isInfo);
+    elements.donorsBtn.className = getTabClass(isDonors, true);
+    elements.donationsBtn.className = getTabClass(isDonations, true);
+    elements.auditLogsBtn.className = getTabClass(isAuditLogs, true);
 
-    if (elements.infoBtn) elements.infoBtn.className = isInfo
-        ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-    if (elements.donorsBtn) elements.donorsBtn.className = isDonors
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-    if (elements.donationsBtn) elements.donationsBtn.className = isDonations
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-    if (elements.auditLogsBtn) elements.auditLogsBtn.className = isAuditLogs
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900";
-
-    if (elements.donorsCount) elements.donorsCount.className = isDonors
+    elements.donorsCount.className = isDonors
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700";
-    if (elements.donationsCount) elements.donationsCount.className = isDonations
+    elements.donationsCount.className = isDonations
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700";
-    if (elements.auditLogsCount) elements.auditLogsCount.className = isAuditLogs
+    elements.auditLogsCount.className = isAuditLogs
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
         : "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700";
 }
@@ -119,7 +106,7 @@ function getAuditActionBadge(action) {
 function renderDonors(rows) {
     if (!rows || rows.length === 0) {
         elements.donorsTableBody.innerHTML = `
-            <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có nhà hảo tâm.</td></tr>
+            <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có nhà hảo tâm.</td></tr>
         `;
         return;
     }
@@ -128,11 +115,10 @@ function renderDonors(rows) {
         <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4">
                 <a href="/admin/donors/${donor.id}" class="font-semibold text-slate-900 hover:text-primary">${donor.displayName || donor.fullName || "---"}</a>
+                <div class="text-xs text-slate-500">${donor.fullName || ""}</div>
             </td>
+            <td class="px-6 py-4 text-sm text-slate-600"><div>${donor.phone || "---"}</div><div>${donor.email || "---"}</div></td>
             <td class="px-6 py-4 text-sm text-slate-600">${getDonorTypeLabel(donor.type)}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${donor.phone || "---"}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${donor.email || "---"}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${formatDateTime(donor.createdAt)}</td>
             <td class="px-6 py-4 text-right font-semibold text-slate-900">${formatMoney(donor.totalDonationAmount)}</td>
         </tr>
     `).join("");
@@ -141,35 +127,22 @@ function renderDonors(rows) {
 function renderDonations(rows) {
     if (!rows || rows.length === 0) {
         elements.donationsTableBody.innerHTML = `
-            <tr><td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có khoản quyên góp.</td></tr>
+            <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Hoạt động này chưa có khoản quyên góp.</td></tr>
         `;
         return;
     }
 
-    elements.donationsTableBody.innerHTML = rows.map((donation) => {
-        const statusUi = getDonationStatusUi(donation.status);
-        const paymentLabel = donation.paymentMethodValue || DONATION_PAYMENT_METHOD_LABELS[donation.paymentMethod] || "---";
-        const donatedDate = formatDateOnly(donation.donatedAt || donation.createdAt);
-        return `
+    elements.donationsTableBody.innerHTML = rows.map((donation) => `
         <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4">
-                <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
-            </td>
-            <td class="px-6 py-4">
-                <a href="/admin/donations/${donation.id}" class="font-semibold text-slate-900 hover:text-primary">${formatDonationCode(donation.id)}</a>
+                <a href="/admin/donations/${donation.id}" class="font-semibold text-slate-900 hover:text-primary">${donation.memoCode || `DN-${donation.id || ""}`}</a>
             </td>
             <td class="px-6 py-4 text-sm text-slate-700">${donation.donorName || "---"}</td>
             <td class="px-6 py-4 text-right font-semibold text-slate-900">${formatMoney(donation.amount)}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${paymentLabel}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">${donatedDate}</td>
-            <td class="px-6 py-4">
-                <span class="${statusUi.className}">
-                    ${statusUi.text}
-                </span>
-            </td>
+            <td class="px-6 py-4 text-sm text-slate-600">${donationStatusLabels[donation.status] || "Chưa cập nhật"}</td>
+            <td class="px-6 py-4 text-right text-sm text-slate-600">${formatDateTime(donation.donatedAt || donation.createdAt)}</td>
         </tr>
-    `;
-    }).join("");
+    `).join("");
 }
 
 function renderAuditLogs(rows) {
@@ -284,17 +257,13 @@ function bindTabEvents() {
 document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
     state.activityId = Number(elements.section.dataset.activityId || 0);
+    if (!state.activityId) return;
+
     bindTabEvents();
     setActiveTab("info");
-
-    if (state.activityId) {
-        try {
-            await loadSummary();
-        } catch (error) {
-            console.error("Không thể tải tổng quan tab hoạt động:", error);
-        }
-    } else {
-        [elements.donorsBtn, elements.donationsBtn, elements.auditLogsBtn]
-            .forEach((btn) => btn?.setAttribute("disabled", "disabled"));
+    try {
+        await loadSummary();
+    } catch (error) {
+        console.error("Không thể tải tổng quan tab hoạt động:", error);
     }
 });

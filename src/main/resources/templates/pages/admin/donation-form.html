@@ -1,0 +1,264 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Tạo Đơn Quyên Góp</title>
+</head>
+<body>
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/donations/form}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/donations}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Hủy bỏ
+            </a>
+            <button id="submitDonation"
+                    form="donationForm"
+                    type="submit"
+                    class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+            <button class="admin-action-btn admin-action-btn--ghost" type="button" onclick="window.location.reload()">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <div class="admin-detail-title-row">
+                    <h1 id="donationFormPageTitle" class="admin-detail-title">Tạo mới quyên góp</h1>
+                    <span id="donationFormBreadcrumbLabel"
+                          class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        Tạo mới quyên góp
+                    </span>
+                </div>
+                <p id="donationFormPageDescription" class="admin-detail-subtitle">
+                    Tạo nhanh một khoản quyên góp nội bộ từ dữ liệu nhà hảo tâm có sẵn.
+                </p>
+            </div>
+        </div>
+
+        <form id="donationForm" class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
+                <div class="lg:col-span-2 space-y-8">
+                    <section class="admin-info-card">
+                        <div class="flex items-start justify-between gap-4 mb-6">
+                            <div>
+                                <h2 class="admin-info-card__title !mb-0">Thông tin nhà hảo tâm</h2>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                                    Tìm kiếm và chọn đúng nhà hảo tâm theo tên hoặc số điện thoại trước khi tạo khoản quyên góp.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="max-w-xl">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="donorSearchInput">
+                                Chọn nhà hảo tâm <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative" id="donorSearchWrapper">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <span class="material-symbols-outlined text-[20px]">person_search</span>
+                                </span>
+                                <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary transition-all text-sm"
+                                       id="donorSearchInput" placeholder="Nhập tên hoặc số điện thoại..." type="text"/>
+                                <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
+                                    <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                                </span>
+                                <div id="donorDropdown"
+                                     class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
+                                     style="z-index: 9999;">
+                                    <div class="grid grid-cols-2 gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                        <span>Nhà hảo tâm</span>
+                                        <span>Số điện thoại</span>
+                                    </div>
+                                    <div id="donorDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                </div>
+                            </div>
+                            <input id="donorId" name="donorId" type="hidden" required/>
+                        </div>
+                    </section>
+
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin quyên góp</h2>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="amount">
+                                        Số tiền <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm pr-12"
+                                               id="amount" name="amount" min="1000" placeholder="0" required step="1" inputmode="numeric"
+                                               type="number"/>
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-slate-500 text-sm font-bold">VND</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="paymentMethod">
+                                        Phương thức thanh toán <span class="text-red-500">*</span>
+                                    </label>
+                                    <select class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                            id="paymentMethod" name="paymentMethod" required>
+                                        <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
+                                        <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
+                                        <option value="CASH">Tiền mặt</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="message">
+                                    Lời nhắn/Ghi chú
+                                </label>
+                                <textarea
+                                        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                        id="message" name="message" placeholder="Nhập nội dung lời nhắn hoặc ghi chú..."
+                                        rows="5"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="space-y-8">
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Mục tiêu quyên góp</h2>
+                        <div class="space-y-4">
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Chọn một mục tiêu phù hợp cho khoản đóng góp này. Bạn có thể để độc lập hoặc gắn vào sự kiện, hoạt động cụ thể.
+                            </p>
+                            <div class="space-y-3">
+                                <label class="block cursor-pointer">
+                                    <input checked class="peer sr-only" id="targetNone" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Không gắn mục tiêu</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Khoản quyên góp được lưu độc lập trong hệ thống.</span>
+                                    </div>
+                                </label>
+                                <label class="block cursor-pointer">
+                                    <input class="peer sr-only" id="targetEvent" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Sự kiện</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Liên kết khoản quyên góp với một chiến dịch cấp sự kiện.</span>
+                                    </div>
+                                </label>
+                                <label class="block cursor-pointer">
+                                    <input class="peer sr-only" id="targetActivity" type="checkbox"/>
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 transition-all hover:border-primary peer-checked:border-primary peer-checked:bg-primary/5">
+                                        <span class="block text-sm font-semibold text-slate-900 dark:text-white">Hoạt động</span>
+                                        <span class="block mt-1 text-xs text-slate-500 dark:text-slate-400">Gắn khoản quyên góp trực tiếp vào một hoạt động cụ thể.</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="eventTargetGroup" class="hidden space-y-2">
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="eventSearchInput">
+                                    Tìm sự kiện đang diễn ra <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative" id="eventSearchWrapper">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                        <span class="material-symbols-outlined text-[20px]">event</span>
+                                    </span>
+                                    <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary transition-all text-sm"
+                                           id="eventSearchInput" placeholder="Tìm theo tên sự kiện đang diễn ra..." type="text" autocomplete="off"/>
+                                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
+                                        <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                                    </span>
+                                    <div id="eventDropdown"
+                                         class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
+                                         style="z-index: 9999;">
+                                        <div class="grid grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            <span>Sự kiện</span>
+                                            <span>ID sự kiện</span>
+                                        </div>
+                                        <div id="eventDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <input id="eventId" name="eventId" type="hidden"/>
+                                <p id="eventSelectedMeta" class="text-xs text-slate-500 dark:text-slate-400">
+                                    Chưa chọn sự kiện nào.
+                                </p>
+                            </div>
+                            <div id="activityTargetGroup" class="hidden space-y-2">
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="activitySearchInput">
+                                    Tìm hoạt động đang diễn ra <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative" id="activitySearchWrapper">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                        <span class="material-symbols-outlined text-[20px]">campaign</span>
+                                    </span>
+                                    <input class="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary transition-all text-sm"
+                                           id="activitySearchInput" placeholder="Tìm theo tên hoạt động đang diễn ra..." type="text" autocomplete="off"/>
+                                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none">
+                                        <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                                    </span>
+                                    <div id="activityDropdown"
+                                         class="hidden absolute mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden"
+                                         style="z-index: 9999;">
+                                        <div class="grid grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            <span>Hoạt động</span>
+                                            <span>ID hoạt động</span>
+                                        </div>
+                                        <div id="activityDropdownList" class="max-h-64 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+                                <input id="activityId" name="activityId" type="hidden"/>
+                                <p id="activitySelectedMeta" class="text-xs text-slate-500 dark:text-slate-400">
+                                    Chưa chọn hoạt động nào.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Yêu cầu biên lai</h2>
+                        <div class="space-y-6">
+                            <div class="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-4">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input class="sr-only peer" id="needReceipt" name="needReceipt" type="checkbox"/>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    <span class="ms-3 text-sm font-semibold text-slate-900 dark:text-slate-300">Nhận biên lai điện tử</span>
+                                </label>
+                                <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                                    Bật tùy chọn này nếu nhà hảo tâm cần nhận biên lai qua email sau khi lưu khoản quyên góp.
+                                </p>
+                            </div>
+                            <div class="hidden grid grid-cols-1 gap-6" id="receiptFields">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="receiptName">
+                                        Tên trên biên lai
+                                    </label>
+                                    <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                           id="receiptName" name="receiptName" placeholder="Họ tên/Tên tổ chức" type="text"/>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="receiptEmail">
+                                        Email nhận biên lai
+                                    </label>
+                                    <input class="block w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary text-sm"
+                                           id="receiptEmail" name="receiptEmail" placeholder="example@domain.com" type="email"/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__DONATION_ID__ = [[${donationId}]];
+    </script>
+    <script type="module" th:src="@{/js/pages/admin/donationForm.js}"></script>
+</th:block>
+</body>
+</html>

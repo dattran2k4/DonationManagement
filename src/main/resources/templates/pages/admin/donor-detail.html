@@ -9,47 +9,53 @@
     <title>Hồ sơ Nhà hảo tâm</title>
 </head>
 <body>
-<div layout:fragment="content" class="space-y-6"
+<div layout:fragment="content" class="admin-page-stack"
      th:attr="data-donor-id=${donor.id},data-donor-type=${donor.type != null ? donor.type.name() : 'INDIVIDUAL'}"
      id="donorDetailPage">
-    <section th:replace="~{fragments/admin/action-toolbar :: adminActionToolbar(
-            createUrl=@{/admin/donors/form},
-            showCreate=${true},
-            showCancel=${donor.id == null},
-            cancelUrl=@{/admin/donors},
-            showSave=${#authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')},
-            showRefresh=${true},
-            showWebsite=${false},
-            websiteUrl=${null},
-            showDelete=${donor.id != null and #authorization.expression('hasAnyRole(''ADMIN'',''STAFF'')')}
-        )}">
+    <section class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/donors/form}"
+               sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+               class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/donors}" class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Quay lại
+            </a>
+            <a sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+               th:href="@{/admin/donors/{id}/form(id=${donor.id})}"
+               class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                Chỉnh sửa
+            </a>
+            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Làm mới
+            </button>
+        </div>
+        <div class="admin-toolbar-group">
+            <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
+                  th:classappend="${donor.type.name() == 'ORGANIZATION'} ? ' bg-emerald-100 text-emerald-700' : ' bg-blue-100 text-blue-700'"
+                  th:text="${donor.type.name() == 'ORGANIZATION'} ? 'Tổ chức' : 'Cá nhân'">
+                Cá nhân
+            </span>
+        </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-5xl font-black text-slate-900">
-            <span th:text="${donor.id == null ? 'Tạo mới Nhà hảo tâm' : ((donor.displayName != null && !#strings.isEmpty(donor.displayName)) ? donor.displayName : donor.fullName)}">Nhà hảo tâm</span>
-            <span th:if="${donor.id == null}" class="text-lg font-semibold text-slate-400">- Mới</span>
-            <span th:if="${donor.id != null and param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
-        </h1>
-    </section>
+    <section class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <h1 class="admin-detail-title">Hồ sơ Nhà hảo tâm</h1>
+            <p class="admin-detail-subtitle">Theo dõi thông tin, lịch sử quyên góp và mối quan hệ của nhà hảo tâm trong cùng một màn chi tiết.</p>
+        </div>
 
-    <section class="rounded-2xl border border-slate-200 bg-white px-6 pt-4 shadow-sm">
-        <div class="border-b border-slate-200">
-            <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
-                <button id="tabInfoBtn" data-tab="info" type="button"
-                        class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">
-                    Thông tin chung
-                </button>
-                <button th:if="${donor.id != null}" id="tabHistoryBtn" data-tab="history" type="button"
-                        class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
-                    Lịch sử quyên góp
-                </button>
-                <button th:if="${donor.id != null}" id="tabRelationshipBtn" data-tab="relationship" type="button"
-                        class="inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
-                    Mối quan hệ
-                </button>
-                <button th:if="${donor.id != null}" id="tabAuditBtn" data-tab="audit" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
+            <div class="admin-tab-strip">
+                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin</button>
+                <button th:if="${donor.id != null}" id="tabHistoryBtn" data-tab="history" type="button" class="admin-tab-link">Lịch sử quyên góp</button>
+                <button th:if="${donor.id != null}" id="tabRelationshipBtn" data-tab="relationship" type="button" class="admin-tab-link">Mối quan hệ</button>
+                <button th:if="${donor.id != null}" id="tabAuditBtn" data-tab="audit" type="button" class="admin-tab-link gap-2">
                     Lịch sử thao tác
                     <span id="tabAuditCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
                 </button>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Event Form</title>
+    <style>
+        .ck-editor {
+            height: 100% !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck-editor__main {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .ck-content.ck-editor__editable {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important; /* Quan trọng để flex-grow hoạt động */
+            border: 1px solid #cbd5e1 !important; /* Màu slate-300 */
+            padding: 1rem 1.25rem !important;
+            font-size: 16px !important;
+            line-height: 1.7 !important;
+        }
+
+        .ck.ck-editor__top .ck-sticky-panel .ck-toolbar {
+            border-bottom: 1px solid #cbd5e1 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/events/form}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/events}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Hủy bỏ
+            </a>
+            <button id="saveBtn" class="admin-action-btn admin-action-btn--ghost" type="button">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+            <button class="admin-action-btn admin-action-btn--ghost" type="button" onclick="window.location.reload()">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
+            </button>
+            <a th:if="${eventFormId != null}"
+               th:href="@{/admin/events/{id}(id=${eventFormId})}"
+               class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                Xem chi tiết
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <div class="admin-detail-title-row">
+                    <h1 class="admin-detail-title"
+                        th:text="${event?.id != null} ? (${event?.name} ?: 'Chỉnh sửa sự kiện') : 'Tạo sự kiện mới'">
+                        Xây trường vùng cao
+                    </h1>
+                    <span th:if="${event?.status != null}"
+                          class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                          th:text="${event.status.value}">
+                        Đã lưu
+                    </span>
+                </div>
+                <p class="admin-detail-subtitle">
+                    Cập nhật đầy đủ thông tin, hình ảnh, nội dung và chỉ số gây quỹ để sự kiện hiển thị đồng bộ trong toàn hệ thống.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
+            <div class="space-y-6">
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin chung</div>
+                    <input type="hidden" id="eventId" th:value="${event?.id}">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <label class="admin-form-label" for="eventName">Tên sự kiện <span class="text-red-500">*</span></label>
+                            <input class="admin-input-field"
+                                   placeholder="Ví dụ: Gây quỹ xây trường học vùng cao"
+                                   id="eventName"
+                                   th:value="${event?.name}"
+                                   type="text"/>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="eventStartDate">Ngày bắt đầu</label>
+                            <input id="eventStartDate"
+                                   th:value="${event?.startDate}"
+                                   class="admin-input-field"
+                                   type="date"/>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="eventEndDate">Ngày kết thúc dự kiến</label>
+                            <input id="eventEndDate"
+                                   th:value="${event?.endDate}"
+                                   class="admin-input-field"
+                                   type="date"/>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="eventCategory">Danh mục</label>
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-1">
+                                    <select id="eventCategory" class="admin-select-field pr-12">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        <option th:each="cat : ${categories}"
+                                                th:value="${cat.id}"
+                                                th:text="${cat.name}"
+                                                th:selected="${event?.categoryId != null and event.categoryId == cat.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="button"
+                                        id="openCreateCategoryModalBtn"
+                                        class="admin-action-btn admin-action-btn--ghost !px-3"
+                                        title="Thêm danh mục mới">
+                                    <span class="material-symbols-outlined text-[18px]">add</span>
+                                </button>
+                                <button type="button"
+                                        id="openEditCategoryModalBtn"
+                                        class="admin-action-btn admin-action-btn--ghost !px-3 disabled:cursor-not-allowed disabled:opacity-50"
+                                        title="Chỉnh sửa danh mục"
+                                        disabled>
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="eventLocation">Địa điểm</label>
+                            <input class="admin-input-field"
+                                   placeholder="Ví dụ: Quận Hải Châu, Đà Nẵng"
+                                   id="eventLocation"
+                                   th:value="${event?.location}"
+                                   type="text"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin sự kiện</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="eventShortDescription">Mô tả ngắn</label>
+                            <textarea
+                                    id="eventShortDescription"
+                                    th:text="${event?.shortDescription}"
+                                    class="admin-textarea-field min-h-[120px]"
+                                    placeholder="Nhập tóm tắt ngắn gọn về sự kiện để hiển thị trên thẻ bài viết..."></textarea>
+                            <div class="mt-2 flex justify-end">
+                                <span class="text-xs text-slate-400">0/300 ký tự</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="admin-form-label">Nội dung chi tiết</label>
+                            <div id="editor" th:utext="${event.content}"
+                                 class="h-[360px] w-full overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="space-y-6">
+                <section class="admin-info-card">
+                    <div class="admin-info-card__title">Thông tin hiển thị</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="eventStatus">Trạng thái</label>
+                            <select id="eventStatus" class="admin-select-field">
+                                <option th:each="status : ${statuses}"
+                                        th:value="${status}"
+                                        th:text="${status?.value}"
+                                        th:selected="${status == event?.status}">
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="admin-form-label">Ảnh đại diện</label>
+                            <div onclick="document.getElementById('thumbnailInput').click()"
+                                 class="admin-upload-box aspect-[4/3]">
+                                <div id="thumbnailPreview"
+                                     th:style="${event?.thumbnailUrl != null} ? |background-image:url('${event.thumbnailUrl}')| : ''"
+                                     th:classappend="${event?.thumbnailUrl != null} ? '' : ' hidden'"
+                                     class="absolute inset-0 bg-cover bg-center transition-opacity group-hover:opacity-40">
+                                </div>
+
+                                <div id="uploadInstruction"
+                                     th:class="${event?.thumbnailUrl != null} ? 'relative z-10 flex flex-col items-center text-center p-4 transition-opacity opacity-0 group-hover:opacity-100' : 'relative z-10 flex flex-col items-center text-center p-4 transition-opacity'">
+                                    <span class="material-symbols-outlined mb-3 text-4xl text-slate-400">add_photo_alternate</span>
+                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-200">Tải ảnh lên</span>
+                                    <span class="mt-1 text-xs text-slate-400">PNG, JPG, GIF tối đa 5MB</span>
+                                </div>
+
+                                <input id="thumbnailInput" class="hidden" type="file" accept="image/*"
+                                       onchange="previewThumbnail(this)"/>
+                            </div>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <div class="admin-muted-label">Tạo lúc</div>
+                                <div class="admin-field-value" th:text="${event?.createdAt != null ? event.createdAt : '---'}">01/04/2026</div>
+                            </div>
+                            <div>
+                                <div class="admin-muted-label">Tạo bởi</div>
+                                <div class="admin-field-value">Quản trị viên</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card" th:with="target=${event?.targetAmount ?: 0}, current=${event?.currentAmount ?: 0}, percent=${target > 0 ? (current * 100 / target) : 0}">
+                    <div class="admin-info-card__title">Thông tin tài chính</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="admin-form-label" for="eventTargetAmount">Mục tiêu gây quỹ</label>
+                            <div class="relative">
+                                <input th:value="${event?.targetAmount}"
+                                       id="eventTargetAmount"
+                                       class="admin-input-field pr-16"
+                                       placeholder="0" type="number"/>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-sm font-semibold text-slate-500">VND</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="admin-form-label" for="eventCurrentAmount">Đã đạt được</label>
+                            <div class="relative">
+                                <input th:value="${event?.currentAmount}"
+                                       id="eventCurrentAmount"
+                                       class="admin-input-field pr-16"
+                                       placeholder="0" type="number"/>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-sm font-semibold text-slate-500">VND</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="mb-2 flex items-center justify-between text-sm text-slate-500">
+                                <span>Tiến độ</span>
+                                <span th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</span>
+                            </div>
+                            <div class="h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-700">
+                                <div class="h-2.5 rounded-full bg-primary transition-all duration-500"
+                                     th:style="'width: ' + ${percent > 100 ? 100 : percent} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="admin-info-card__title">Hoạt động thuộc sự kiện</div>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Quản lý nhanh các hoạt động con gắn với sự kiện này.
+                            </p>
+                        </div>
+                        <a th:if="${eventFormId != null}" th:href="@{/admin/activities/form(eventId=${eventFormId})}"
+                           class="admin-action-btn admin-action-btn--ghost whitespace-nowrap">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Thêm hoạt động
+                        </a>
+                    </div>
+
+                    <div th:if="${eventFormId == null}"
+                         class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+                        Hãy lưu sự kiện trước để thêm và quản lý các hoạt động con.
+                    </div>
+
+                    <div th:if="${eventFormId != null}" class="space-y-3">
+                        <div th:if="${eventActivities == null or #lists.isEmpty(eventActivities)}"
+                             class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+                            Sự kiện này chưa có hoạt động nào.
+                        </div>
+
+                        <div th:each="activity : ${eventActivities}"
+                             class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                            <div class="min-w-0">
+                                <a th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
+                                   th:text="${activity.name}"
+                                   class="block truncate text-sm font-semibold text-slate-900 transition-colors hover:text-primary dark:text-slate-100">
+                                    Tên hoạt động
+                                </a>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                    <span th:text="${activity.status != null ? activity.status.value : 'Chưa có trạng thái'}">Trạng thái</span>
+                                    <span class="mx-2">•</span>
+                                    <span th:text="${activity.startDate}"></span>
+                                    <span> - </span>
+                                    <span th:text="${activity.endDate}"></span>
+                                </p>
+                            </div>
+                            <a th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
+                               class="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition-colors hover:bg-primary/10 hover:text-primary"
+                               title="Chỉnh sửa hoạt động">
+                                <span class="material-symbols-outlined text-[20px]">open_in_new</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoryModal"
+             class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="mb-5 flex items-start justify-between gap-4">
+                    <div>
+                        <h3 id="categoryModalTitle" class="text-lg font-bold text-slate-900">Thêm danh mục</h3>
+                        <p class="mt-1 text-sm text-slate-500">Nhập tên danh mục, slug sẽ được tạo tự động.</p>
+                    </div>
+                    <button type="button"
+                            id="closeCategoryModalBtn"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <input type="hidden" id="categoryModalId">
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Tên danh mục</label>
+                        <input id="categoryModalName"
+                               type="text"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-primary focus:ring-primary"
+                               placeholder="Ví dụ: Học bổng, Y tế, Cứu trợ..."/>
+                    </div>
+                    <p id="categoryModalError" class="hidden text-sm text-red-500"></p>
+                </div>
+
+                <div class="mt-6 flex items-center justify-end gap-3">
+                    <button type="button"
+                            id="cancelCategoryModalBtn"
+                            class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+                        Hủy
+                    </button>
+                    <button type="button"
+                            id="saveCategoryModalBtn"
+                            class="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90">
+                        Lưu danh mục
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script type="module">
+
+        import {eventApi} from "/js/apis/eventApi.js";
+        import {categoryApi} from "/js/apis/categoryApi.js";
+
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const categorySelect = document.getElementById('eventCategory');
+        const createCategoryBtn = document.getElementById('openCreateCategoryModalBtn');
+        const editCategoryBtn = document.getElementById('openEditCategoryModalBtn');
+        const categoryModal = document.getElementById('categoryModal');
+        const categoryModalTitle = document.getElementById('categoryModalTitle');
+        const categoryModalIdInput = document.getElementById('categoryModalId');
+        const categoryModalNameInput = document.getElementById('categoryModalName');
+        const categoryModalError = document.getElementById('categoryModalError');
+        const saveCategoryModalBtn = document.getElementById('saveCategoryModalBtn');
+        const closeCategoryModalBtn = document.getElementById('closeCategoryModalBtn');
+        const cancelCategoryModalBtn = document.getElementById('cancelCategoryModalBtn');
+        let currentThumbnailUrl = "";
+        let categoryModalMode = 'create';
+
+        if (thumbnailPreview && thumbnailPreview.style.backgroundImage) {
+            const bgImage = thumbnailPreview.style.backgroundImage;
+            currentThumbnailUrl = bgImage.startsWith("url(")
+                ? bgImage.slice(5, -2).replace(/["']/g, "")
+                : "";
+        }
+
+        window.previewThumbnail = async function (input) {
+            const preview = document.getElementById('thumbnailPreview');
+            const instruction = document.getElementById('uploadInstruction');
+            const eventId = document.getElementById('eventId')?.value;
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Kiểm tra dung lượng
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    if (preview) {
+                        preview.style.backgroundImage = `url('${e.target.result}')`;
+                        preview.classList.remove('hidden');
+                    }
+                    if (instruction) {
+                        instruction.classList.add('opacity-0');
+                        instruction.classList.add('group-hover:opacity-100');
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                try {
+                    const response = await eventApi.uploadThumbnail(file, eventId || null);
+
+                    if (response.status === 201 || response.status === 200) {
+                        currentThumbnailUrl = response.data;
+                    } else {
+                        alert("Server báo lỗi: " + response.message);
+                    }
+                } catch (error) {
+                    console.error("Lỗi upload ảnh:", error);
+                    alert("Không thể kết nối máy chủ để upload ảnh!");
+                }
+            }
+        }
+
+        document.getElementById("saveBtn")
+            .addEventListener("click", handleSaveEvent);
+
+        let myEditor;
+
+        // 1. Khởi tạo CKEditor
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'link', 'blockQuote', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'insertTable', 'mediaEmbed', '|',
+                    'undo', 'redo'
+                ],
+                heading: {
+                    options: [
+                        {model: 'paragraph', title: 'Đoạn văn', class: 'ck-heading_paragraph'},
+                        {model: 'heading2', view: 'h2', title: 'Tiêu đề lớn', class: 'ck-heading_heading2'},
+                        {model: 'heading3', view: 'h3', title: 'Tiêu đề vừa', class: 'ck-heading_heading3'}
+                    ]
+                },
+                placeholder: 'Hãy viết câu chuyện truyền cảm hứng cho chiến dịch của bạn...'
+            })
+            .then(editor => {
+                myEditor = editor; // Gán instance vào biến global của module
+            })
+            .catch(error => console.error(error));
+
+        async function handleSaveEvent() {
+
+            const editorData = myEditor ? myEditor.getData() : "";
+
+            const eventData = {
+                id: document.getElementById('eventId')?.value || null,
+                name: document.getElementById('eventName').value,
+                status: document.getElementById('eventStatus').value,
+                categoryId: document.getElementById('eventCategory').value,
+                shortDescription: document.getElementById('eventShortDescription').value,
+                location: document.getElementById('eventLocation').value,
+                content: editorData,
+                startDate: document.getElementById('eventStartDate').value,
+                endDate: document.getElementById('eventEndDate').value,
+                targetAmount: parseFloat(document.getElementById('eventTargetAmount').value) || 0,
+                currentAmount: parseFloat(document.getElementById('eventCurrentAmount').value) || 0,
+                thumbnailUrl: currentThumbnailUrl
+            };
+
+            // 2. Kiểm tra dữ liệu sơ bộ (Validation)
+            if (!eventData.name) {
+                alert("Vui lòng nhập tên sự kiện!");
+                return;
+            }
+
+            try {
+                // 3. Gọi API thông qua eventApi
+                const response = await eventApi.saveEvent(eventData);
+
+                if (response.status === 200) {
+                    alert("Lưu thành công!");
+                    // Chuyển hướng về danh sách hoặc load lại trang
+                    // window.location.href = '/admin/events';
+                } else {
+                    alert("Có lỗi xảy ra: " + response.message);
+                }
+            } catch (error) {
+                console.error("Save Error:", error);
+                alert(error || "Không thể kết nối tới máy chủ!");
+            }
+        }
+
+        function toggleCategoryModal(show) {
+            categoryModal.classList.toggle('hidden', !show);
+            categoryModal.classList.toggle('flex', show);
+            if (show) {
+                categoryModalNameInput.focus();
+            }
+        }
+
+        function resetCategoryModal() {
+            categoryModalIdInput.value = '';
+            categoryModalNameInput.value = '';
+            categoryModalError.textContent = '';
+            categoryModalError.classList.add('hidden');
+        }
+
+        function openCreateCategoryModal() {
+            categoryModalMode = 'create';
+            resetCategoryModal();
+            categoryModalTitle.textContent = 'Thêm danh mục';
+            saveCategoryModalBtn.textContent = 'Lưu danh mục';
+            toggleCategoryModal(true);
+        }
+
+        function openEditCategoryModal() {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                return;
+            }
+
+            categoryModalMode = 'edit';
+            resetCategoryModal();
+            categoryModalTitle.textContent = 'Cập nhật danh mục';
+            saveCategoryModalBtn.textContent = 'Cập nhật danh mục';
+            categoryModalIdInput.value = selectedOption.value;
+            categoryModalNameInput.value = selectedOption.textContent.trim();
+            toggleCategoryModal(true);
+        }
+
+        async function refreshCategoryOptions(selectedId = '') {
+            const response = await categoryApi.getCategories();
+            const categories = response?.data || [];
+
+            categorySelect.innerHTML = [
+                '<option value="">-- Chọn danh mục --</option>',
+                ...categories.map((category) => `
+                    <option value="${category.id}" ${String(category.id) === String(selectedId) ? 'selected' : ''}>
+                        ${category.name}
+                    </option>
+                `)
+            ].join('');
+
+            updateEditCategoryButtonState();
+        }
+
+        function updateEditCategoryButtonState() {
+            editCategoryBtn.disabled = !categorySelect.value;
+        }
+
+        async function handleSaveCategory() {
+            const name = categoryModalNameInput.value.trim();
+            if (!name) {
+                categoryModalError.textContent = 'Tên danh mục không được để trống';
+                categoryModalError.classList.remove('hidden');
+                return;
+            }
+
+            categoryModalError.classList.add('hidden');
+
+            try {
+                const payload = {
+                    id: categoryModalMode === 'edit' ? Number(categoryModalIdInput.value) : null,
+                    name
+                };
+
+                const response = await categoryApi.saveCategory(payload);
+                const savedCategoryId = response?.data;
+
+                await refreshCategoryOptions(savedCategoryId);
+                toggleCategoryModal(false);
+            } catch (error) {
+                categoryModalError.textContent = error?.message || 'Không thể lưu danh mục';
+                categoryModalError.classList.remove('hidden');
+            }
+        }
+
+        if (createCategoryBtn && editCategoryBtn && categoryModal && saveCategoryModalBtn && closeCategoryModalBtn && cancelCategoryModalBtn && categorySelect) {
+            createCategoryBtn.addEventListener('click', openCreateCategoryModal);
+            editCategoryBtn.addEventListener('click', openEditCategoryModal);
+            saveCategoryModalBtn.addEventListener('click', handleSaveCategory);
+            closeCategoryModalBtn.addEventListener('click', () => toggleCategoryModal(false));
+            cancelCategoryModalBtn.addEventListener('click', () => toggleCategoryModal(false));
+            categorySelect.addEventListener('change', updateEditCategoryButtonState);
+            categoryModal.addEventListener('click', (event) => {
+                if (event.target === categoryModal) {
+                    toggleCategoryModal(false);
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !categoryModal.classList.contains('hidden')) {
+                    toggleCategoryModal(false);
+                }
+            });
+            updateEditCategoryButtonState();
+        }
+    </script>
+</th:block>
+</body>
+</html>

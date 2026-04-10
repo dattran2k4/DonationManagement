@@ -7,524 +7,305 @@
 >
 <head>
     <title>Chi tiết sự kiện</title>
-    <style>
-        .event-editor .ck-editor {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .event-editor .ck-editor__main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .event-editor .ck-content.ck-editor__editable {
-            flex: 1;
-            min-height: 220px;
-            border: 1px solid #cbd5e1;
-            padding: 0.85rem 1rem;
-            line-height: 1.6;
-        }
-    </style>
 </head>
 <body>
-<div layout:fragment="content" class="space-y-6 event-editor"
+<div layout:fragment="content" class="admin-page-stack"
      th:with="current=${event.currentAmount != null ? event.currentAmount : 0},
               targetRaw=${event.targetAmount != null ? event.targetAmount : 0},
               targetSafe=${targetRaw > 0 ? targetRaw : 1},
               percent=${current * 100 / targetSafe}">
 
-    <input type="hidden" id="eventId" th:value="${event.id}">
-
-    <section th:replace="~{fragments/admin/action-toolbar :: adminActionToolbar(
-            createUrl=@{/admin/events/form},
-            showCreate=${true},
-            showCancel=${true},
-            cancelUrl=${null},
-            showSave=${true},
-            showRefresh=${true},
-            showWebsite=${event.slug != null and !#strings.isEmpty(event.slug)},
-            websiteUrl=@{/events/{slug}(slug=${event.slug})},
-            showDelete=${true}
-        )}">
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-5xl font-black text-slate-900">
-            <span id="eventHeaderTitle" th:text="${event.name ?: 'Chi tiết sự kiện'}">Chi tiết sự kiện</span>
-            <span th:if="${param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
-        </h1>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white px-6 pt-4 shadow-sm">
-        <div class="border-b border-slate-200">
-            <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
-                <button id="tabInfoBtn" data-tab="info" type="button"
-                        class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">Thông tin chung</button>
-                <button id="tabActivitiesBtn" data-tab="activities" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Hoạt động
-                    <span id="tabActivitiesCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-                <button id="tabDonorsBtn" data-tab="donors" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Nhà hảo tâm
-                    <span id="tabDonorsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-                <button id="tabDonationsBtn" data-tab="donations" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Quyên góp
-                    <span id="tabDonationsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Lịch sử thao tác
-                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-            </div>
+    <section class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/events/form}"
+               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/events}"
+               class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Quay lại
+            </a>
+            <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               th:if="${event.status == null || event.status.name() != 'COMPLETED'}"
+               th:href="@{/admin/events/{id}/form(id=${event.id})}"
+               class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                Chỉnh sửa
+            </a>
+            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Làm mới
+            </button>
+        </div>
+        <div class="admin-toolbar-group">
+            <a th:if="${event.slug != null && !#strings.isEmpty(event.slug)}"
+               th:href="@{/events/{slug}(slug=${event.slug})}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                Xem website
+            </a>
         </div>
     </section>
 
-    <section id="tabInfoPanel" class="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
-        <div class="grid gap-5 xl:grid-cols-2">
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên sự kiện</label>
-                    <input id="eventName" th:value="${event.name}"
-                           class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-base text-slate-900"
-                           type="text">
-
-                    <label th:if="${event.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Mã sự kiện</label>
-                    <input th:if="${event.id != null}" id="eventCode" value="---"
-                           class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" readonly>
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Ngày bắt đầu</label>
-                    <input id="eventStartDate" th:value="${event.startDate}"
-                           class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="date">
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Ngày kết thúc dự tính</label>
-                    <input id="eventEndDate" th:value="${event.endDate}"
-                           class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="date">
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Danh mục</label>
-                    <select id="eventCategory"
-                            class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900">
-                        <option value="">-- Chọn danh mục --</option>
-                        <option th:each="cat : ${categories}"
-                                th:value="${cat.id}"
-                                th:text="${cat.name}"
-                                th:selected="${event.categoryId != null and event.categoryId == cat.id}"></option>
-                    </select>
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Địa điểm</label>
-                    <input id="eventLocation" th:value="${event.location}"
-                           class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" placeholder="---">
+    <section class="admin-detail-frame" id="eventDetailTabsSection" th:attr="data-event-id=${event.id}">
+        <div class="admin-detail-header">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <h1 class="admin-detail-title" th:text="${event.name ?: 'Chi tiết sự kiện'}">Chi tiết sự kiện</h1>
+                    <p class="admin-detail-subtitle">
+                        <span class="font-semibold text-slate-500">Trạng thái:</span>
+                        <span th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">Đang diễn ra</span>
+                    </p>
+                </div>
+                <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
+                     th:classappend="
+                        ${event.status != null && event.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700' :
+                        (${event.status != null && event.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700' :
+                        (${event.status != null && event.status.name() == 'COMPLETED'} ? ' bg-slate-200 text-slate-700' :
+                        ' bg-sky-100 text-sky-700'))"
+                     th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">
+                    Đang diễn ra
                 </div>
             </div>
+        </div>
 
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Trạng thái</label>
-                    <select id="eventStatus"
-                            class="event-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900">
-                        <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.value}"
-                                th:selected="${event.status == status}"></option>
-                    </select>
+        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
+            <div class="admin-tab-strip">
+                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin chung</button>
+                <button id="tabActivitiesBtn" data-tab="activities" type="button" class="admin-tab-link gap-2">
+                    Hoạt động
+                    <span id="tabActivitiesCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
+                <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
+                    Nhà hảo tâm
+                    <span id="tabDonorsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
+                <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
+                    Quyên góp
+                    <span id="tabDonationsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
+                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
+                    Lịch sử thao tác
+                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                </button>
+            </div>
+        </div>
 
-                    <label class="col-span-4 self-start pt-2 text-sm font-medium text-slate-700">Ảnh đại diện</label>
-                    <div class="col-span-8">
-                        <div onclick="document.getElementById('thumbnailInput').click()"
-                             class="relative flex h-[230px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-100 text-slate-500">
-                            <div id="thumbnailPreview"
-                                 th:style="${event.thumbnailUrl != null} ? |background-image:url('${event.thumbnailUrl}')| : ''"
-                                 th:classappend="${event.thumbnailUrl != null} ? '' : ' hidden'"
-                                 class="absolute inset-0 rounded-lg bg-cover bg-center"></div>
-                            <div id="uploadInstruction" class="z-10 text-center">
-                                <span class="material-symbols-outlined text-5xl">imagesmode</span>
-                                <p class="mt-2 text-xl font-semibold">Tải ảnh lên</p>
-                                <p class="text-sm">PNG, JPG, GIF tối đa 5MB</p>
+        <div id="tabInfoPanel" class="p-8 space-y-6">
+            <div class="grid gap-6 xl:grid-cols-2">
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Thông tin chung</h2>
+                    <div class="admin-field-grid">
+                        <div>
+                            <p class="admin-muted-label">Tên sự kiện</p>
+                            <div class="admin-field-value" th:text="${event.name ?: '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Trạng thái</p>
+                            <div class="admin-field-value" th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Ngày bắt đầu</p>
+                            <div class="admin-field-value" th:text="${event.startDate != null ? #temporals.format(event.startDate, 'dd/MM/yyyy') : '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Ngày kết thúc dự tính</p>
+                            <div class="admin-field-value" th:text="${event.endDate != null ? #temporals.format(event.endDate, 'dd/MM/yyyy') : '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Danh mục</p>
+                            <div class="admin-field-value" th:text="${event.category != null && event.category.name != null && !#strings.isEmpty(event.category.name) ? event.category.name : 'Chưa có danh mục'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Địa điểm</p>
+                            <div class="admin-field-value" th:text="${event.location != null && !#strings.isEmpty(event.location) ? event.location : 'Chưa cập nhật'}">---</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Truyền thông & quản trị</h2>
+                    <div class="grid gap-5">
+                        <div>
+                            <p class="admin-muted-label">Ảnh đại diện</p>
+                            <div class="mt-2 grid gap-4 md:grid-cols-[120px_minmax(0,1fr)]">
+                                <div class="h-[120px] w-[120px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                                    <img class="h-full w-full object-cover"
+                                         th:src="${event.thumbnailUrl != null && !#strings.isEmpty(event.thumbnailUrl) ? event.thumbnailUrl : '/images/default-event.png'}"
+                                         th:alt="${event.name}">
+                                </div>
+                                <div class="grid gap-4">
+                                    <div>
+                                        <p class="admin-muted-label">Tạo lúc</p>
+                                        <div class="admin-field-value" th:text="${event.createdAt != null ? #temporals.format(event.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">---</div>
+                                    </div>
+                                    <div>
+                                        <p class="admin-muted-label">Tạo bởi</p>
+                                        <div class="admin-field-value" th:text="${event.createdBy != null && event.createdBy.fullName != null ? event.createdBy.fullName : 'Hệ thống'}">---</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <input id="thumbnailInput" class="hidden" type="file" accept="image/*">
                     </div>
+                </section>
+            </div>
 
-                    <label th:if="${event.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Tạo lúc</label>
-                    <input th:if="${event.id != null}" class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text"
-                           th:value="${event.createdAt != null ? #temporals.format(event.createdAt, 'dd/MM/yyyy hh:mm a') : '---'}"
-                           readonly>
+            <div class="grid gap-6 xl:grid-cols-2">
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Thông tin sự kiện</h2>
+                    <div class="grid gap-5">
+                        <div>
+                            <p class="admin-muted-label">Mô tả ngắn</p>
+                            <div class="admin-field-value min-h-[128px] items-start leading-relaxed"
+                                 th:text="${event.shortDescription != null && !#strings.isEmpty(event.shortDescription) ? event.shortDescription : 'Chưa có mô tả ngắn.'}">
+                                Chưa có mô tả ngắn.
+                            </div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Nội dung chi tiết</p>
+                            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                                <div th:if="${event.content != null && !#strings.isEmpty(event.content)}" th:utext="${event.content}"></div>
+                                <p th:if="${event.content == null || #strings.isEmpty(event.content)}">Chưa có nội dung chiến dịch.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                    <label th:if="${event.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Tạo bởi</label>
-                    <input th:if="${event.id != null}" class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" th:value="${event.createdBy != null ? event.createdBy : 'Hệ thống'}" readonly>
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Thông tin tài chính</h2>
+                    <div class="grid gap-4">
+                        <div>
+                            <p class="admin-muted-label">Mục tiêu gây quỹ</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Đã đạt được</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Tiến độ</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Số hoạt động trong sự kiện này</p>
+                            <div class="admin-field-value" id="eventActivitiesCountInline">0</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Tổng số nhà hảo tâm tham gia</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatInteger(event.numberOfDonors ?: 0, 0, 'COMMA')}">0</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div id="tabActivitiesPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách hoạt động thuộc sự kiện</h2>
                 </div>
-            </div>
-        </div>
-
-        <div class="grid gap-5 xl:grid-cols-2">
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin sự kiện</h2>
-                <div class="grid grid-cols-12 gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Mô tả ngắn</label>
-                    <textarea id="eventShortDescription"
-                              class="event-editable col-span-8 min-h-[120px] rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                              placeholder="Tóm tắt ngắn gọn về mục tiêu và ý nghĩa của sự kiện..."
-                              th:text="${event.shortDescription}"></textarea>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Hoạt động</th>
+                            <th class="px-6 py-4 text-left">Trạng thái</th>
+                            <th class="px-6 py-4 text-right">Gây quỹ</th>
+                            <th class="px-6 py-4 text-left">Thời gian</th>
+                        </tr>
+                        </thead>
+                        <tbody id="eventActivitiesTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu hoạt động...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                <div id="eventActivitiesPagination"></div>
+            </section>
+        </div>
 
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin tài chính</h2>
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Mục tiêu gây quỹ</label>
-                    <input id="eventTargetAmount" th:value="${targetRaw}"
-                           class="event-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" inputmode="numeric">
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Đã đạt được</label>
-                    <input id="eventCurrentAmount" th:value="${current}"
-                           class="event-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" inputmode="numeric">
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Tiến độ</label>
-                    <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text"
-                           th:value="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + ' %'" readonly>
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Số hoạt động trong sự kiện này</label>
-                    <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" th:value="${event.activities != null ? #lists.size(event.activities) : 0}" readonly>
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Tổng số nhà hảo tâm tham gia</label>
-                    <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" th:value="${event.numberOfDonors ?: 0}" readonly>
+        <div id="tabDonorsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm tham gia sự kiện</h2>
                 </div>
-            </div>
-        </div>
-
-        <section class="rounded-2xl border border-slate-200 p-6">
-            <h2 class="mb-4 text-xl font-bold text-slate-900">Nội dung chi tiết</h2>
-            <div id="editor" class="overflow-hidden rounded-lg border border-slate-300 bg-white"
-                 th:utext="${event.content}"></div>
-        </section>
-    </section>
-
-    <section id="eventDetailTabsSection"
-             th:attr="data-event-id=${event.id}"
-             class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-        <div id="tabActivitiesPanel" class="hidden pt-2">
-            <div class="px-6 pb-3 pt-2">
-                <div class="flex items-center justify-between gap-3">
-                    <h3 class="text-xl font-bold text-slate-900">Danh sách hoạt động của sự kiện</h3>
-                    <a th:if="${event.id != null}"
-                       th:href="@{/admin/activities/form(eventId=${event.id})}"
-                       class="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-primary">
-                        <span class="text-base">+</span> Thêm hoạt động
-                    </a>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
+                            <th class="px-6 py-4 text-left">Liên hệ</th>
+                            <th class="px-6 py-4 text-left">Loại</th>
+                            <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
+                        </tr>
+                        </thead>
+                        <tbody id="eventDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Hoạt động</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Gây quỹ</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Thời gian</th>
-                    </tr>
-                    </thead>
-                    <tbody id="eventActivitiesTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu hoạt động...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="eventActivitiesPagination"></div>
+                <div id="eventDonorsPagination"></div>
+            </section>
         </div>
 
-        <div id="tabDonorsPanel" class="hidden pt-2">
-            <div class="px-6 pb-3 pt-2">
-                <h3 class="text-xl font-bold text-slate-900">Danh sách nhà hảo tâm tham gia sự kiện</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Loại</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Số điện thoại</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày tham gia</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tổng tiền quyên góp</th>
-                    </tr>
-                    </thead>
-                    <tbody id="eventDonorsTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="eventDonorsPagination"></div>
+        <div id="tabDonationsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp cho sự kiện</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Mã đơn</th>
+                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
+                            <th class="px-6 py-4 text-left">Mục tiêu</th>
+                            <th class="px-6 py-4 text-right">Số tiền</th>
+                            <th class="px-6 py-4 text-left">Trạng thái</th>
+                            <th class="px-6 py-4 text-right">Thời gian</th>
+                        </tr>
+                        </thead>
+                        <tbody id="eventDonationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="eventDonationsPagination"></div>
+            </section>
         </div>
 
-        <div id="tabDonationsPanel" class="hidden pt-2">
-            <div class="px-6 pb-3 pt-2">
-                <h3 class="text-xl font-bold text-slate-900">Danh sách quyên góp cho sự kiện</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Mã đơn</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Số tiền</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Phương thức</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày quyên góp</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</th>
-                    </tr>
-                    </thead>
-                    <tbody id="eventDonationsTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="eventDonationsPagination"></div>
-        </div>
-
-        <div id="tabAuditLogsPanel" class="hidden pt-2">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Thời gian</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Người thao tác</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Hành động</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nội dung</th>
-                    </tr>
-                    </thead>
-                    <tbody id="eventAuditLogsTableBody" class="divide-y divide-slate-100">
-                    <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="eventAuditLogsPagination"></div>
+        <div id="tabAuditLogsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Thời gian</th>
+                            <th class="px-6 py-4 text-left">Người thao tác</th>
+                            <th class="px-6 py-4 text-left">Hành động</th>
+                            <th class="px-6 py-4 text-left">Nội dung</th>
+                        </tr>
+                        </thead>
+                        <tbody id="eventAuditLogsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="eventAuditLogsPagination"></div>
+            </section>
         </div>
     </section>
 </div>
 
 <th:block layout:fragment="scripts">
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script type="module" th:src="@{/js/pages/admin/eventDetail.js}"></script>
-    <script type="module" th:inline="javascript">
-        import {eventApi} from '/js/apis/eventApi.js';
-        import {formatNumberVi, parseVndInput} from '/js/utils/currency.js';
-
-        const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
-        const eventId = /*[[${event.id}]]*/ null;
-
-        const saveBtn = document.getElementById('saveBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const thumbInput = document.getElementById('thumbnailInput');
-        const thumbPreview = document.getElementById('thumbnailPreview');
-        const uploadInstruction = document.getElementById('uploadInstruction');
-        const titleInput = document.getElementById('eventName');
-        const titleHeader = document.getElementById('eventHeaderTitle');
-        const eventCodeInput = document.getElementById('eventCode');
-        const eventTargetAmountInput = document.getElementById('eventTargetAmount');
-        const eventCurrentAmountInput = document.getElementById('eventCurrentAmount');
-
-        let editorInstance = null;
-        let currentThumbnailUrl = thumbPreview && !thumbPreview.classList.contains('hidden')
-            ? (thumbPreview.style.backgroundImage || '').slice(5, -2).replace(/["']/g, '')
-            : '';
-
-        let initialState = null;
-
-        function formatEventCode(id) {
-            if (!id && id !== 0) return '---';
-            return `EVT-${String(id).padStart(5, '0')}`;
-        }
-
-        function setFormattedAmountValue(inputEl, value) {
-            if (!inputEl) return;
-            inputEl.value = formatNumberVi(parseVndInput(value));
-        }
-
-        function bindAmountInputFormatting(inputEl) {
-            if (!inputEl) return;
-            inputEl.addEventListener('input', () => {
-                setFormattedAmountValue(inputEl, inputEl.value);
-            });
-            inputEl.addEventListener('blur', () => {
-                setFormattedAmountValue(inputEl, inputEl.value);
-            });
-        }
-
-        function collectFormState() {
-            return {
-                name: document.getElementById('eventName')?.value?.trim() || '',
-                status: document.getElementById('eventStatus')?.value || null,
-                categoryId: Number(document.getElementById('eventCategory')?.value) || null,
-                shortDescription: document.getElementById('eventShortDescription')?.value || '',
-                location: document.getElementById('eventLocation')?.value || '',
-                startDate: document.getElementById('eventStartDate')?.value || null,
-                endDate: document.getElementById('eventEndDate')?.value || null,
-                targetAmount: parseVndInput(eventTargetAmountInput?.value),
-                currentAmount: parseVndInput(eventCurrentAmountInput?.value),
-                content: editorInstance ? editorInstance.getData() : '',
-                thumbnailUrl: currentThumbnailUrl
-            };
-        }
-
-        async function uploadThumbnail(file) {
-            if (!file) return;
-            const response = await eventApi.uploadThumbnail(file, eventId || null);
-            if (response.status !== 201 && response.status !== 200) {
-                throw new Error(response.message || 'Upload ảnh thất bại');
-            }
-            currentThumbnailUrl = response.data;
-        }
-
-        function previewThumbnail(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (!thumbPreview) return;
-                thumbPreview.classList.remove('hidden');
-                thumbPreview.style.backgroundImage = `url('${e.target.result}')`;
-                if (uploadInstruction) {
-                    uploadInstruction.classList.add('opacity-0');
-                    uploadInstruction.classList.add('group-hover:opacity-100');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function handleSave() {
-            if (!canManage) return;
-
-            const payload = collectFormState();
-            if (!payload.name) {
-                alert('Vui lòng nhập tên sự kiện.');
-                return;
-            }
-            if (!payload.categoryId) {
-                alert('Vui lòng chọn danh mục.');
-                return;
-            }
-
-            try {
-                const response = eventId
-                    ? await eventApi.updateEvent(eventId, payload)
-                    : await eventApi.createEvent(payload);
-                if (response.status === 200) {
-                    alert('Lưu sự kiện thành công.');
-                    if (!eventId && response.data) {
-                        window.location.href = `/admin/events/${response.data}?saved=1`;
-                        return;
-                    }
-                    window.location.href = `/admin/events/${eventId}?saved=1`;
-                } else {
-                    alert(response.message || 'Lưu sự kiện thất bại.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Không thể lưu sự kiện.');
-            }
-        }
-
-        function restoreInitialState() {
-            if (!initialState) return;
-            document.getElementById('eventName').value = initialState.name;
-            document.getElementById('eventStatus').value = initialState.status || '';
-            document.getElementById('eventCategory').value = initialState.categoryId || '';
-            document.getElementById('eventShortDescription').value = initialState.shortDescription;
-            document.getElementById('eventLocation').value = initialState.location;
-            document.getElementById('eventStartDate').value = initialState.startDate || '';
-            document.getElementById('eventEndDate').value = initialState.endDate || '';
-            setFormattedAmountValue(eventTargetAmountInput, initialState.targetAmount);
-            setFormattedAmountValue(eventCurrentAmountInput, initialState.currentAmount);
-            if (editorInstance) editorInstance.setData(initialState.content || '');
-            currentThumbnailUrl = initialState.thumbnailUrl || '';
-            if (thumbPreview) {
-                if (currentThumbnailUrl) {
-                    thumbPreview.classList.remove('hidden');
-                    thumbPreview.style.backgroundImage = `url('${currentThumbnailUrl}')`;
-                } else {
-                    thumbPreview.classList.add('hidden');
-                    thumbPreview.style.backgroundImage = '';
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (eventCodeInput) {
-                eventCodeInput.value = formatEventCode(eventId);
-            }
-
-            if (titleInput && titleHeader) {
-                titleInput.addEventListener('input', () => {
-                    titleHeader.textContent = titleInput.value?.trim() || 'Chi tiết sự kiện';
-                });
-            }
-
-            bindAmountInputFormatting(eventTargetAmountInput);
-            bindAmountInputFormatting(eventCurrentAmountInput);
-            setFormattedAmountValue(eventTargetAmountInput, eventTargetAmountInput?.value);
-            setFormattedAmountValue(eventCurrentAmountInput, eventCurrentAmountInput?.value);
-
-            if (typeof ClassicEditor !== 'undefined') {
-                editorInstance = await ClassicEditor.create(document.querySelector('#editor'), {
-                    toolbar: [
-                        'heading', '|',
-                        'bold', 'italic', 'link', 'blockQuote', '|',
-                        'bulletedList', 'numberedList', '|',
-                        'undo', 'redo'
-                    ]
-                });
-            }
-
-            initialState = collectFormState();
-
-            if (!canManage) {
-                document.querySelectorAll('.event-editable').forEach((el) => {
-                    el.setAttribute('disabled', 'disabled');
-                });
-                if (saveBtn) saveBtn.classList.add('hidden');
-                if (cancelBtn) cancelBtn.classList.add('hidden');
-                if (thumbInput) thumbInput.setAttribute('disabled', 'disabled');
-            }
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', handleSave);
-            }
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => window.location.reload());
-            }
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', restoreInitialState);
-            }
-            if (thumbInput) {
-                thumbInput.addEventListener('change', async (event) => {
-                    const file = event.target.files?.[0];
-                    if (!file) return;
-                    previewThumbnail(file);
-                    try {
-                        await uploadThumbnail(file);
-                    } catch (error) {
-                        console.error(error);
-                        alert(error.message || 'Không thể upload ảnh.');
-                    }
-                });
-            }
-        });
-    </script>
 </th:block>
 </body>
 </html>

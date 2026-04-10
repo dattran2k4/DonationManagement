@@ -9,45 +9,63 @@
     <title>Cài đặt hệ thống</title>
 </head>
 <body>
-<div layout:fragment="content">
-    <header class="mb-8">
-        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Cài đặt hệ thống</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Quản lý thông tin và cấu hình tổ chức từ thiện</p>
-    </header>
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/settings}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">tune</span>
+                Cấu hình
+            </a>
+            <button id="resetSettingsBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
+            </button>
+            <button sec:authorize="hasRole('ADMIN')" form="systemSettingsForm" type="submit"
+                    class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <h1 class="admin-detail-title">Cài đặt hệ thống</h1>
+                <p class="admin-detail-subtitle">Quản lý thông tin và cấu hình tổ chức từ thiện theo cùng một bố cục nhất quán với các module quản trị khác.</p>
+            </div>
+        </div>
     <div sec:authorize="!hasRole('ADMIN')"
          class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200">
         Bạn đang ở chế độ chỉ xem. Theo Access Matrix, chỉ Quản trị viên mới được phép cập nhật cấu hình hệ thống.
     </div>
-    <div class="border-b border-slate-200 dark:border-slate-800 mb-8">
-        <div class="flex flex-wrap gap-8">
+    <div class="admin-tab-strip mb-8">
+        <div class="flex flex-wrap gap-4">
             <button id="settingsTabGeneral"
                     type="button"
                     data-tab-target="general"
-                    class="settings-tab-btn pb-4 border-b-2 border-primary text-primary font-semibold text-sm">
+                    class="settings-tab-btn admin-tab-link is-active">
                 Thông tin chung
             </button>
             <button id="settingsTabAppearance"
                     type="button"
                     data-tab-target="appearance"
-                    class="settings-tab-btn pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 font-medium text-sm">
+                    class="settings-tab-btn admin-tab-link">
                 Giao diện
             </button>
             <button id="settingsTabAbout"
                     type="button"
                     data-tab-target="about"
-                    class="settings-tab-btn pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 font-medium text-sm">
+                    class="settings-tab-btn admin-tab-link">
                 Về chúng tôi
             </button>
         </div>
     </div>
-    <form id="systemSettingsForm" class="max-w-5xl space-y-8">
+    <form id="systemSettingsForm" class="space-y-8">
         <section
                 data-tab-panel="general"
-                class="settings-panel bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">info</span>
-                Thông tin tổ chức
-            </h2>
+                class="settings-panel admin-info-card">
+            <h2 class="admin-info-card__title">Thông tin tổ chức</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2 col-span-2 md:col-span-1">
                     <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tên câu lạc bộ</label>
@@ -109,11 +127,8 @@
         </section>
         <section
                 data-tab-panel="appearance"
-                class="settings-panel hidden bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">image</span>
-                Hình ảnh &amp; Banners
-            </h2>
+                class="settings-panel hidden admin-info-card">
+            <h2 class="admin-info-card__title">Hình ảnh &amp; Banner</h2>
             <div class="space-y-6">
                 <div class="space-y-3">
                     <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Banner Trang chủ (Tối ưu:
@@ -169,11 +184,8 @@
         </section>
         <section
                 data-tab-panel="about"
-                class="settings-panel hidden bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">history_edu</span>
-                Nội dung giới thiệu
-            </h2>
+                class="settings-panel hidden admin-info-card">
+            <h2 class="admin-info-card__title">Nội dung giới thiệu</h2>
             <div class="space-y-6">
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Câu chuyện của chúng
@@ -210,8 +222,8 @@
                 </div>
             </div>
         </section>
-        <div sec:authorize="hasRole('ADMIN')" class="flex justify-end gap-4 py-8">
-            <button id="resetSettingsBtn" type="button"
+        <div sec:authorize="hasRole('ADMIN')" class="hidden justify-end gap-4 py-8">
+            <button type="button"
                     class="px-6 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
                 Hủy thay đổi
             </button>
@@ -221,6 +233,7 @@
             </button>
         </div>
     </form>
+</div>
 </div>
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">

@@ -8,24 +8,29 @@
     <title>Lịch sử quyên góp nhà hảo tâm</title>
 </head>
 <body>
-<div layout:fragment="content" class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Lịch sử quyên góp</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/donors}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <h1 class="admin-detail-title">Lịch sử quyên góp</h1>
+                <p class="admin-detail-subtitle">
                 <span class="font-semibold text-slate-700 dark:text-slate-300" th:text="${donor.fullName}">Nhà hảo tâm</span>
                 <span class="mx-1">-</span>
                 <span th:text="${donor.phone}">SĐT</span>
-            </p>
+                </p>
+            </div>
         </div>
-        <a th:href="@{/admin/donors}"
-           class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-            Quay lại danh sách
-        </a>
-    </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="admin-table-shell overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
@@ -47,6 +52,7 @@
         </div>
         <div id="paginationContainer"></div>
     </div>
+</div>
 </div>
 
 <th:block layout:fragment="scripts">

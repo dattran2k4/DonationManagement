@@ -7,577 +7,229 @@
 >
 <head>
     <title>Chi tiết hoạt động</title>
-    <style>
-        .activity-editor .ck-editor {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .activity-editor .ck-editor__main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .activity-editor .ck-content.ck-editor__editable {
-            flex: 1;
-            min-height: 220px;
-            border: 1px solid #cbd5e1;
-            padding: 0.85rem 1rem;
-            line-height: 1.6;
-        }
-    </style>
 </head>
 <body>
-<div layout:fragment="content" class="space-y-6 activity-editor"
+<div layout:fragment="content" class="admin-page-stack"
      th:with="current=${activity.currentAmount != null ? activity.currentAmount : 0},
               targetRaw=${activity.targetAmount != null ? activity.targetAmount : 0},
               targetSafe=${targetRaw > 0 ? targetRaw : 1},
               percent=${current * 100 / targetSafe}">
 
-    <input type="hidden" id="activityId" th:value="${activity.id}">
-
-    <section th:replace="~{fragments/admin/action-toolbar :: adminActionToolbar(
-            createUrl=@{/admin/activities/form},
-            showCreate=${true},
-            showCancel=${true},
-            cancelUrl=${null},
-            showSave=${true},
-            showRefresh=${true},
-            showWebsite=${activity.slug != null and !#strings.isEmpty(activity.slug)},
-            websiteUrl=@{/activities/{slug}(slug=${activity.slug})},
-            showDelete=${true}
-        )}">
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-5xl font-black text-slate-900">
-            <span id="activityHeaderTitle" th:text="${activity.name ?: 'Chi tiết hoạt động'}">Chi tiết hoạt động</span>
-            <span th:if="${param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
-        </h1>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white px-6 pt-4 shadow-sm">
-        <div class="border-b border-slate-200">
-            <div class="inline-flex gap-2 overflow-x-auto whitespace-nowrap pb-3">
-                <button id="tabInfoBtn" data-tab="info" type="button"
-                        class="inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary">Thông tin chung</button>
-                <button id="tabDonorsBtn" data-tab="donors" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Nhà hảo tâm
-                    <span id="tabDonorsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-                <button id="tabDonationsBtn" data-tab="donations" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Quyên góp
-                    <span id="tabDonationsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button"
-                        class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900">Lịch sử thao tác
-                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700">0</span>
-                </button>
-            </div>
+    <section class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/activities/form}"
+               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/activities}"
+               class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Quay lại
+            </a>
+            <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+               th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
+               class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                Chỉnh sửa
+            </a>
+            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Làm mới
+            </button>
         </div>
     </section>
 
-    <section id="tabInfoPanel" class="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="grid gap-5 xl:grid-cols-2">
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Tên hoạt động</label>
-                    <input id="activityName" th:value="${activity.name}"
-                           class="activity-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-base text-slate-900"
-                           type="text">
+    <section class="admin-detail-frame" id="activityDetailTabsSection" th:attr="data-activity-id=${activity.id}">
+        <div class="admin-detail-header">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <h1 class="admin-detail-title" th:text="${activity.name ?: 'Chi tiết hoạt động'}">Chi tiết hoạt động</h1>
+                    <p class="admin-detail-subtitle">
+                        Thuộc sự kiện:
+                        <span class="font-semibold" th:text="${activity.event != null && activity.event.name != null ? activity.event.name : 'Chưa liên kết'}">---</span>
+                    </p>
+                </div>
+                <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
+                     th:classappend="
+                        ${activity.status != null && activity.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700' :
+                        (${activity.status != null && activity.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700' :
+                        (${activity.status != null && activity.status.name() == 'COMPLETED'} ? ' bg-slate-200 text-slate-700' :
+                        ' bg-sky-100 text-sky-700'))"
+                     th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">
+                    Đang diễn ra
+                </div>
+            </div>
+        </div>
 
-                    <label th:if="${activity.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Mã hoạt động</label>
-                    <input th:if="${activity.id != null}" id="activityCode" value="---"
-                           class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" readonly>
+        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
+            <div class="admin-tab-strip">
+                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin chung</button>
+                <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
+                    Nhà hảo tâm
+                    <span id="tabDonorsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                </button>
+                <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
+                    Quyên góp
+                    <span id="tabDonationsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                </button>
+                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
+                    Lịch sử thao tác
+                    <span id="tabAuditLogsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                </button>
+            </div>
+        </div>
 
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Sự kiện cha</label>
-                    <div class="col-span-8 relative">
-                        <input id="activityEvent"
-                               th:value="${activity.eventId}"
-                               type="hidden"/>
-                        <input id="activityEventSearch"
-                               type="text"
-                               autocomplete="off"
-                               placeholder="Nhập tên sự kiện để tìm..."
-                               th:value="${activity.event != null ? activity.event.name : ''}"
-                               class="activity-editable w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 pr-10 text-sm text-slate-900"/>
-                        <span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">expand_more</span>
-                        <div id="activityEventDropdown"
-                             class="absolute z-[1100] mt-1 hidden max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-                            <button type="button"
-                                    class="activity-event-option block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
-                                    data-id=""
-                                    data-name=""
-                                    data-start-date="">
-                                -- Chọn sự kiện --
-                            </button>
-                            <button th:each="e : ${events.data}"
-                                    type="button"
-                                    class="activity-event-option block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
-                                    th:attr="data-id=${e.id},data-name=${e.name},data-start-date=${e.startDate}"
-                                    th:text="${e.name}">
-                            </button>
+        <div id="tabInfoPanel" class="p-8 space-y-6">
+            <div class="grid gap-6 xl:grid-cols-2">
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Thông tin hoạt động</h2>
+                    <div class="admin-field-grid">
+                        <div>
+                            <p class="admin-muted-label">Tên hoạt động</p>
+                            <div class="admin-field-value" th:text="${activity.name ?: '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Trạng thái</p>
+                            <div class="admin-field-value" th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Ngày bắt đầu</p>
+                            <div class="admin-field-value" th:text="${activity.startDate != null ? #temporals.format(activity.startDate, 'dd/MM/yyyy') : '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Ngày kết thúc</p>
+                            <div class="admin-field-value" th:text="${activity.endDate != null ? #temporals.format(activity.endDate, 'dd/MM/yyyy') : '---'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Địa điểm</p>
+                            <div class="admin-field-value" th:text="${activity.location != null && !#strings.isEmpty(activity.location) ? activity.location : 'Chưa cập nhật'}">---</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Sự kiện cha</p>
+                            <div class="admin-field-value" th:text="${activity.event != null && activity.event.name != null ? activity.event.name : '---'}">---</div>
                         </div>
                     </div>
+                </section>
 
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Ngày bắt đầu</label>
-                    <input id="activityStartDate" th:value="${activity.startDate}"
-                           class="activity-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="date">
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Ngày kết thúc</label>
-                    <input id="activityEndDate" th:value="${activity.endDate}"
-                           class="activity-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="date">
-
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Địa điểm</label>
-                    <input id="activityLocation" th:value="${activity.location}"
-                           class="activity-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" placeholder="---">
-                </div>
-            </div>
-
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Trạng thái</label>
-                    <select id="activityStatus"
-                            class="activity-editable col-span-8 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900">
-                        <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.value}"
-                                th:selected="${activity.status == status}"></option>
-                    </select>
-
-                    <label class="col-span-4 self-start pt-2 text-sm font-medium text-slate-700">Ảnh đại diện</label>
-                    <div class="col-span-8">
-                        <div onclick="document.getElementById('thumbnailInput').click()"
-                             class="relative flex h-[230px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-100 text-slate-500">
-                            <div id="thumbnailPreview"
-                                 th:style="${activity.thumbnailUrl != null} ? |background-image:url('${activity.thumbnailUrl}')| : ''"
-                                 th:classappend="${activity.thumbnailUrl != null} ? '' : ' hidden'"
-                                 class="absolute inset-0 rounded-lg bg-cover bg-center"></div>
-                            <div id="uploadInstruction" class="z-10 text-center">
-                                <span class="material-symbols-outlined text-5xl">imagesmode</span>
-                                <p class="mt-2 text-xl font-semibold">Tải ảnh lên</p>
-                                <p class="text-sm">PNG, JPG, GIF tối đa 5MB</p>
-                            </div>
+                <section class="admin-info-card">
+                    <h2 class="admin-info-card__title">Thông tin tài chính</h2>
+                    <div class="grid gap-4">
+                        <div>
+                            <p class="admin-muted-label">Mục tiêu gây quỹ</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
                         </div>
-                        <input id="thumbnailInput" class="hidden" type="file" accept="image/*">
+                        <div>
+                            <p class="admin-muted-label">Đã đạt được</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
+                        </div>
+                        <div>
+                            <p class="admin-muted-label">Tiến độ</p>
+                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</div>
+                        </div>
                     </div>
+                </section>
+            </div>
 
-                    <label th:if="${activity.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Tạo lúc</label>
-                    <input th:if="${activity.id != null}" class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text"
-                           th:value="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy hh:mm a') : '---'}"
-                           readonly>
-
-                    <label th:if="${activity.id != null}" class="col-span-4 text-sm font-medium text-slate-700">Tạo bởi</label>
-                    <input th:if="${activity.id != null}" class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" th:value="${activity.createdBy != null ? activity.createdBy : 'Hệ thống'}" readonly>
+            <section class="admin-info-card">
+                <h2 class="admin-info-card__title">Nội dung hoạt động</h2>
+                <div class="grid gap-5">
+                    <div>
+                        <p class="admin-muted-label">Mô tả ngắn</p>
+                        <div class="admin-field-value min-h-[120px] items-start leading-relaxed"
+                             th:text="${activity.shortDescription != null && !#strings.isEmpty(activity.shortDescription) ? activity.shortDescription : 'Chưa có mô tả ngắn.'}">
+                            Chưa có mô tả ngắn.
+                        </div>
+                    </div>
+                    <div>
+                        <p class="admin-muted-label">Nội dung chi tiết</p>
+                        <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                            <div th:if="${activity.content != null && !#strings.isEmpty(activity.content)}" th:utext="${activity.content}"></div>
+                            <p th:if="${activity.content == null || #strings.isEmpty(activity.content)}">Chưa có nội dung hoạt động.</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
 
-        <div class="grid gap-5 xl:grid-cols-2">
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin hoạt động</h2>
-                <div class="grid grid-cols-12 gap-y-4">
-                    <label class="col-span-4 text-sm font-medium text-slate-700">Mô tả ngắn</label>
-                    <textarea id="activityShortDescription"
-                              class="activity-editable col-span-8 min-h-[120px] rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                              placeholder="Tóm tắt ngắn gọn về mục tiêu và ý nghĩa của hoạt động..."
-                              th:text="${activity.shortDescription}"></textarea>
+        <div id="tabDonorsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm</h2>
                 </div>
-            </div>
-
-            <div class="rounded-2xl border border-slate-200 p-6">
-                <h2 class="mb-5 text-xl font-bold text-slate-900">Thông tin tài chính</h2>
-                <div class="grid grid-cols-12 items-center gap-y-4">
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Mục tiêu gây quỹ</label>
-                    <input id="activityTargetAmount" th:value="${targetRaw}"
-                           class="activity-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" inputmode="numeric">
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Đã đạt được</label>
-                    <input id="activityCurrentAmount" th:value="${current}"
-                           class="activity-editable col-span-7 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900"
-                           type="text" inputmode="numeric">
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Tiến độ</label>
-                    <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text"
-                           th:value="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + ' %'" readonly>
-
-                    <label class="col-span-5 text-sm font-medium text-slate-700">Số nhà hảo tâm tham gia</label>
-                    <input class="col-span-7 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-900"
-                           type="text" th:value="${activity.numberOfDonors ?: 0}" readonly>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
+                            <th class="px-6 py-4 text-left">Liên hệ</th>
+                            <th class="px-6 py-4 text-left">Loại</th>
+                            <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
+                        </tr>
+                        </thead>
+                        <tbody id="activityDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                <div id="activityDonorsPagination"></div>
+            </section>
         </div>
 
-        <section class="rounded-2xl border border-slate-200 p-6">
-            <h2 class="mb-4 text-xl font-bold text-slate-900">Nội dung chi tiết</h2>
-            <div id="editor" class="overflow-hidden rounded-lg border border-slate-300 bg-white"
-                 th:utext="${activity.content}"></div>
-        </section>
-    </section>
-
-    <section id="activityDetailTabsSection"
-             th:attr="data-activity-id=${activity.id}"
-             class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div id="tabDonorsPanel" class="hidden pt-2">
-            <div class="px-6 pb-3 pt-2">
-                <h3 class="text-xl font-bold text-slate-900">Danh sách nhà hảo tâm tham gia hoạt động</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Loại</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Số điện thoại</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày tham gia</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tổng tiền quyên góp</th>
-                    </tr>
-                    </thead>
-                    <tbody id="activityDonorsTableBody" class="divide-y divide-slate-100">
-                    <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="activityDonorsPagination"></div>
+        <div id="tabDonationsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Mã đơn</th>
+                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
+                            <th class="px-6 py-4 text-right">Số tiền</th>
+                            <th class="px-6 py-4 text-left">Trạng thái</th>
+                            <th class="px-6 py-4 text-right">Thời gian</th>
+                        </tr>
+                        </thead>
+                        <tbody id="activityDonationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="activityDonationsPagination"></div>
+            </section>
         </div>
 
-        <div id="tabDonationsPanel" class="hidden pt-2">
-            <div class="px-6 pb-3 pt-2">
-                <h3 class="text-xl font-bold text-slate-900">Danh sách quyên góp cho hoạt động</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-300 text-primary"/>
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Mã đơn</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nhà hảo tâm</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Số tiền</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Phương thức</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ngày quyên góp</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</th>
-                    </tr>
-                    </thead>
-                    <tbody id="activityDonationsTableBody" class="divide-y divide-slate-100">
-                    <tr>
-                        <td colspan="7" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="activityDonationsPagination"></div>
-        </div>
-
-        <div id="tabAuditLogsPanel" class="hidden pt-2">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Thời gian</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Người thao tác</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Hành động</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Nội dung</th>
-                    </tr>
-                    </thead>
-                    <tbody id="activityAuditLogsTableBody" class="divide-y divide-slate-100">
-                    <tr>
-                        <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="activityAuditLogsPagination"></div>
+        <div id="tabAuditLogsPanel" class="hidden p-8">
+            <section class="admin-table-shell">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Thời gian</th>
+                            <th class="px-6 py-4 text-left">Người thao tác</th>
+                            <th class="px-6 py-4 text-left">Hành động</th>
+                            <th class="px-6 py-4 text-left">Nội dung</th>
+                        </tr>
+                        </thead>
+                        <tbody id="activityAuditLogsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="activityAuditLogsPagination"></div>
+            </section>
         </div>
     </section>
 </div>
 
 <th:block layout:fragment="scripts">
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script type="module" th:src="@{/js/pages/admin/activityDetail.js}"></script>
-    <script type="module" th:inline="javascript">
-        import {activityApi} from '/js/apis/activityApi.js';
-        import {formatNumberVi, parseVndInput} from '/js/utils/currency.js';
-
-        const canManage = /*[[${#authorization.expression('hasAnyRole(''ADMIN'',''ACCOUNTING'')')}]]*/ false;
-        const activityId = /*[[${activity.id}]]*/ null;
-
-        const saveBtn = document.getElementById('saveBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const thumbInput = document.getElementById('thumbnailInput');
-        const thumbPreview = document.getElementById('thumbnailPreview');
-        const uploadInstruction = document.getElementById('uploadInstruction');
-        const titleInput = document.getElementById('activityName');
-        const titleHeader = document.getElementById('activityHeaderTitle');
-        const activityCodeInput = document.getElementById('activityCode');
-        const activityEventInput = document.getElementById('activityEvent');
-        const activityEventSearch = document.getElementById('activityEventSearch');
-        const activityEventDropdown = document.getElementById('activityEventDropdown');
-        const activityEventOptions = Array.from(document.querySelectorAll('.activity-event-option'));
-        const activityStartDateInput = document.getElementById('activityStartDate');
-        const activityTargetAmountInput = document.getElementById('activityTargetAmount');
-        const activityCurrentAmountInput = document.getElementById('activityCurrentAmount');
-
-        let editorInstance = null;
-        let currentThumbnailUrl = thumbPreview && !thumbPreview.classList.contains('hidden')
-            ? (thumbPreview.style.backgroundImage || '').slice(5, -2).replace(/["']/g, '')
-            : '';
-
-        let initialState = null;
-
-        function formatActivityCode(id) {
-            if (!id && id !== 0) return '---';
-            return `ACT-${String(id).padStart(5, '0')}`;
-        }
-
-        function setFormattedAmountValue(inputEl, value) {
-            if (!inputEl) return;
-            inputEl.value = formatNumberVi(parseVndInput(value));
-        }
-
-        function bindAmountInputFormatting(inputEl) {
-            if (!inputEl) return;
-            inputEl.addEventListener('input', () => {
-                setFormattedAmountValue(inputEl, inputEl.value);
-            });
-            inputEl.addEventListener('blur', () => {
-                setFormattedAmountValue(inputEl, inputEl.value);
-            });
-        }
-
-        function collectFormState() {
-            return {
-                id: activityId || null,
-                eventId: Number(document.getElementById('activityEvent')?.value) || null,
-                eventName: document.getElementById('activityEventSearch')?.value?.trim() || '',
-                name: document.getElementById('activityName')?.value?.trim() || '',
-                status: document.getElementById('activityStatus')?.value || null,
-                shortDescription: document.getElementById('activityShortDescription')?.value || '',
-                location: document.getElementById('activityLocation')?.value || '',
-                startDate: document.getElementById('activityStartDate')?.value || null,
-                endDate: document.getElementById('activityEndDate')?.value || null,
-                targetAmount: parseVndInput(activityTargetAmountInput?.value),
-                currentAmount: parseVndInput(activityCurrentAmountInput?.value),
-                content: editorInstance ? editorInstance.getData() : '',
-                thumbnailUrl: currentThumbnailUrl
-            };
-        }
-
-        function showEventDropdown() {
-            activityEventDropdown?.classList.remove('hidden');
-        }
-
-        function hideEventDropdown() {
-            activityEventDropdown?.classList.add('hidden');
-        }
-
-        function findEventOptionById(id) {
-            if (!id) return null;
-            return activityEventOptions.find((option) => Number(option.dataset.id) === Number(id)) || null;
-        }
-
-        function selectEventOption(option) {
-            if (!option) return;
-            if (activityEventInput) activityEventInput.value = option.dataset.id || '';
-            if (activityEventSearch) activityEventSearch.value = option.dataset.name || '';
-            hideEventDropdown();
-            syncStartDateFromEvent();
-        }
-
-        function filterEventDropdown(keyword) {
-            const normalized = (keyword || '').trim().toLowerCase();
-            activityEventOptions.forEach((option, index) => {
-                if (index === 0) {
-                    option.classList.remove('hidden');
-                    return;
-                }
-                const name = (option.dataset.name || '').toLowerCase();
-                option.classList.toggle('hidden', normalized.length > 0 && !name.includes(normalized));
-            });
-        }
-
-        function syncStartDateFromEvent() {
-            if (activityId || !activityStartDateInput) return;
-            const selectedOption = findEventOptionById(activityEventInput?.value);
-            const eventStartDate = selectedOption?.dataset?.startDate;
-            if (!eventStartDate || activityStartDateInput.value) return;
-            activityStartDateInput.value = eventStartDate;
-        }
-
-        async function uploadThumbnail(file) {
-            if (!file) return;
-            const response = await activityApi.uploadThumbnail(file, activityId || null);
-            if (response.status !== 201 && response.status !== 200) {
-                throw new Error(response.message || 'Upload ảnh thất bại');
-            }
-            currentThumbnailUrl = response.data;
-        }
-
-        function previewThumbnail(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (!thumbPreview) return;
-                thumbPreview.classList.remove('hidden');
-                thumbPreview.style.backgroundImage = `url('${e.target.result}')`;
-                if (uploadInstruction) {
-                    uploadInstruction.classList.add('opacity-0');
-                    uploadInstruction.classList.add('group-hover:opacity-100');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function handleSave() {
-            if (!canManage) return;
-
-            const payload = collectFormState();
-            if (!payload.eventId) {
-                alert('Vui lòng chọn sự kiện cha.');
-                return;
-            }
-            if (!payload.name) {
-                alert('Vui lòng nhập tên hoạt động.');
-                return;
-            }
-
-            try {
-                const response = await activityApi.saveActivity(payload);
-                if (response.status === 200) {
-                    alert('Lưu hoạt động thành công.');
-                    if (!activityId && response.data) {
-                        window.location.href = `/admin/activities/${response.data}?saved=1`;
-                        return;
-                    }
-                    window.location.href = `/admin/activities/${activityId}?saved=1`;
-                } else {
-                    alert(response.message || 'Lưu hoạt động thất bại.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Không thể lưu hoạt động.');
-            }
-        }
-
-        function restoreInitialState() {
-            if (!initialState) return;
-            document.getElementById('activityName').value = initialState.name;
-            document.getElementById('activityStatus').value = initialState.status || '';
-            document.getElementById('activityEvent').value = initialState.eventId || '';
-            document.getElementById('activityEventSearch').value = initialState.eventName || '';
-            document.getElementById('activityShortDescription').value = initialState.shortDescription;
-            document.getElementById('activityLocation').value = initialState.location;
-            document.getElementById('activityStartDate').value = initialState.startDate || '';
-            document.getElementById('activityEndDate').value = initialState.endDate || '';
-            setFormattedAmountValue(activityTargetAmountInput, initialState.targetAmount);
-            setFormattedAmountValue(activityCurrentAmountInput, initialState.currentAmount);
-            if (editorInstance) editorInstance.setData(initialState.content || '');
-            currentThumbnailUrl = initialState.thumbnailUrl || '';
-            if (thumbPreview) {
-                if (currentThumbnailUrl) {
-                    thumbPreview.classList.remove('hidden');
-                    thumbPreview.style.backgroundImage = `url('${currentThumbnailUrl}')`;
-                } else {
-                    thumbPreview.classList.add('hidden');
-                    thumbPreview.style.backgroundImage = '';
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (activityCodeInput) {
-                activityCodeInput.value = formatActivityCode(activityId);
-            }
-
-            syncStartDateFromEvent();
-            if (activityEventSearch) {
-                activityEventSearch.addEventListener('focus', () => {
-                    filterEventDropdown(activityEventSearch.value || '');
-                    showEventDropdown();
-                });
-                activityEventSearch.addEventListener('input', () => {
-                    if (activityEventInput) activityEventInput.value = '';
-                    filterEventDropdown(activityEventSearch.value || '');
-                    showEventDropdown();
-                });
-            }
-
-            activityEventOptions.forEach((option) => {
-                option.addEventListener('click', () => selectEventOption(option));
-            });
-
-            document.addEventListener('click', (event) => {
-                if (!activityEventDropdown || !activityEventSearch) return;
-                const target = event.target;
-                if (!(target instanceof Element)) return;
-                if (target.closest('#activityEventDropdown') || target.closest('#activityEventSearch')) return;
-                hideEventDropdown();
-            });
-
-            if (titleInput && titleHeader) {
-                titleInput.addEventListener('input', () => {
-                    titleHeader.textContent = titleInput.value?.trim() || 'Chi tiết hoạt động';
-                });
-            }
-
-            bindAmountInputFormatting(activityTargetAmountInput);
-            bindAmountInputFormatting(activityCurrentAmountInput);
-            setFormattedAmountValue(activityTargetAmountInput, activityTargetAmountInput?.value);
-            setFormattedAmountValue(activityCurrentAmountInput, activityCurrentAmountInput?.value);
-
-            if (typeof ClassicEditor !== 'undefined') {
-                editorInstance = await ClassicEditor.create(document.querySelector('#editor'), {
-                    toolbar: [
-                        'heading', '|',
-                        'bold', 'italic', 'link', 'blockQuote', '|',
-                        'bulletedList', 'numberedList', '|',
-                        'undo', 'redo'
-                    ]
-                });
-            }
-
-            initialState = collectFormState();
-
-            if (!canManage) {
-                document.querySelectorAll('.activity-editable').forEach((el) => {
-                    el.setAttribute('disabled', 'disabled');
-                });
-                if (saveBtn) saveBtn.classList.add('hidden');
-                if (cancelBtn) cancelBtn.classList.add('hidden');
-                if (thumbInput) thumbInput.setAttribute('disabled', 'disabled');
-            }
-
-            if (saveBtn) saveBtn.addEventListener('click', handleSave);
-            if (refreshBtn) refreshBtn.addEventListener('click', () => window.location.reload());
-            if (cancelBtn) cancelBtn.addEventListener('click', restoreInitialState);
-            if (thumbInput) {
-                thumbInput.addEventListener('change', async (event) => {
-                    const file = event.target.files?.[0];
-                    if (!file) return;
-                    previewThumbnail(file);
-                    try {
-                        await uploadThumbnail(file);
-                    } catch (error) {
-                        console.error(error);
-                        alert(error.message || 'Không thể upload ảnh.');
-                    }
-                });
-            }
-        });
-    </script>
 </th:block>
 </body>
 </html>
