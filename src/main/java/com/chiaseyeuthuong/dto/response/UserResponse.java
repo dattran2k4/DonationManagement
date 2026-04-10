@@ -5,6 +5,8 @@ import com.chiaseyeuthuong.common.EUserStatus;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class UserResponse {
@@ -14,4 +16,6 @@ public class UserResponse {
     private String email;
     private ERole role;
     private EUserStatus status;
+    private LocalDateTime createdAt;
+    private String createdBy;
 }

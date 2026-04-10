@@ -70,7 +70,9 @@ const renderRows = (users) => {
             <td class="px-6 py-5">
                 <input type="checkbox" class="h-6 w-6 rounded-md border-slate-300 text-primary focus:ring-primary/30"/>
             </td>
-            <td class="px-6 py-5 text-lg font-semibold text-slate-900">${user.fullName || '---'}</td>
+            <td class="px-6 py-5 text-lg font-semibold text-slate-900">
+                <a href="/admin/users/${user.id}" class="hover:text-primary">${user.fullName || '---'}</a>
+            </td>
             <td class="px-6 py-5 text-base text-slate-500">${user.phone || '---'}</td>
             <td class="px-6 py-5 text-base text-slate-500">${user.email || '---'}</td>
             <td class="px-6 py-5">${renderRoleBadge(user.role)}</td>
