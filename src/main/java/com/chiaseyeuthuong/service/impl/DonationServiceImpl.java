@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.*;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.DonorWallItemResponse;
 import com.chiaseyeuthuong.dto.response.DonorWallResponse;
@@ -47,9 +48,23 @@ import vn.payos.model.webhooks.WebhookData;
 @Slf4j(topic = "DONATION-SERVICE")
 public class DonationServiceImpl implements DonationService {
     private static final String WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
+    private static final Map<String, String> DONATION_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "id"),
+            Map.entry("donorName", "donor.fullName"),
+            Map.entry("eventName", "event.name"),
+            Map.entry("activityName", "activity.name"),
+            Map.entry("target", "target"),
+            Map.entry("amount", "amount"),
+            Map.entry("paymentMethod", "paymentMethod"),
+            Map.entry("createdAt", "createdAt")
+    );
+    private static final Map<String, String> DONATION_UNSAFE_SORT_FIELDS = Map.ofEntries(
+            Map.entry("status", "case when status = 'PENDING_PAYMENT' then 1 when status = 'PENDING_APPROVED' then 2 when status = 'CONFIRMED' then 3 when status = 'REJECTED' then 4 when status = 'CANCELLED' then 5 when status = 'FAILED' then 6 else 99 end"),
+            Map.entry("donatedAt", "coalesce(donatedAt, createdAt)")
+    );
 
     private final DonationRepository donationRepository;
-    private final UserRepository userRepository;
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
     private final DonorRepository donorRepository;
@@ -71,7 +86,6 @@ public class DonationServiceImpl implements DonationService {
         donation.setPaymentMethod(EPaymentMethod.BANK_TRANSFER_ONLINE);
         donation.setMemoCode(generateMemoCode());
         donation.setOrderCode(generatePaymentCode());
-        donation.setApprovalRequired(false);
 
         Donation newDonation = donationRepository.save(donation);
         log.info("Donation saved {} from web", newDonation.getId());
@@ -92,15 +106,12 @@ public class DonationServiceImpl implements DonationService {
     public long createStaffDonation(DonationRequest request, String username) {
         log.info("Processing create donation from staff {}", username);
 
-        User staff = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         Donation donation = new Donation();
 
         saveDonation(donation, request);
 
         donation.setDonationVia(EDonationVia.STAFF);
         donation.setStatus(EDonationStatus.PENDING_APPROVED);
-        donation.setCreatedBy(staff);
         donation.setPaymentMethod(request.getPaymentMethod());
 
         Donation result = donationRepository.save(donation);
@@ -122,15 +133,17 @@ public class DonationServiceImpl implements DonationService {
         Donation donation = getDonation(id);
         Map<String, Object> beforeValues = buildDonationAuditMap(donation);
 
-        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
-            throw new InvalidDataException("Chỉ hỗ trợ chỉnh sửa khoản quyên góp được tạo nội bộ");
-        }
         if (EDonationStatus.CONFIRMED.equals(donation.getStatus())) {
             throw new InvalidDataException("Không thể chỉnh sửa khoản quyên góp đã xác nhận");
+        }
+        if (!EDonationStatus.REJECTED.equals(donation.getStatus())
+                && !EDonationStatus.PENDING_APPROVED.equals(donation.getStatus())) {
+            throw new InvalidDataException("Chỉ được chỉnh sửa khoản quyên góp ở trạng thái Chờ duyệt hoặc Từ chối");
         }
 
         saveDonation(donation, request);
         donation.setPaymentMethod(request.getPaymentMethod());
+        donation.setStatus(EDonationStatus.PENDING_APPROVED);
 
         Donation result = donationRepository.save(donation);
         auditLogService.logUpdate(
@@ -141,6 +154,31 @@ public class DonationServiceImpl implements DonationService {
                 buildDonationAuditMap(result)
         );
         log.info("Donation updated from staff {}", result.getId());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void submitForApproval(Long id) {
+        Donation donation = getDonation(id);
+        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
+            throw new InvalidDataException("Chỉ hỗ trợ gửi duyệt với khoản quyên góp tạo nội bộ");
+        }
+        if (EDonationStatus.CONFIRMED.equals(donation.getStatus())) {
+            throw new InvalidDataException("Khoản quyên góp đã xác nhận, không thể gửi duyệt");
+        }
+
+        Map<String, Object> beforeValues = buildDonationAuditMap(donation);
+        donation.setStatus(EDonationStatus.PENDING_APPROVED);
+        donation.setRejectionReason(null);
+        Donation savedDonation = donationRepository.save(donation);
+
+        auditLogService.logUpdate(
+                EEntityType.DONATION,
+                savedDonation.getId(),
+                "Gửi duyệt khoản quyên góp nội bộ",
+                beforeValues,
+                buildDonationAuditMap(savedDonation)
+        );
     }
 
     private void saveDonation(Donation donation, DonationRequest request) {
@@ -154,8 +192,13 @@ public class DonationServiceImpl implements DonationService {
         if (request.getActivityId() != null) {
             log.info("Processing activity {}", request.getActivityId());
             Activity activity = activityRepository.findById(request.getActivityId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hoạt động từ thiện"));
+            Event parentEvent = activity.getEvent();
+            if (parentEvent == null) {
+                throw new InvalidDataException("Hoạt động không có sự kiện cha hợp lệ");
+            }
 
             donation.setActivity(activity);
+            donation.setEvent(parentEvent);
             donation.setTarget(EDonationTarget.ACTIVITY);
         } else if (request.getEventId() != null) {
             log.info("Processing event {}", request.getEventId());
@@ -167,10 +210,27 @@ public class DonationServiceImpl implements DonationService {
         }
 
         donation.setAmount(request.getAmount());
-        donation.setMessage(request.getMessage());
+        if (request.getDonatedAt() != null) {
+            donation.setDonatedAt(request.getDonatedAt());
+        }
+        donation.setMessage(request.getMessage() != null && !request.getMessage().isBlank() ? request.getMessage().trim() : null);
+        donation.setMemoCode(request.getMemoCode() != null && !request.getMemoCode().isBlank() ? request.getMemoCode().trim() : null);
         donation.setNeedReceipt(request.getNeedReceipt());
-        donation.setReceiptEmail(request.getReceiptEmail());
-        donation.setReceiptName(request.getReceiptName());
+        if (Boolean.TRUE.equals(request.getNeedReceipt())) {
+            if (request.getReceiptEmail() == null) {
+                throw new InvalidDataException("Email không được để trống");
+            }
+            if (request.getReceiptName() == null) {
+                throw new InvalidDataException("Tên không được để trống");
+            }
+            donation.setReceiptEmail(request.getReceiptEmail());
+            donation.setReceiptName(request.getReceiptName());
+        } else {
+            donation.setReceiptEmail(null);
+            donation.setReceiptName(null);
+        }
+
+        donation.setRejectionReason(null);
     }
 
     private void validateWholeAmount(BigDecimal amount) {
@@ -191,10 +251,44 @@ public class DonationServiceImpl implements DonationService {
             return;
         }
 
+        if (EDonationStatus.REJECTED.equals(status)) {
+            throw new InvalidDataException("Vui lòng dùng API từ chối riêng và cung cấp lý do từ chối");
+        }
+
         Donation donation = getDonation(id);
         donation.setStatus(status);
         donationRepository.save(donation);
         log.info("Donation updated status to {}", status);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void rejectDonation(Long id, String reason, String username) {
+        Donation donation = getDonation(id);
+
+        if (!EDonationVia.STAFF.equals(donation.getDonationVia())) {
+            throw new InvalidDataException("Chỉ hỗ trợ từ chối khoản quyên góp tạo bởi nhân sự nội bộ");
+        }
+
+        if (!EDonationStatus.PENDING_APPROVED.equals(donation.getStatus())) {
+            throw new InvalidDataException("Chỉ được từ chối khoản quyên góp đang ở trạng thái chờ duyệt");
+        }
+
+        String normalizedReason = reason == null ? "" : reason.trim();
+        if (normalizedReason.isBlank()) {
+            throw new InvalidDataException("Vui lòng nhập lý do từ chối");
+        }
+
+        Map<String, Object> beforeValues = buildDonationAuditMap(donation);
+
+        donation.setStatus(EDonationStatus.REJECTED);
+        donation.setRejectionReason(normalizedReason);
+        Donation savedDonation = donationRepository.save(donation);
+
+        auditLogService.logUpdate(EEntityType.DONATION, savedDonation.getId(),
+                "Từ chối khoản quyên góp nội bộ", beforeValues, buildDonationAuditMap(savedDonation));
+
+        log.info("Donation {} rejected by {}", savedDonation.getId(), username);
     }
 
     @Override
@@ -218,12 +312,14 @@ public class DonationServiceImpl implements DonationService {
     @Override
     public PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target,
                                                           EDonationType type, EPaymentMethod paymentMethod,
-                                                          BigDecimal minAmount, BigDecimal maxAmount, int page, int size) {
+                                                          BigDecimal minAmount, BigDecimal maxAmount,
+                                                          String sortBy, String sortDir,
+                                                          int page, int size) {
         log.info("Processing get all donations");
 
-        int pageNumber = (page > 0) ? page - 1 : 0;
-
-        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("id").descending());
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
 
         Specification<Donation> specification = DonationSpecification.filterDonation(
                 search, status, target, type, paymentMethod, minAmount, maxAmount
@@ -233,8 +329,8 @@ public class DonationServiceImpl implements DonationService {
 
         List<DonationResponse> data = donationPage.stream().map(this::toResponse).toList();
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)
@@ -277,11 +373,10 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by("id").descending());
+    public PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
         Page<Donation> donationPage = donationRepository.findByEventScopeId(eventId, pageable);
 
         List<DonationResponse> data = donationPage.getContent()
@@ -290,8 +385,8 @@ public class DonationServiceImpl implements DonationService {
                 .toList();
 
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)
@@ -299,11 +394,10 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by("id").descending());
+    public PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
         Page<Donation> donationPage = donationRepository.findByActivityId(activityId, pageable);
 
         List<DonationResponse> data = donationPage.getContent()
@@ -312,8 +406,8 @@ public class DonationServiceImpl implements DonationService {
                 .toList();
 
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)
@@ -367,11 +461,37 @@ public class DonationServiceImpl implements DonationService {
         BeanUtils.copyProperties(donation, response);
         response.setDonorId(donation.getDonor() != null ? donation.getDonor().getId() : null);
         response.setDonorPhone(donation.getDonor() != null ? donation.getDonor().getPhone() : null);
-        response.setEventId(donation.getEvent() != null ? donation.getEvent().getId() : null);
+        response.setDonorEmail(donation.getDonor() != null ? donation.getDonor().getEmail() : null);
+        response.setEventId(resolveEventId(donation));
         response.setActivityId(donation.getActivity() != null ? donation.getActivity().getId() : null);
-        response.setDonorName(donation.getDonor().getFullName());
+        response.setDonorName(donation.getDonor() != null ? donation.getDonor().getFullName() : null);
         response.setObjectName(getObjectName(donation, donation.getTarget()));
+        response.setEventName(resolveEventName(donation));
+        response.setActivityName(donation.getActivity() != null ? donation.getActivity().getName() : null);
+        response.setParentEventName(donation.getActivity() != null && donation.getActivity().getEvent() != null
+                ? donation.getActivity().getEvent().getName()
+                : null);
         return response;
+    }
+
+    private Long resolveEventId(Donation donation) {
+        if (donation.getEvent() != null) {
+            return donation.getEvent().getId();
+        }
+        if (donation.getActivity() != null && donation.getActivity().getEvent() != null) {
+            return donation.getActivity().getEvent().getId();
+        }
+        return null;
+    }
+
+    private String resolveEventName(Donation donation) {
+        if (donation.getEvent() != null) {
+            return donation.getEvent().getName();
+        }
+        if (donation.getActivity() != null && donation.getActivity().getEvent() != null) {
+            return donation.getActivity().getEvent().getName();
+        }
+        return null;
     }
 
     private String getObjectName(Donation donation, EDonationTarget target) {
@@ -444,7 +564,9 @@ public class DonationServiceImpl implements DonationService {
         values.put("receiptName", donation.getReceiptName());
         values.put("receiptEmail", donation.getReceiptEmail());
         values.put("paymentMethod", donation.getPaymentMethod() != null ? donation.getPaymentMethod().name() : null);
+        values.put("donatedAt", donation.getDonatedAt());
         values.put("status", donation.getStatus() != null ? donation.getStatus().name() : null);
+        values.put("rejectionReason", donation.getRejectionReason());
         values.put("donationVia", donation.getDonationVia() != null ? donation.getDonationVia().name() : null);
         return values;
     }

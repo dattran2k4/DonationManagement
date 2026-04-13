@@ -32,8 +32,6 @@ public class EventResponse {
 
     private String shortDescription;
 
-    private String description;
-
     private String location;
 
     private String content;
@@ -47,6 +45,8 @@ public class EventResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String createdBy;
 
     private LocalDateTime completedAt;
 

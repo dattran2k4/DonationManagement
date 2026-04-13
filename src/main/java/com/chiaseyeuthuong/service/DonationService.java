@@ -23,13 +23,19 @@ public interface DonationService {
 
     void updateStaffDonation(Long id, DonationRequest request);
 
+    void submitForApproval(Long id);
+
     void changeStatusDonation(EDonationStatus status, Long id);
+
+    void rejectDonation(Long id, String reason, String username);
 
     void confirmDonation(Long id, WebhookData webhookData);
 
     PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target,
                                                    EDonationType type, EPaymentMethod paymentMethod,
-                                                   BigDecimal minAmount, BigDecimal maxAmount, int page, int size);
+                                                   BigDecimal minAmount, BigDecimal maxAmount,
+                                                   String sortBy, String sortDir,
+                                                   int page, int size);
 
     DonationResponse getDonationResponseById(Long id);
 
@@ -43,9 +49,9 @@ public interface DonationService {
 
     List<DonationResponse> getRecentDonationsByDonorId(Long donorId, int limit);
 
-    PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size);
+    PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size, String sortBy, String sortDir);
 
-    PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size);
+    PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size, String sortBy, String sortDir);
 
     DonorWallResponse getDonorWall(EDonorWallPeriod period, Integer year, Integer month);
 }

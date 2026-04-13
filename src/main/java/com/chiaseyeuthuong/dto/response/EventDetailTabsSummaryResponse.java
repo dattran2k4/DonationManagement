@@ -9,4 +9,5 @@ public class EventDetailTabsSummaryResponse {
     private long activityCount;
     private long donorCount;
     private long donationCount;
+    private long auditLogCount;
 }

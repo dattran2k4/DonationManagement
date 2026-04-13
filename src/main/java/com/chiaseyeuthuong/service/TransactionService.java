@@ -8,7 +8,8 @@ import com.chiaseyeuthuong.model.Transaction;
 import vn.payos.model.webhooks.WebhookData;
 
 public interface TransactionService {
-    PageResponse<TransactionResponse> getTransactions(int page, int size, String search, EPaymentMethod method);
+    PageResponse<TransactionResponse> getTransactions(int page, int size, String search, EPaymentMethod method,
+                                                      String sortBy, String sortDir);
 
     void createTransactionFromPayOS(WebhookData data, Donation donation);
 

@@ -1,5 +1,6 @@
 package com.chiaseyeuthuong.security;
 
+import com.chiaseyeuthuong.common.EUserStatus;
 import com.chiaseyeuthuong.model.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,11 @@ public record CustomUserDetails(User user) implements UserDetails {
     @Override
     public String getUsername() {
         return user.getUsername();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.getStatus() == null || user.getStatus() == EUserStatus.ACTIVE;
     }
 
 }

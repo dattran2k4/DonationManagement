@@ -2,7 +2,7 @@ import { pages } from './helpers/donorTestUtils.js';
 
 describe('Các trang nội dung nhà hảo tâm', () => {
   const heroDonationSelector =
-    'div.relative.overflow-hidden a[href="/donations"].bg-primary';
+    'div.relative.overflow-hidden a[href="/quyen-gop"].bg-primary';
 
   it('TC-NHT-ACTVIEW-001 - Hiển thị đúng tên hoạt động', () => {
     cy.visit(pages.activity);

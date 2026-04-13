@@ -13,7 +13,7 @@ public class ActivityController {
 
     private final ActivityService activityService;
 
-    @GetMapping("/activities/{slug}")
+    @GetMapping({"/activities/{slug}", "/hoat-dong/{slug}"})
     public String showActivityDetailPage(@PathVariable String slug, Model model) {
 
         model.addAttribute("activity", activityService.getPublicActivityBySlug(slug));

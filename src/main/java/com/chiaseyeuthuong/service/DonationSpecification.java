@@ -49,12 +49,25 @@ public class DonationSpecification {
             }
 
             if (StringUtils.hasLength(search)) {
-                String pattern = String.format("%%%s%%", search.trim().toLowerCase());
+                String normalizedSearch = search.trim().toLowerCase();
+                String pattern = String.format("%%%s%%", normalizedSearch);
 
                 Join<Donation, Donor> donorJoin = root.join("donor");
-                predicate = cb.and(predicate, cb.or(
-                        cb.like(cb.lower(root.get("memoCode")), pattern),
-                        cb.like(cb.lower(donorJoin.get("fullName")), pattern)));
+                Predicate searchPredicate = cb.like(cb.lower(donorJoin.get("fullName")), pattern);
+
+                String normalizedIdText = normalizedSearch.replace("dnt-", "").replace("#", "").trim();
+                if (normalizedIdText.matches("\\d+")) {
+                    try {
+                        Long donationId = Long.parseLong(normalizedIdText);
+                        searchPredicate = cb.or(
+                                searchPredicate,
+                                cb.equal(root.get("id"), donationId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+
+                predicate = cb.and(predicate, searchPredicate);
             }
             return predicate;
         };

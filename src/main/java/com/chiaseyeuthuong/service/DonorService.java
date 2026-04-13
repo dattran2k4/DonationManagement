@@ -36,9 +36,9 @@ public interface DonorService {
 
     List<OrganizationRoleTypeResponse> getActiveOrganizationRoleTypes();
 
-    List<DonorPersonRelationshipResponse> getPersonRelationships(Long donorId);
+    List<DonorPersonRelationshipResponse> getPersonRelationships(Long donorId, String sortBy, String sortDir);
 
-    List<DonorOrganizationRelationshipResponse> getOrganizationRelationships(Long donorId);
+    List<DonorOrganizationRelationshipResponse> getOrganizationRelationships(Long donorId, String sortBy, String sortDir);
 
     long createPersonRelationship(Long donorId, DonorPersonRelationshipRequest request);
 
@@ -52,13 +52,13 @@ public interface DonorService {
 
     void deactivateOrganizationRelationship(Long donorId, Long relationshipId);
 
-    PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size);
+    PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size, String sortBy, String sortDir);
 
     PageResponse<DonorDonationHistoryResponse> getDonorDonationsByEmail(String email, String code, int page, int size);
 
-    PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size);
+    PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size, String sortBy, String sortDir);
 
-    PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size);
+    PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size, String sortBy, String sortDir);
 
     long getDorCountByObjectId(Long objectId, EEntityType type);
 
@@ -67,4 +67,6 @@ public interface DonorService {
     BigDecimal getConfirmedDonationTotalAmount(Long donorId, EDonationStatus status);
 
     void sendLookupCodeIfEmailExists(String email);
+
+    void deleteDonor(Long donorId);
 }

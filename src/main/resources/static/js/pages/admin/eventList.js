@@ -1,17 +1,26 @@
-import {eventApi} from '../../apis/eventApi.js';
-import {renderPagination} from '../../components/pagination.js';
-import {bindExcelActions} from '../../utils/excelTransfer.js';
-const canManageEvents = window.__CAN_MANAGE_EVENTS__ === true;
+import { eventApi } from '../../apis/eventApi.js';
+import { renderPagination } from '../../components/pagination.js';
+import { bindExcelActions } from '../../utils/excelTransfer.js';
+import { formatVnd } from '../../utils/currency.js';
+import { bindSortButtons, debounce, readStateFromUrl, syncStateToUrl } from '../../utils/adminTable.js';
 
-const state = {
+const DEFAULT_STATE = {
     page: 1,
     size: 50,
     search: '',
     status: '',
     categoryId: '',
-    sortBy: 'id',
+    sortBy: 'startDate',
     sortDir: 'desc'
 };
+
+const QUERY_PARAM_MAP = {
+    categoryId: 'categoryIds'
+};
+
+const state = readStateFromUrl(DEFAULT_STATE, {
+    paramMap: QUERY_PARAM_MAP
+});
 
 const elements = {
     tableBody: document.getElementById('eventTableBody'),
@@ -19,20 +28,22 @@ const elements = {
     searchInput: document.getElementById('searchFilter'),
     statusSelect: document.getElementById('statusFilter'),
     categorySelect: document.getElementById('categoryFilter'),
-    sortSelect: document.getElementById('sortFilter'),
-    actionHeader: document.getElementById('eventActionHeader'),
+    sortButtons: document.querySelectorAll('[data-event-sort]'),
     exportBtn: document.getElementById('eventExportBtn'),
+    templateBtn: document.getElementById('eventTemplateBtn'),
     importBtn: document.getElementById('eventImportBtn'),
     importInput: document.getElementById('eventImportInput')
 };
 
-let searchDebounceId = null;
+let sortController;
 
-// Hàm tiện ích format tiền tệ rút gọn (VD: 650000000 -> 650tr)
+const formatEventCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `EVT-${String(id).padStart(8, '0')}`;
+};
+
 const formatMoney = (amount) => {
-    if (amount >= 1000000000) return (amount / 1000000000).toFixed(1).replace('.0', '') + ' tỷ';
-    if (amount >= 1000000) return (amount / 1000000).toFixed(0) + 'tr';
-    return amount.toLocaleString('vi-VN') + 'đ';
+    return formatVnd(amount);
 };
 
 // Hàm tiện ích lấy style cho Badge Trạng thái
@@ -79,29 +90,16 @@ const renderTable = (data) => {
         // Tính phần trăm gây quỹ
         const percent = item.targetAmount > 0 ? Math.min(Math.round((item.currentAmount / item.targetAmount) * 100), 100) : 0;
         const isCompleted = percent >= 100;
-        const isLocked = item.status === 'COMPLETED';
-        const actionHtml = `
-                <a href="/admin/events/${item.id}" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Xem chi tiết">
-                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                </a>
-            ${(!canManageEvents || isLocked)
-            ? ''
-            : `
-                <a href="/admin/events/${item.id}/form" class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-1 rounded-md hover:bg-primary/10 transition-all group/btn" title="Cập nhật">
-                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                </a>
-            `}`;
-
         return `
         <tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-            <td class="px-6 py-4 font-mono text-sm text-slate-700 dark:text-slate-300">#${item.id}</td>
+            <td class="px-6 py-4 font-mono text-sm text-slate-700 dark:text-slate-300">${formatEventCode(item.id)}</td>
             <td class="px-6 py-4">
                 <div class="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" 
                      style="background-image: url('${item.thumbnailUrl || '/images/default-event.png'}')"></div>
             </td>
             <td class="px-6 py-4">
-                <div class="font-semibold text-slate-900 dark:text-slate-100">${item.name}</div>
-                <div class="text-xs text-slate-500 mt-0.5">Mã: ${item.code || `EVT-${item.id}`}</div>
+                <a href="/admin/events/${item.id}" class="font-semibold text-slate-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors">${item.name}</a>
+                <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatEventCode(item.id)}</div>
             </td>
             <td class="px-6 py-4">
                 ${getStatusBadge(item.status)}
@@ -122,23 +120,45 @@ const renderTable = (data) => {
                 ${item.startDate} - ${item.endDate}
             </td>
             <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-2">
-                    ${actionHtml}
-                </div>
+                <a href="/admin/events/${item.id}" class="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-primary hover:text-primary">
+                    Chi tiết
+                </a>
             </td>
         </tr>
         `;
     }).join('');
 };
 
+const getDefaultSortDirection = (field) => {
+    if (['code', 'startDate', 'currentAmount'].includes(field)) {
+        return 'desc';
+    }
+
+    if (field === 'status') {
+        return 'asc';
+    }
+
+    return 'asc';
+};
+
+const syncFilterControls = () => {
+    if (elements.searchInput) elements.searchInput.value = state.search;
+    if (elements.statusSelect) elements.statusSelect.value = state.status;
+    if (elements.categorySelect) elements.categorySelect.value = state.categoryId;
+};
+
 const loadEvents = async () => {
     try {
+        syncStateToUrl(state, DEFAULT_STATE, {
+            paramMap: QUERY_PARAM_MAP
+        });
         const response = await eventApi.getEvents(buildEventQueryParams());
         const data = response.data;
         renderTable(data.data);
 
         renderPagination(data, elements.paginationContainer, (newPage) => {
             state.page = newPage;
+            sortController?.updateIndicators();
             loadEvents();
         });
     } catch (error) {
@@ -161,14 +181,11 @@ function buildEventQueryParams() {
 
 function bindFilters() {
     if (elements.searchInput) {
-        elements.searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchDebounceId);
-            searchDebounceId = setTimeout(() => {
-                state.search = e.target.value.trim();
-                state.page = 1;
-                loadEvents();
-            }, 300);
-        });
+        elements.searchInput.addEventListener('input', debounce((e) => {
+            state.search = e.target.value.trim();
+            state.page = 1;
+            loadEvents();
+        }, 300));
     }
 
     if (elements.statusSelect) {
@@ -187,28 +204,33 @@ function bindFilters() {
         });
     }
 
-    if (elements.sortSelect) {
-        elements.sortSelect.addEventListener('change', (e) => {
-            const [sortBy, sortDir] = e.target.value.split(':');
-            state.sortBy = sortBy || 'id';
-            state.sortDir = sortDir || 'desc';
-            state.page = 1;
-            loadEvents();
-        });
-    }
+    sortController = bindSortButtons({
+        state,
+        buttons: elements.sortButtons,
+        datasetKey: 'eventSort',
+        getDefaultDirection: getDefaultSortDirection,
+        onChange: () => loadEvents()
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    syncFilterControls();
     bindFilters();
+    sortController?.updateIndicators();
     bindExcelActions({
         exportButton: elements.exportBtn,
+        templateButton: elements.templateBtn,
         importButton: elements.importBtn,
         importInput: elements.importInput,
         exportUrl: '/api/admin/excel/events/export',
+        templateUrl: '/api/admin/excel/events/template',
         importUrl: '/api/admin/excel/events/import',
         getExportParams: buildEventQueryParams,
         fallbackFilename: 'su-kien.xlsx',
+        templateFallbackFilename: 'mau-import-su-kien.xlsx',
         successExportMessage: 'Xuất Excel sự kiện thành công.',
+        successTemplateMessage: 'Đã bắt đầu tải file mẫu sự kiện.',
+        moduleLabel: 'sự kiện',
         onImportSuccess: () => {
             state.page = 1;
             loadEvents();

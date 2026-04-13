@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.common.EEventStatus;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.EventRequest;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.dto.response.CategoryResponse;
@@ -15,6 +16,7 @@ import com.chiaseyeuthuong.exception.BusinessException;
 import com.chiaseyeuthuong.model.Category;
 import com.chiaseyeuthuong.model.Event;
 import com.chiaseyeuthuong.repository.ActivityRepository;
+import com.chiaseyeuthuong.repository.AuditLogRepository;
 import com.chiaseyeuthuong.repository.CategoryRepository;
 import com.chiaseyeuthuong.repository.EventRepository;
 import com.chiaseyeuthuong.repository.DonationRepository;
@@ -29,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -51,45 +52,69 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "EVENT-SERVICE")
 public class EventServiceImpl implements EventService {
+    private static final String EVENT_NOT_FOUND_MESSAGE = "Không tìm thấy sự kiện";
+    private static final String CATEGORY_NOT_FOUND_MESSAGE = "Không tìm thấy danh mục";
+    private static final String END_DATE_BEFORE_START_DATE_MESSAGE = "Thời gian kết thúc sự kiện không được trước thời gian bắt đầu";
+    private static final String UPCOMING_START_DATE_IN_PAST_MESSAGE = "Sự kiện sắp diễn ra không được có thời gian bắt đầu trong quá khứ";
+    private static final String ONGOING_START_DATE_INVALID_MESSAGE = "Sự kiện đang diễn ra phải có thời gian bắt đầu trong hiện tại hoặc quá khứ";
+    private static final String ONGOING_END_DATE_INVALID_MESSAGE = "Sự kiện đang diễn ra phải có thời gian kết thúc trong hiện tại hoặc tương lai";
+    private static final String COMPLETED_START_DATE_INVALID_MESSAGE = "Sự kiện đã hoàn thành không được có thời gian bắt đầu trong tương lai";
+    private static final String COMPLETED_END_DATE_INVALID_MESSAGE = "Sự kiện đã hoàn thành không được có thời gian kết thúc trong tương lai";
+    private static final String EVENT_UPDATE_WINDOW_EXPIRED_MESSAGE = "Sự kiện chỉ được cập nhật trong vòng 3 ngày sau khi kết thúc";
+    private static final String INVALID_EVENT_STATUS_MESSAGE = "Trạng thái sự kiện không hợp lệ";
 
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final ActivityRepository activityRepository;
     private final DonationRepository donationRepository;
+    private final AuditLogRepository auditLogRepository;
 
     private final DonorService donorService;
     private final ActivityService activityService;
     private final DonationService donationService;
     private final AuditLogService auditLogService;
 
+    private static final Map<String, String> EVENT_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "id"),
+            Map.entry("name", "name"),
+            Map.entry("categoryName", "category.name"),
+            Map.entry("location", "location"),
+            Map.entry("startDate", "startDate"),
+            Map.entry("endDate", "endDate"),
+            Map.entry("targetAmount", "targetAmount"),
+            Map.entry("currentAmount", "currentAmount"),
+            Map.entry("createdAt", "createdAt"),
+            Map.entry("updatedAt", "updatedAt")
+    );
+    private static final Map<String, String> EVENT_UNSAFE_SORT_FIELDS = Map.of(
+            "status", "case when status = 'DRAFT' then 1 when status = 'UPCOMING' then 2 when status = 'ONGOING' then 3 when status = 'COMPLETED' then 4 else 99 end"
+    );
+
     public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
     @Override
     public PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, boolean excludeDraft, String... categoryIds) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-
-        Sort.Direction sortDirection = ("asc".equals(sortDir)) ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        String sortField = StringUtils.hasLength(sortBy) ? sortBy : "id";
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(sortDirection, sortField));
+        Sort sort = SortParamUtils.buildSort(EVENT_SORT_FIELDS, EVENT_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "startDate", Sort.Direction.DESC, "id");
 
         Specification<Event> specification = EventSpecification.filterEvent(search, status, excludeDraft, categoryIds);
 
-        Page<Event> eventPage = eventRepository.findAll(specification, pageRequest);
+        Page<Event> eventPage = eventRepository.findAll(specification, SortParamUtils.buildPageRequest(page, size, sort, 10));
 
         List<EventResponse> eventResponses = eventPage.getContent().stream()
                 .map(event -> toResponse(event, false))
                 .toList();
 
         return PageResponse.<EventResponse>builder()
-                .page(page)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(eventPage.getTotalElements())
                 .totalPages(eventPage.getTotalPages())
                 .data(eventResponses)
@@ -98,36 +123,60 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public long saveEvent(EventRequest request) {
-        log.info("Processing saving event: ");
-        validateEventSchedule(request);
-        boolean isCreate = request.getId() == null;
-        Event event = isCreate ? new Event() : findEventById(request.getId());
-        Map<String, Object> beforeValues = isCreate ? Map.of() : buildEventAuditMap(event);
+    @Transactional(rollbackFor = Exception.class)
+    public long createEvent(EventRequest request) {
+        log.info("Processing creating event");
 
-        if (!isCreate && EEventStatus.COMPLETED.equals(event.getStatus())) {
-            throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
+        if (request.getStatus() == null) {
+            request.setStatus(EEventStatus.DRAFT);
         }
+        validateEventSchedule(request);
 
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        Event event = new Event();
+        toEntity(event, request);
+
+        Event result = eventRepository.save(event);
+        log.info("Created event: {} ", result.getId());
+
+        Map<String, Object> afterValues = buildEventAuditMap(result);
+        auditLogService.logCreate(EEntityType.EVENT, result.getId(), "Tạo mới sự kiện", afterValues);
+        return result.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public long updateEvent(Long id, EventRequest request) {
+        log.info("Processing updating event: {}", id);
+
+        Event event = findEventById(id);
+        validateEventUpdateWindow(event);
+
+        if (request.getStatus() == null) {
+            request.setStatus(event.getStatus());
+        }
+        validateEventSchedule(request);
+
+        Map<String, Object> beforeValues = buildEventAuditMap(event);
+
+        toEntity(event, request);
+
+        Event result = eventRepository.save(event);
+        log.info("Updated event: {} ", result.getId());
+
+        auditLogService.logUpdate(EEntityType.EVENT, result.getId(),
+                "Cập nhật sự kiện", beforeValues, buildEventAuditMap(result));
+        return result.getId();
+    }
+
+    private void toEntity(Event event, EventRequest request) {
+        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException(CATEGORY_NOT_FOUND_MESSAGE));
         event.setCategory(category);
 
         BeanUtils.copyProperties(request, event);
+        event.setCurrentAmount(defaultAmount(request.getCurrentAmount()));
+        event.setTargetAmount(defaultAmount(request.getTargetAmount()));
         Slugify slugify = Slugify.builder().build();
-        String slug = slugify.slugify(request.getName());
-        event.setSlug(slug);
-
-        Event result = eventRepository.save(event);
-        log.info("Saved event: {} ", result.getId());
-
-        Map<String, Object> afterValues = buildEventAuditMap(result);
-        if (isCreate) {
-            auditLogService.logCreate(EEntityType.EVENT, result.getId(), "Tạo mới sự kiện", afterValues);
-        } else {
-            auditLogService.logUpdate(EEntityType.EVENT, result.getId(), "Cập nhật sự kiện", beforeValues, afterValues);
-        }
-
-        return result.getId();
+        event.setSlug(slugify.slugify(request.getName()));
     }
 
     private void validateEventSchedule(EventRequest request) {
@@ -141,33 +190,39 @@ public class EventServiceImpl implements EventService {
         }
 
         if (endDate.isBefore(startDate)) {
-            throw new BusinessException("Thời gian kết thúc sự kiện không được trước thời gian bắt đầu");
+            throw new BusinessException(END_DATE_BEFORE_START_DATE_MESSAGE);
         }
 
         switch (status) {
-            case DRAFT -> {
-            }
-            case UPCOMING -> {
-                if (startDate.isBefore(today)) {
-                    throw new BusinessException("Sự kiện sắp diễn ra không được có thời gian bắt đầu trong quá khứ");
-                }
-            }
-            case ONGOING -> {
-                if (startDate.isAfter(today)) {
-                    throw new BusinessException("Sự kiện đang diễn ra phải có thời gian bắt đầu trong hiện tại hoặc quá khứ");
-                }
-                if (endDate.isBefore(today)) {
-                    throw new BusinessException("Sự kiện đang diễn ra phải có thời gian kết thúc trong hiện tại hoặc tương lai");
-                }
-            }
-            case COMPLETED -> {
-                if (startDate.isAfter(today)) {
-                    throw new BusinessException("Sự kiện đã hoàn thành không được có thời gian bắt đầu trong tương lai");
-                }
-                if (endDate.isAfter(today)) {
-                    throw new BusinessException("Sự kiện đã hoàn thành không được có thời gian kết thúc trong tương lai");
-                }
-            }
+            case DRAFT -> log.info("Skip schedule validation for draft event");
+            case UPCOMING -> validateUpcomingSchedule(startDate, today);
+            case ONGOING -> validateOngoingSchedule(startDate, endDate, today);
+            case COMPLETED -> validateCompletedSchedule(startDate, endDate, today);
+            default -> throw new BusinessException(INVALID_EVENT_STATUS_MESSAGE);
+        }
+    }
+
+    private void validateUpcomingSchedule(LocalDate startDate, LocalDate today) {
+        if (startDate.isBefore(today)) {
+            throw new BusinessException(UPCOMING_START_DATE_IN_PAST_MESSAGE);
+        }
+    }
+
+    private void validateOngoingSchedule(LocalDate startDate, LocalDate endDate, LocalDate today) {
+        if (startDate.isAfter(today)) {
+            throw new BusinessException(ONGOING_START_DATE_INVALID_MESSAGE);
+        }
+        if (endDate.isBefore(today)) {
+            throw new BusinessException(ONGOING_END_DATE_INVALID_MESSAGE);
+        }
+    }
+
+    private void validateCompletedSchedule(LocalDate startDate, LocalDate endDate, LocalDate today) {
+        if (startDate.isAfter(today)) {
+            throw new BusinessException(COMPLETED_START_DATE_INVALID_MESSAGE);
+        }
+        if (endDate.isAfter(today)) {
+            throw new BusinessException(COMPLETED_END_DATE_INVALID_MESSAGE);
         }
     }
 
@@ -178,51 +233,22 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event findEventById(Long id) {
-        return eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        return eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_MESSAGE));
     }
 
     @Override
     public EventResponse getEventBySlug(String slug) {
-        Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_MESSAGE));
         return toResponse(event, false);
     }
 
     @Override
     public EventResponse getPublicEventBySlug(String slug) {
-        Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+        Event event = eventRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_MESSAGE));
         if (EEventStatus.DRAFT.equals(event.getStatus())) {
-            throw new ResourceNotFoundException("Event not found");
+            throw new ResourceNotFoundException(EVENT_NOT_FOUND_MESSAGE);
         }
         return toResponse(event, true);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void updateStatus(EEventStatus status, Long id) {
-        Event event = findEventById(id);
-        EEventStatus oldStatus = event.getStatus();
-
-        if (EEventStatus.COMPLETED.equals(event.getStatus())) {
-            throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
-        }
-
-        event.setStatus(status);
-
-        if (status.equals(EEventStatus.COMPLETED)) {
-            event.setCompletedAt(LocalDateTime.now());
-        }
-
-        eventRepository.save(event);
-        log.info("Updated status event {} to: {} ", event.getId(), status);
-        if (!Objects.equals(oldStatus, status)) {
-            auditLogService.logStatusChange(
-                    EEntityType.EVENT,
-                    event.getId(),
-                    "Cập nhật trạng thái sự kiện",
-                    oldStatus != null ? oldStatus.name() : null,
-                    status != null ? status.name() : null
-            );
-        }
     }
 
     @Override
@@ -234,8 +260,34 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int syncStatusesBySchedule() {
+        LocalDate today = LocalDate.now();
+        List<Event> events = eventRepository.findAll();
+        List<Event> changedEvents = new ArrayList<>();
+
+        for (Event event : events) {
+            EEventStatus currentStatus = event.getStatus();
+            EEventStatus nextStatus = calculateStatusByDate(event, today);
+            if (!Objects.equals(currentStatus, nextStatus)) {
+                event.setStatus(nextStatus);
+                if (EEventStatus.COMPLETED.equals(nextStatus) && event.getCompletedAt() == null) {
+                    event.setCompletedAt(LocalDateTime.now());
+                }
+                changedEvents.add(event);
+            }
+        }
+
+        if (!changedEvents.isEmpty()) {
+            eventRepository.saveAll(changedEvents);
+        }
+
+        return changedEvents.size();
+    }
+
+    @Override
     public void updateEventCurrentAmount(Event event, BigDecimal amount) {
-        BigDecimal newCurrentAmount = event.getCurrentAmount().add(amount);
+        BigDecimal newCurrentAmount = defaultAmount(event.getCurrentAmount()).add(amount);
         event.setCurrentAmount(newCurrentAmount);
         eventRepository.save(event);
 
@@ -249,22 +301,20 @@ public class EventServiceImpl implements EventService {
             Event event = null;
             if (id != null) {
                 event = findEventById(id);
-                if (EEventStatus.COMPLETED.equals(event.getStatus())) {
-                    throw new BusinessException("Sự kiện đã hoàn thành không thể cập nhật");
-                }
+                validateEventUpdateWindow(event);
             }
             File directory = new File(UPLOAD_DIR);
             if (!directory.exists()) directory.mkdirs();
 
-            String safeName = file.getOriginalFilename().replace("\\s+", "_");
+            String safeName = Objects.requireNonNull(file.getOriginalFilename()).replace("\\s+", "_");
 
-            String fileName = UUID.randomUUID().toString() + "_" + safeName;
+            String fileName = "%s_%s".formatted(UUID.randomUUID(), safeName);
             Path filePath = Paths.get(UPLOAD_DIR + fileName);
 
             //Lưu file vật lý
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            String fileUrl = "/uploads/thumbnails/" + fileName;
+            String fileUrl = "/uploads/thumbnails/%s".formatted(fileName);
 
             if (event != null) {
                 event.setThumbnailUrl(fileUrl);
@@ -289,25 +339,26 @@ public class EventServiceImpl implements EventService {
                 .activityCount(activityRepository.countByEventId(eventId))
                 .donorCount(donorService.getDorCountByObjectId(eventId, EEntityType.EVENT))
                 .donationCount(donationRepository.countByEventScopeId(eventId))
+                .auditLogCount(auditLogRepository.countByEntityTypeAndEntityId(EEntityType.EVENT, eventId))
                 .build();
     }
 
     @Override
-    public PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size) {
+    public PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return activityService.getActivitiesByEventId(eventId, page, size);
+        return activityService.getActivitiesByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     @Override
-    public PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size) {
+    public PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return donorService.getDonorsByEventId(eventId, page, size);
+        return donorService.getDonorsByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     @Override
-    public PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size) {
+    public PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return donationService.getDonationsByEventId(eventId, page, size);
+        return donationService.getDonationsByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     private EventResponse toResponse(Event event) {
@@ -353,5 +404,37 @@ public class EventServiceImpl implements EventService {
         values.put("currentAmount", event.getCurrentAmount());
         values.put("thumbnailUrl", event.getThumbnailUrl());
         return values;
+    }
+
+    private void validateEventUpdateWindow(Event event) {
+        LocalDate endDate = event.getEndDate();
+        if (endDate == null) {
+            return;
+        }
+
+        LocalDate lastEditableDate = endDate.plusDays(3);
+        if (LocalDate.now().isAfter(lastEditableDate)) {
+            throw new BusinessException(EVENT_UPDATE_WINDOW_EXPIRED_MESSAGE);
+        }
+    }
+
+    private EEventStatus calculateStatusByDate(Event event, LocalDate today) {
+        if (event.getStartDate() == null || event.getEndDate() == null) {
+            return event.getStatus();
+        }
+        if (EEventStatus.DRAFT.equals(event.getStatus())) {
+            return EEventStatus.DRAFT;
+        }
+        if (today.isBefore(event.getStartDate())) {
+            return EEventStatus.UPCOMING;
+        }
+        if (today.isAfter(event.getEndDate())) {
+            return EEventStatus.COMPLETED;
+        }
+        return EEventStatus.ONGOING;
+    }
+
+    private BigDecimal defaultAmount(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 }

@@ -1,8 +1,21 @@
-import {transactionApi} from '../../apis/transactionApi.js';
-import {renderPagination} from '../../components/pagination.js';
-import {bindExcelActions} from '../../utils/excelTransfer.js';
+import { transactionApi } from '../../apis/transactionApi.js';
+import { renderPagination } from '../../components/pagination.js';
+import { bindExcelActions } from '../../utils/excelTransfer.js';
+import { formatVnd } from '../../utils/currency.js';
+import { bindSortButtons, debounce, readStateFromUrl, syncStateToUrl } from '../../utils/adminTable.js';
 
-const state = {page: 1, size: 50, search: '', method: ''};
+const DEFAULT_STATE = {
+    page: 1,
+    size: 50,
+    search: '',
+    method: '',
+    sortBy: 'transactionDateTime',
+    sortDir: 'desc'
+};
+
+const state = readStateFromUrl(DEFAULT_STATE);
+
+let sortController;
 
 const elements = {
     tableBody: document.getElementById('transactionTableBody'),
@@ -10,29 +23,44 @@ const elements = {
     searchInput: document.getElementById('transactionSearchInput'),
     methodFilter: document.getElementById('transactionMethodFilter'),
     resetFilterBtn: document.getElementById('transactionResetFilterBtn'),
+    sortButtons: document.querySelectorAll('[data-transaction-sort]'),
     exportBtn: document.getElementById('transactionExportBtn'),
+    templateBtn: document.getElementById('transactionTemplateBtn'),
     importBtn: document.getElementById('transactionImportBtn'),
     importInput: document.getElementById('transactionImportInput')
 };
 
+const syncFilterControls = () => {
+    if (elements.searchInput) elements.searchInput.value = state.search;
+    if (elements.methodFilter) elements.methodFilter.value = state.method;
+};
+
+const getDefaultSortDirection = (field) => {
+    if (['code', 'transactionCode', 'amount', 'transactionDateTime'].includes(field)) {
+        return 'desc';
+    }
+
+    return 'asc';
+};
+
 // 1. Format tiền tệ
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+    return formatVnd(amount);
 };
 
 // 2. Format Thời gian
 const formatDateTime = (dateStr) => {
-    if (!dateStr) return {date: '---', time: ''};
+    if (!dateStr) return { date: '---', time: '' };
     const date = new Date(dateStr);
     return {
-        date: date.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}),
-        time: date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})
+        date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
 };
 
 // 3. Render Row Giao dịch
 const renderTransactionRow = (txn) => {
-    const dt = formatDateTime(txn.createdAt);
+    const dt = formatDateTime(txn.transactionDateTime || txn.createdAt);
     const isUnlinked = !txn.donationCode;
 
     // CSS Class cho hàng Unlinked
@@ -77,6 +105,7 @@ const renderTransactionRow = (txn) => {
 // 4. Hàm Load dữ liệu chính
 const loadTransactions = async () => {
     try {
+        syncStateToUrl(state, DEFAULT_STATE);
         const response = await transactionApi.getAllTransactions(state);
 
         const pageData = response.data;
@@ -93,20 +122,13 @@ const loadTransactions = async () => {
 
         renderPagination(pageData, elements.paginationContainer, (newPage) => {
             state.page = newPage;
+            sortController?.updateIndicators();
             loadTransactions();
         });
 
     } catch (error) {
         console.error("Lỗi khi tải giao dịch:", error);
     }
-};
-
-const debounce = (fn, delay = 350) => {
-    let timeoutId;
-    return (...args) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => fn(...args), delay);
-    };
 };
 
 const bindFilters = () => {
@@ -138,23 +160,40 @@ const bindFilters = () => {
             loadTransactions();
         });
     }
+
+    sortController = bindSortButtons({
+        state,
+        buttons: elements.sortButtons,
+        datasetKey: 'transactionSort',
+        getDefaultDirection: getDefaultSortDirection,
+        onChange: () => loadTransactions()
+    });
 };
 
 // Khởi chạy khi load trang
 document.addEventListener('DOMContentLoaded', () => {
+    syncFilterControls();
     bindFilters();
+    sortController?.updateIndicators();
     bindExcelActions({
         exportButton: elements.exportBtn,
+        templateButton: elements.templateBtn,
         importButton: elements.importBtn,
         importInput: elements.importInput,
         exportUrl: '/api/admin/excel/transactions/export',
+        templateUrl: '/api/admin/excel/transactions/template',
         importUrl: '/api/admin/excel/transactions/import',
         getExportParams: () => ({
             search: state.search,
-            method: state.method
+            method: state.method,
+            sortBy: state.sortBy,
+            sortDir: state.sortDir
         }),
         fallbackFilename: 'giao-dich.xlsx',
+        templateFallbackFilename: 'mau-import-giao-dich.xlsx',
         successExportMessage: 'Xuất Excel giao dịch thành công.',
+        successTemplateMessage: 'Đã bắt đầu tải file mẫu giao dịch.',
+        moduleLabel: 'giao dịch',
         onImportSuccess: () => {
             state.page = 1;
             loadTransactions();

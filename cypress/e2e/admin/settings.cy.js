@@ -48,7 +48,7 @@ describe('Cài đặt Hệ thống', () => {
 
     cy.get('#ORG_NAME').clear().type('CLB Admin Cypress');
     cy.get('#ORG_PHONE').clear().type('0911222333');
-    cy.contains('button', 'Lưu cấu hình').click();
+    cy.contains('button', /^Lưu$/).click();
 
     cy.wait('@saveSettings');
     cy.get('@alert').should('have.been.calledWith', 'Đã lưu cấu hình hệ thống thành công.');
@@ -182,7 +182,7 @@ describe('Cài đặt Hệ thống', () => {
     cy.get('#ORG_LOGO_URL').should('have.value', '/uploads/images/logo-cypress.png');
     cy.get('#ORG_LOGO_URL_preview').should('have.attr', 'src').and('include', 'blob:');
 
-    cy.contains('button', 'Lưu cấu hình').click();
+    cy.contains('button', /^Lưu$/).click();
 
     cy.wait('@uploadImage');
     cy.wait('@saveSettings');

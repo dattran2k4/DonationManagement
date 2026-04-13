@@ -90,6 +90,7 @@ describe('Đăng nhập và thanh điều hướng quản trị', () => {
         'Sự kiện',
         'Hoạt động',
         'Nhà hảo tâm',
+        'Thành viên',
         'Quyên góp',
         'Lịch sử giao dịch',
         'Cài đặt'

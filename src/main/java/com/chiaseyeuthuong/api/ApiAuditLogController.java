@@ -31,11 +31,14 @@ public class ApiAuditLogController {
                                     @RequestParam(required = false) String actorUsername,
                                     @RequestParam(required = false) String keyword,
                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+                                    @RequestParam(required = false) String sortBy,
+                                    @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách audit log thành công")
-                .data(auditLogService.getAuditLogs(page, size, entityType, entityId, action, actorUsername, keyword, fromDate, toDate))
+                .data(auditLogService.getAuditLogs(page, size, entityType, entityId, action, actorUsername, keyword, fromDate, toDate,
+                        sortBy, sortDir))
                 .build();
     }
 }

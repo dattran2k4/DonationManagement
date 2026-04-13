@@ -3,6 +3,7 @@ package com.chiaseyeuthuong.api;
 import com.chiaseyeuthuong.common.*;
 import com.chiaseyeuthuong.dto.response.ApiResponse;
 import com.chiaseyeuthuong.dto.response.ExcelImportResult;
+import com.chiaseyeuthuong.excel.ExcelErrorReportStorageService;
 import com.chiaseyeuthuong.service.AdminExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -30,6 +31,7 @@ public class ApiAdminExcelController {
     private static final DateTimeFormatter FILE_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     private final AdminExcelService adminExcelService;
+    private final ExcelErrorReportStorageService excelErrorReportStorageService;
 
     @GetMapping("/events/export")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
@@ -40,6 +42,13 @@ public class ApiAdminExcelController {
                                                @RequestParam(required = false) String... categoryIds) {
         byte[] data = adminExcelService.exportEvents(search, status, sortBy, sortDir, categoryIds);
         return buildExcelResponse(data, "su-kien");
+    }
+
+    @GetMapping("/events/template")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadEventTemplate() {
+        byte[] data = adminExcelService.downloadEventsTemplate();
+        return buildExcelResponse(data, "mau-import-su-kien");
     }
 
     @PostMapping("/events/import")
@@ -56,9 +65,18 @@ public class ApiAdminExcelController {
     @GetMapping("/activities/export")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ResponseEntity<byte[]> exportActivities(@RequestParam(required = false) String search,
-                                                   @RequestParam(required = false) EActivityStatus status) {
-        byte[] data = adminExcelService.exportActivities(search, status);
+                                                   @RequestParam(required = false) EActivityStatus status,
+                                                   @RequestParam(required = false) String sortBy,
+                                                   @RequestParam(required = false) String sortDir) {
+        byte[] data = adminExcelService.exportActivities(search, status, sortBy, sortDir);
         return buildExcelResponse(data, "hoat-dong");
+    }
+
+    @GetMapping("/activities/template")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadActivityTemplate() {
+        byte[] data = adminExcelService.downloadActivitiesTemplate();
+        return buildExcelResponse(data, "mau-import-hoat-dong");
     }
 
     @PostMapping("/activities/import")
@@ -82,6 +100,13 @@ public class ApiAdminExcelController {
         return buildExcelResponse(data, "nha-hao-tam");
     }
 
+    @GetMapping("/donors/template")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadDonorTemplate() {
+        byte[] data = adminExcelService.downloadDonorsTemplate();
+        return buildExcelResponse(data, "mau-import-nha-hao-tam");
+    }
+
     @PostMapping("/donors/import")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ApiResponse importDonors(@RequestParam("file") MultipartFile file) {
@@ -101,9 +126,19 @@ public class ApiAdminExcelController {
                                                   @RequestParam(required = false) EDonationType type,
                                                   @RequestParam(required = false) EPaymentMethod paymentMethod,
                                                   @RequestParam(required = false) BigDecimal minAmount,
-                                                  @RequestParam(required = false) BigDecimal maxAmount) {
-        byte[] data = adminExcelService.exportDonations(search, status, target, type, paymentMethod, minAmount, maxAmount);
+                                                  @RequestParam(required = false) BigDecimal maxAmount,
+                                                  @RequestParam(required = false) String sortBy,
+                                                  @RequestParam(required = false) String sortDir) {
+        byte[] data = adminExcelService.exportDonations(search, status, target, type, paymentMethod, minAmount, maxAmount,
+                sortBy, sortDir);
         return buildExcelResponse(data, "quyen-gop");
+    }
+
+    @GetMapping("/donations/template")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadDonationTemplate() {
+        byte[] data = adminExcelService.downloadDonationsTemplate();
+        return buildExcelResponse(data, "mau-import-quyen-gop");
     }
 
     @PostMapping("/donations/import")
@@ -120,9 +155,18 @@ public class ApiAdminExcelController {
     @GetMapping("/transactions/export")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ResponseEntity<byte[]> exportTransactions(@RequestParam(required = false) String search,
-                                                     @RequestParam(required = false) EPaymentMethod method) {
-        byte[] data = adminExcelService.exportTransactions(search, method);
+                                                     @RequestParam(required = false) EPaymentMethod method,
+                                                     @RequestParam(required = false) String sortBy,
+                                                     @RequestParam(required = false) String sortDir) {
+        byte[] data = adminExcelService.exportTransactions(search, method, sortBy, sortDir);
         return buildExcelResponse(data, "giao-dich");
+    }
+
+    @GetMapping("/transactions/template")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadTransactionTemplate() {
+        byte[] data = adminExcelService.downloadTransactionsTemplate();
+        return buildExcelResponse(data, "mau-import-giao-dich");
     }
 
     @PostMapping("/transactions/import")
@@ -134,6 +178,24 @@ public class ApiAdminExcelController {
                 .message(result.getMessage())
                 .data(result)
                 .build();
+    }
+
+    @GetMapping("/error-reports/{token}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
+    public ResponseEntity<byte[]> downloadErrorReport(@PathVariable String token) {
+        ExcelErrorReportStorageService.StoredExcelReport report = excelErrorReportStorageService.get(token);
+
+        MediaType mediaType = report.contentType() != null
+                ? MediaType.parseMediaType(report.contentType())
+                : EXCEL_MEDIA_TYPE;
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(report.filename(), StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .body(report.content());
     }
 
     private ResponseEntity<byte[]> buildExcelResponse(byte[] data, String moduleName) {

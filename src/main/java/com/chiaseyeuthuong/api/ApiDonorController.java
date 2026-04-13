@@ -39,7 +39,7 @@ public class ApiDonorController {
                                     @RequestParam(required = false, defaultValue = "10") int size,
                                     @RequestParam(required = false) String search,
                                     @RequestParam(required = false) EDonorType type,
-                                    @RequestParam(required = false, defaultValue = "id") String sortBy,
+                                    @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                     @RequestParam(required = false, defaultValue = "desc") String sortDir) {
         return ApiResponse.builder()
                 .status(200)
@@ -80,21 +80,25 @@ public class ApiDonorController {
 
     @GetMapping("/{id}/relationships/person")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
-    public ApiResponse getPersonRelationships(@PathVariable Long id) {
+    public ApiResponse getPersonRelationships(@PathVariable Long id,
+                                             @RequestParam(required = false) String sortBy,
+                                             @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách mối quan hệ cá nhân thành công")
-                .data(donorService.getPersonRelationships(id))
+                .data(donorService.getPersonRelationships(id, sortBy, sortDir))
                 .build();
     }
 
     @GetMapping("/{id}/relationships/organizations")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
-    public ApiResponse getOrganizationRelationships(@PathVariable Long id) {
+    public ApiResponse getOrganizationRelationships(@PathVariable Long id,
+                                                    @RequestParam(required = false) String sortBy,
+                                                    @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách mối quan hệ tổ chức thành công")
-                .data(donorService.getOrganizationRelationships(id))
+                .data(donorService.getOrganizationRelationships(id, sortBy, sortDir))
                 .build();
     }
 
@@ -102,11 +106,13 @@ public class ApiDonorController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getDonorDonations(@PathVariable Long id,
                                          @RequestParam(required = false, defaultValue = "1") int page,
-                                         @RequestParam(required = false, defaultValue = "10") int size) {
+                                         @RequestParam(required = false, defaultValue = "10") int size,
+                                         @RequestParam(required = false) String sortBy,
+                                         @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Get donor donation history successfully")
-                .data(donorService.getDonorDonations(id, page, size))
+                .data(donorService.getDonorDonations(id, page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -233,6 +239,16 @@ public class ApiDonorController {
         return ApiResponse.builder()
                 .status(200)
                 .message("Đã ngừng sử dụng mối quan hệ tổ chức")
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ApiResponse deleteDonor(@PathVariable Long id) {
+        donorService.deleteDonor(id);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Xóa nhà hảo tâm thành công")
                 .build();
     }
 }

@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<section th:fragment="adminActionToolbar(createUrl, showCreate, showCancel, cancelUrl, showSave, showRefresh, showWebsite, websiteUrl, showDelete)"
+         class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3">
+        <a th:if="${showCreate}" th:href="${createUrl}"
+           class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-lg font-semibold text-white hover:bg-emerald-700">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Tạo mới
+        </a>
+
+        <a th:if="${showCancel and cancelUrl != null and !#strings.isEmpty(cancelUrl)}"
+           th:href="${cancelUrl}" id="cancelBtn"
+           class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+            <span class="material-symbols-outlined text-[18px]">undo</span>
+            Hủy bỏ
+        </a>
+
+        <button th:if="${showCancel and (cancelUrl == null or #strings.isEmpty(cancelUrl))}" type="button" id="cancelBtn"
+                class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+            <span class="material-symbols-outlined text-[18px]">undo</span>
+            Hủy bỏ
+        </button>
+
+        <button th:if="${showSave}" type="button" id="saveBtn" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')"
+                class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+            <span class="material-symbols-outlined text-[18px]">save</span>
+            Lưu
+        </button>
+
+        <button th:if="${showRefresh}" type="button" id="refreshBtn"
+                class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+            Làm mới
+        </button>
+
+        <a th:if="${showWebsite}" th:href="${websiteUrl}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+            <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            Xem website
+        </a>
+
+        <button th:if="${showDelete}" type="button" id="deleteBtn"
+                class="ml-auto inline-flex items-center gap-2 rounded-2xl bg-red-500 px-6 py-3 text-lg font-semibold text-white hover:bg-red-600"
+        >
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+            Xóa
+        </button>
+    </div>
+</section>
+</body>
+</html>

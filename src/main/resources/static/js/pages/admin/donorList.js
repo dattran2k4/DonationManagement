@@ -1,17 +1,19 @@
-import {donorApi} from '../../apis/donorApi.js';
-import {renderPagination} from '../../components/pagination.js';
-import {bindExcelActions} from '../../utils/excelTransfer.js';
+import { donorApi } from '../../apis/donorApi.js';
+import { renderPagination } from '../../components/pagination.js';
+import { bindExcelActions } from '../../utils/excelTransfer.js';
+import { formatVnd } from '../../utils/currency.js';
+import { bindSortButtons, debounce, readStateFromUrl, syncStateToUrl } from '../../utils/adminTable.js';
 
-const canManageDonors = window.__CAN_MANAGE_DONORS__ === true;
-
-const state = {
+const DEFAULT_STATE = {
     page: 1,
     size: 50,
     search: '',
     type: '',
-    sortBy: 'id',
+    sortBy: 'createdAt',
     sortDir: 'desc'
 };
+
+const state = readStateFromUrl(DEFAULT_STATE);
 
 const elements = {
     tableBody: document.getElementById('donorTableBody'),
@@ -20,9 +22,13 @@ const elements = {
     typeFilter: document.getElementById('donorTypeFilter'),
     sortButtons: document.querySelectorAll('[data-donor-sort]'),
     exportBtn: document.getElementById('donorExportBtn'),
+    templateBtn: document.getElementById('donorTemplateBtn'),
     importBtn: document.getElementById('donorImportBtn'),
     importInput: document.getElementById('donorImportInput')
 };
+
+let latestRequestId = 0;
+let sortController;
 
 const getDefaultSortDirection = (field) => {
     if (['createdAt', 'numberOfDonations', 'totalDonationAmount'].includes(field)) {
@@ -32,24 +38,14 @@ const getDefaultSortDirection = (field) => {
     return 'asc';
 };
 
-const getSortIcon = (field) => {
-    if (state.sortBy !== field) return 'unfold_more';
-    return state.sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward';
-};
+const syncFilterControls = () => {
+    if (elements.searchInput) {
+        elements.searchInput.value = state.search;
+    }
 
-const updateSortIndicators = () => {
-    elements.sortButtons.forEach((button) => {
-        const field = button.dataset.donorSort;
-        const icon = button.querySelector('[data-sort-icon]');
-        const isActive = state.sortBy === field;
-
-        button.classList.toggle('text-primary', isActive);
-        button.classList.toggle('font-bold', isActive);
-
-        if (icon) {
-            icon.textContent = getSortIcon(field);
-        }
-    });
+    if (elements.typeFilter) {
+        elements.typeFilter.value = state.type;
+    }
 };
 
 const getInitials = (name) => {
@@ -57,14 +53,19 @@ const getInitials = (name) => {
 };
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+    return formatVnd(amount);
+};
+
+const formatDonorCode = (id) => {
+    if (!id && id !== 0) return '---';
+    return `DON-${String(id).padStart(8, '0')}`;
 };
 
 const getTypeBadge = (type) => {
     const isOrg = type === 'ORGANIZATION';
     const config = isOrg
-        ? {text: 'Tổ chức', class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'}
-        : {text: 'Cá nhân', class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'};
+        ? { text: 'Tổ chức', class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' }
+        : { text: 'Cá nhân', class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' };
 
     return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.class}">${config.text}</span>`;
 };
@@ -89,14 +90,18 @@ const renderDonorRow = (donor) => {
                 <div class="h-10 w-10 shrink-0">${avatarHtml}</div>
                     <div class="ml-4">
                         ${isOrg && orgInfo ? `
-                            <div class="text-sm font-semibold text-text-main dark:text-white">
+                            <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">
                                 ${orgInfo.name}
-                            </div>
+                            </a>
+                            <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
                             <div class="text-xs text-text-secondary mt-0.5 flex items-center">
                                 <span class="material-symbols-outlined text-[12px] mr-1">person_pin</span>
                                 Đại diện: ${orgInfo.representative || '---'}
                             </div>
-                    ` : `<div class="text-sm font-semibold text-text-main dark:text-white">${donor.fullName}</div>`}
+                    ` : `
+                        <a href="/admin/donors/${donor.id}" class="text-sm font-semibold text-text-main dark:text-white hover:text-primary dark:hover:text-primary transition-colors">${donor.fullName}</a>
+                        <div class="text-xs text-slate-500 mt-0.5">Mã: ${formatDonorCode(donor.id)}</div>
+                    `}
                     </div>
             </div>
         </td>
@@ -124,27 +129,21 @@ const renderDonorRow = (donor) => {
         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-text-main dark:text-white">
             ${formatCurrency(donor.totalDonationAmount)}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium sticky right-0 bg-surface-light dark:bg-surface-dark group-hover:bg-slate-50 dark:group-hover:bg-white/5 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.45)] transition-colors">
-            <div class="flex items-center justify-center gap-2">
-                <button onclick="viewDonorProfile(${donor.id})" class="text-slate-400 hover:text-primary p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Xem hồ sơ">
-                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                </button>
-                ${canManageDonors ? `
-                    <button onclick="editDonor(${donor.id})" class="text-slate-400 hover:text-blue-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chỉnh sửa">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                ` : ''}
-                <button onclick="viewDonationHistory(${donor.id})" class="text-slate-400 hover:text-orange-500 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Lịch sử quyên góp">
-                    <span class="material-symbols-outlined text-[20px]">history</span>
-                </button>
-            </div>
+        <td class="px-6 py-4 whitespace-nowrap text-right sticky right-0 bg-white dark:bg-slate-900">
+            <a href="/admin/donors/${donor.id}" class="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-primary hover:text-primary">
+                Chi tiết
+            </a>
         </td>
     </tr>`;
 };
 
 const loadDonors = async () => {
+    const requestId = ++latestRequestId;
+
     try {
+        syncStateToUrl(state, DEFAULT_STATE);
         const response = await donorApi.getAllDonors(state);
+        if (requestId !== latestRequestId) return;
 
         const pageData = response.data;
         const donors = pageData.data || [];
@@ -157,19 +156,13 @@ const loadDonors = async () => {
 
         renderPagination(pageData, elements.paginationContainer, (newPage) => {
             state.page = newPage;
+            sortController?.updateIndicators();
             loadDonors();
         });
     } catch (error) {
-        console.error("Error loading donors:", error);
+        if (requestId !== latestRequestId) return;
+        console.error('Error loading donors:', error);
     }
-};
-
-const debounce = (fn, delay = 350) => {
-    let timeoutId;
-    return (...args) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => fn(...args), delay);
-    };
 };
 
 const bindFilters = () => {
@@ -189,32 +182,26 @@ const bindFilters = () => {
         });
     }
 
-    elements.sortButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-            const field = button.dataset.donorSort;
-
-            if (state.sortBy === field) {
-                state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
-            } else {
-                state.sortBy = field;
-                state.sortDir = getDefaultSortDirection(field);
-            }
-
-            state.page = 1;
-            updateSortIndicators();
-            loadDonors();
-        });
+    sortController = bindSortButtons({
+        state,
+        buttons: elements.sortButtons,
+        datasetKey: 'donorSort',
+        getDefaultDirection: getDefaultSortDirection,
+        onChange: () => loadDonors()
     });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    syncFilterControls();
     bindFilters();
-    updateSortIndicators();
+    sortController?.updateIndicators();
     bindExcelActions({
         exportButton: elements.exportBtn,
+        templateButton: elements.templateBtn,
         importButton: elements.importBtn,
         importInput: elements.importInput,
         exportUrl: '/api/admin/excel/donors/export',
+        templateUrl: '/api/admin/excel/donors/template',
         importUrl: '/api/admin/excel/donors/import',
         getExportParams: () => ({
             search: state.search,
@@ -223,7 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
             sortDir: state.sortDir
         }),
         fallbackFilename: 'nha-hao-tam.xlsx',
+        templateFallbackFilename: 'mau-import-nha-hao-tam.xlsx',
         successExportMessage: 'Xuất Excel nhà hảo tâm thành công.',
+        successTemplateMessage: 'Đã bắt đầu tải file mẫu nhà hảo tâm.',
+        moduleLabel: 'nhà hảo tâm',
         onImportSuccess: () => {
             state.page = 1;
             loadDonors();
@@ -234,10 +224,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.viewDonorProfile = (id) => {
     window.location.href = `/admin/donors/${id}`;
-};
-window.editDonor = (id) => {
-    window.location.href = `/admin/donors/${id}/form`;
-};
-window.viewDonationHistory = (id) => {
-    window.location.href = `/admin/donors/${id}/donations`;
 };

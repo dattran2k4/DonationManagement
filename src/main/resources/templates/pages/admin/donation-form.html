@@ -8,44 +8,53 @@
     <title>Tạo Đơn Quyên Góp</title>
 </head>
 <body>
-<div layout:fragment="content" class="flex flex-col overflow-hidden">
-    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
-        <div class="flex items-center gap-2">
-            <span class="text-slate-400">Quyên góp</span>
-            <span class="material-icons text-sm text-slate-400">chevron_right</span>
-            <span id="donationFormBreadcrumbLabel" class="font-semibold text-slate-700 dark:text-slate-200">Tạo mới quyên góp</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <a th:href="@{/admin/donations}"
-               class="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/donations/form}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/donations}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
                 Hủy bỏ
             </a>
             <button id="submitDonation"
                     form="donationForm"
                     type="submit"
-                    class="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2">
-                <span class="material-icons text-sm font-bold">save</span>
-                Tạo đơn quyên góp
+                    class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+            <button class="admin-action-btn admin-action-btn--ghost" type="button" onclick="window.location.reload()">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
             </button>
         </div>
-    </header>
-    <div class="flex-1 overflow-y-auto py-2">
-        <div class="max-w-6xl">
-            <div class="py-6 space-y-2">
-                <h1 id="donationFormPageTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Tạo mới quyên góp</h1>
-                <p id="donationFormPageDescription" class="text-sm text-slate-500 dark:text-slate-400">
+    </div>
+
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <div class="admin-detail-title-row">
+                    <h1 id="donationFormPageTitle" class="admin-detail-title">Tạo mới quyên góp</h1>
+                    <span id="donationFormBreadcrumbLabel"
+                          class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        Tạo mới quyên góp
+                    </span>
+                </div>
+                <p id="donationFormPageDescription" class="admin-detail-subtitle">
                     Tạo nhanh một khoản quyên góp nội bộ từ dữ liệu nhà hảo tâm có sẵn.
                 </p>
             </div>
-            <form id="donationForm" class="grid grid-cols-1 lg:grid-cols-3 gap-8 py-6">
+        </div>
+
+        <form id="donationForm" class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
                 <div class="lg:col-span-2 space-y-8">
-                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                    <section class="admin-info-card">
                         <div class="flex items-start justify-between gap-4 mb-6">
                             <div>
-                                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <span class="material-icons text-primary">volunteer_activism</span>
-                                    Thông tin nhà hảo tâm
-                                </h2>
+                                <h2 class="admin-info-card__title !mb-0">Thông tin nhà hảo tâm</h2>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
                                     Tìm kiếm và chọn đúng nhà hảo tâm theo tên hoặc số điện thoại trước khi tạo khoản quyên góp.
                                 </p>
@@ -78,11 +87,8 @@
                         </div>
                     </section>
 
-                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                            <span class="material-icons text-primary">payments</span>
-                            Thông tin quyên góp
-                        </h2>
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin quyên góp</h2>
                         <div class="space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
@@ -124,11 +130,8 @@
                 </div>
 
                 <div class="space-y-8">
-                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                            <span class="material-icons text-primary">flag</span>
-                            Mục tiêu quyên góp
-                        </h2>
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Mục tiêu quyên góp</h2>
                         <div class="space-y-4">
                             <p class="text-sm text-slate-500 dark:text-slate-400">
                                 Chọn một mục tiêu phù hợp cho khoản đóng góp này. Bạn có thể để độc lập hoặc gắn vào sự kiện, hoạt động cụ thể.
@@ -215,11 +218,8 @@
                         </div>
                     </section>
 
-                    <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                            <span class="material-icons text-primary">receipt_long</span>
-                            Yêu cầu biên lai
-                        </h2>
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Yêu cầu biên lai</h2>
                         <div class="space-y-6">
                             <div class="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-4">
                                 <label class="relative inline-flex items-center cursor-pointer">

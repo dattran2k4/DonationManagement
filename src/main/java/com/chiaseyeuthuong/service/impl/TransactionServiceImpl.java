@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EPaymentMethod;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.response.PageResponse;
 import com.chiaseyeuthuong.dto.response.TransactionResponse;
 import com.chiaseyeuthuong.exception.ResourceNotFoundException;
@@ -22,27 +23,43 @@ import vn.payos.model.webhooks.WebhookData;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "TRANSACTION-SERVICE")
 public class TransactionServiceImpl implements TransactionService {
 
+    private static final Map<String, String> TRANSACTION_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "transactionCode"),
+            Map.entry("transactionCode", "transactionCode"),
+            Map.entry("amount", "amount"),
+            Map.entry("counterAccountName", "counterAccountName"),
+            Map.entry("counterAccountNumber", "counterAccountNumber"),
+            Map.entry("donationCode", "donation.memoCode"),
+            Map.entry("paymentMethod", "paymentMethod"),
+            Map.entry("transactionDateTime", "transactionDateTime"),
+            Map.entry("createdAt", "createdAt")
+    );
+
     private final TransactionRepository transactionRepository;
 
     @Override
-    public PageResponse<TransactionResponse> getTransactions(int page, int size, String search, EPaymentMethod method) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
+    public PageResponse<TransactionResponse> getTransactions(int page, int size, String search, EPaymentMethod method,
+                                                             String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(TRANSACTION_SORT_FIELDS, Map.of(),
+                sortBy, sortDir, "transactionDateTime", Sort.Direction.DESC, "id");
 
         Specification<Transaction> specification = TransactionSpecification.filterTransaction(search, method);
-        Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageRequest);
+        Page<Transaction> transactionPage = transactionRepository.findAll(specification,
+                SortParamUtils.buildPageRequest(page, size, sort, 10));
 
         List<TransactionResponse> response = transactionPage.stream().map(this::toResponse).toList();
 
         return PageResponse.<TransactionResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(transactionPage.getTotalElements())
                 .totalPages(transactionPage.getTotalPages())
                 .data(response)

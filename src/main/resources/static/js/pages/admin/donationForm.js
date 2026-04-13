@@ -2,6 +2,7 @@ import {donationApi} from '../../apis/donationApi.js';
 import {donorApi} from '../../apis/donorApi.js';
 import {eventApi} from '../../apis/eventApi.js';
 import {activityApi} from '../../apis/activityApi.js';
+import {toDateInputValue, toStartOfDayLocalDateTime, todayDateInputValue} from '../../utils/date.js';
 
 const form = document.getElementById('donationForm');
 const donorSearchWrapper = document.getElementById('donorSearchWrapper');
@@ -10,6 +11,7 @@ const donorDropdown = document.getElementById('donorDropdown');
 const donorDropdownList = document.getElementById('donorDropdownList');
 const donorIdInput = document.getElementById('donorId');
 const amountInput = document.getElementById('amount');
+const donatedAtInput = document.getElementById('donatedAt');
 const paymentMethodInput = document.getElementById('paymentMethod');
 const messageInput = document.getElementById('message');
 const targetNoneCheckbox = document.getElementById('targetNone');
@@ -55,6 +57,13 @@ const parseLongOrNull = (value) => {
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
 };
+
+const prefillDonorContext = {
+    id: parseLongOrNull(window.__PREFILL_DONOR_ID__),
+    fullName: window.__PREFILL_DONOR_NAME__ || '',
+    phone: window.__PREFILL_DONOR_PHONE__ || ''
+};
+const returnToUrl = window.__DONATION_RETURN_TO__ || '/admin/donations';
 
 const debounce = (fn, delay = 350) => {
     let timeoutId;
@@ -116,6 +125,14 @@ const selectDonor = (donor) => {
     hideDonorDropdown();
 };
 
+const applyPrefillDonorContext = () => {
+    if (isEditMode) return;
+    if (!prefillDonorContext.id) return;
+    if (donorIdInput?.value) return;
+
+    selectDonor(prefillDonorContext);
+};
+
 const resetEventSelection = () => {
     if (eventIdInput) eventIdInput.value = '';
     if (eventSearchInput) eventSearchInput.value = '';
@@ -140,6 +157,11 @@ const selectActivity = (activityItem) => {
     if (!activityItem) return;
     if (activityIdInput) activityIdInput.value = activityItem.id || '';
     if (activitySearchInput) activitySearchInput.value = activityItem.name || '';
+    if (eventIdInput && activityItem.eventId) eventIdInput.value = activityItem.eventId;
+    if (eventSearchInput && activityItem.eventName) eventSearchInput.value = activityItem.eventName;
+    if (activityItem.eventId && activityItem.eventName) {
+        setLookupMeta(eventSelectedMeta, 'Chưa chọn sự kiện nào.', activityItem.eventId, activityItem.eventName);
+    }
     setLookupMeta(activitySelectedMeta, 'Chưa chọn hoạt động nào.', activityItem.id, activityItem.name || 'Không rõ tên');
     hideLookupDropdown(activityDropdown);
 };
@@ -212,6 +234,8 @@ const renderActivityDropdown = (activities) => {
         <button type="button"
                 data-activity-id="${activityItem.id}"
                 data-activity-name="${escapeHtml(activityItem.name || '')}"
+                data-activity-event-id="${escapeHtml(activityItem.event?.id || '')}"
+                data-activity-event-name="${escapeHtml(activityItem.event?.name || '')}"
                 class="grid w-full grid-cols-[minmax(0,1fr)_110px] gap-4 px-3 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
             <span class="min-w-0">
                 <span class="block font-medium text-slate-900 dark:text-slate-100 truncate">${escapeHtml(activityItem.name || 'Không rõ tên')}</span>
@@ -358,12 +382,20 @@ const validatePayload = (payload, target) => {
         alert('Vui lòng chọn phương thức thanh toán.');
         return false;
     }
+    if (!payload.donatedAt) {
+        alert('Vui lòng chọn ngày quyên góp.');
+        return false;
+    }
     if (target === 'event' && !payload.eventId) {
         alert('Vui lòng chọn sự kiện đang diễn ra.');
         return false;
     }
     if (target === 'activity' && !payload.activityId) {
         alert('Vui lòng chọn hoạt động đang diễn ra.');
+        return false;
+    }
+    if (target === 'activity' && !payload.eventId) {
+        alert('Hoạt động phải thuộc một sự kiện hợp lệ.');
         return false;
     }
     if (payload.needReceipt) {
@@ -387,6 +419,7 @@ const fillForm = (donation) => {
         donorSearchInput.value = `${donation.donorName || 'Không rõ tên'} - ${donation.donorPhone || '---'}`;
     }
     if (amountInput) amountInput.value = donation.amount ?? '';
+    if (donatedAtInput) donatedAtInput.value = toDateInputValue(donation.donatedAt) || todayDateInputValue();
     if (paymentMethodInput) paymentMethodInput.value = donation.paymentMethod || 'BANK_TRANSFER_ONLINE';
     if (messageInput) messageInput.value = donation.message || '';
 
@@ -455,12 +488,15 @@ const handleSubmit = async (event) => {
     const payload = {
         donorId: parseLongOrNull(rawData.donorId),
         amount: Number(rawData.amount),
+        donatedAt: toStartOfDayLocalDateTime(rawData.donatedAt),
         paymentMethod: rawData.paymentMethod,
         message: rawData.message?.trim() || null,
         needReceipt,
         receiptName: needReceipt ? (rawData.receiptName?.trim() || null) : null,
         receiptEmail: needReceipt ? (rawData.receiptEmail?.trim() || null) : null,
-        eventId: target === 'event' ? parseLongOrNull(rawData.eventId) : null,
+        eventId: target === 'activity'
+            ? parseLongOrNull(rawData.eventId)
+            : (target === 'event' ? parseLongOrNull(rawData.eventId) : null),
         activityId: target === 'activity' ? parseLongOrNull(rawData.activityId) : null
     };
 
@@ -472,7 +508,7 @@ const handleSubmit = async (event) => {
             : await donationApi.createStaffDonation(payload);
         if (response.status === 200) {
             alert(response.message || (isEditMode ? 'Cập nhật đơn quyên góp thành công.' : 'Tạo đơn quyên góp thành công.'));
-            window.location.href = isEditMode ? `/admin/donations/${donationId}` : '/admin/donations';
+            window.location.href = isEditMode ? `/admin/donations/${donationId}` : returnToUrl;
         }
     } catch (error) {
         const errorMessage = error?.message || (isEditMode
@@ -503,6 +539,10 @@ const init = async () => {
     activateTarget('none');
     toggleReceiptFields();
     bindTargetEvents();
+
+    if (donatedAtInput && !donatedAtInput.value) {
+        donatedAtInput.value = todayDateInputValue();
+    }
 
     if (donorSearchInput) {
         donorSearchInput.addEventListener('focus', () => {
@@ -572,7 +612,9 @@ const init = async () => {
 
             selectActivity({
                 id: optionButton.getAttribute('data-activity-id'),
-                name: optionButton.getAttribute('data-activity-name') || optionButton.children[0]?.textContent || ''
+                name: optionButton.getAttribute('data-activity-name') || optionButton.children[0]?.textContent || '',
+                eventId: parseLongOrNull(optionButton.getAttribute('data-activity-event-id')),
+                eventName: optionButton.getAttribute('data-activity-event-name') || ''
             });
         });
     }
@@ -606,6 +648,7 @@ const init = async () => {
 
     form.addEventListener('submit', handleSubmit);
 
+    applyPrefillDonorContext();
     await loadDonationDetail();
 };
 

@@ -8,34 +8,49 @@
     <title>Thêm Nhà hảo tâm</title>
 </head>
 <body>
-<div layout:fragment="content">
-    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-slate-400">chevron_right</span>
-            <h2 id="donorHeaderTitle" class="text-lg font-semibold">Thêm Nhà hảo tâm mới</h2>
-        </div>
-        <div class="flex items-center gap-4">
-            <button id="saveDonorHeaderBtn" type="button"
-                    class="flex items-center gap-2 bg-primary px-4 py-2 rounded-lg text-white font-bold text-sm hover:brightness-105 transition-all">
-                <span class="material-symbols-outlined text-[20px]">save</span>
-                <span id="saveDonorHeaderText">Lưu thông tin</span>
+<div layout:fragment="content" class="admin-page-stack">
+    <div class="admin-toolbar">
+        <div class="admin-toolbar-group">
+            <a th:href="@{/admin/donors/form}" class="admin-action-btn admin-action-btn--primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo mới
+            </a>
+            <a th:href="@{/admin/donors}" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Hủy bỏ
+            </a>
+            <button id="saveDonorHeaderBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                <span id="saveDonorHeaderText">Lưu</span>
+            </button>
+            <button class="admin-action-btn admin-action-btn--ghost" type="button" onclick="window.location.reload()">
+                <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                Làm mới
             </button>
         </div>
-    </header>
+    </div>
 
-    <div class="flex-1 overflow-y-auto p-8">
-        <div class="max-w-4xl mx-auto">
-            <div class="mb-8">
-                <h3 id="donorPageTitle" class="text-2xl font-bold mb-2">Thông tin Nhà hảo tâm</h3>
-                <p id="donorPageDescription" class="text-slate-500 dark:text-slate-400">Vui lòng chọn loại hình và điền đầy đủ thông tin bên
-                    dưới.</p>
+    <div class="admin-detail-frame">
+        <div class="admin-detail-header">
+            <div>
+                <div id="donorPageTitle" class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+                    Thông tin Nhà hảo tâm
+                </div>
+                <div class="admin-detail-title-row">
+                    <h1 id="donorHeaderTitle" class="admin-detail-title">Thêm Nhà hảo tâm mới</h1>
+                </div>
+                <p id="donorPageDescription" class="admin-detail-subtitle">
+                    Vui lòng chọn loại hình và điền đầy đủ thông tin bên dưới.
+                </p>
             </div>
+        </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <form id="donorForm" class="p-8 space-y-6">
+        <div class="mx-auto w-full max-w-4xl">
+            <div class="admin-info-card overflow-hidden">
+                <form id="donorForm" class="space-y-6">
                     <input type="hidden" id="donorId" name="id" th:value="${donorId}">
 
-                    <div class="bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center w-auto">
+                    <div class="flex items-center rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800/70">
                         <div class="flex-1 items-center">
                             <input checked class="hidden" id="donor_personal" name="donor_type" type="radio"
                                    value="INDIVIDUAL"/>
@@ -145,13 +160,13 @@
                     </div>
                 </form>
 
-                <div class="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                <div class="mt-8 flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-0 pt-6 dark:border-slate-800 dark:bg-transparent">
                     <a th:href="@{/admin/donors}"
-                       class="px-6 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                       class="admin-action-btn admin-action-btn--ghost">
                         Hủy bỏ
                     </a>
                     <button id="saveDonorBtn" type="button"
-                            class="px-8 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-105 transition-all shadow-md shadow-primary/10">
+                            class="admin-action-btn admin-action-btn--primary">
                         Xác nhận lưu
                     </button>
                 </div>

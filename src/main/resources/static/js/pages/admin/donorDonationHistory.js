@@ -1,5 +1,7 @@
 import {donorApi} from '../../apis/donorApi.js';
 import {renderPagination} from '../../components/pagination.js';
+import {getDonationStatusUi, formatDonationCode} from '../../utils/donationUi.js';
+import {formatVnd} from '../../utils/currency.js';
 
 const donorId = window.__DONOR_ID__;
 const state = {
@@ -12,7 +14,7 @@ const elements = {
     paginationContainer: document.getElementById('paginationContainer')
 };
 
-const formatCurrency = (amount) => `${new Intl.NumberFormat('vi-VN').format(amount || 0)} đ`;
+const formatCurrency = (amount) => formatVnd(amount);
 
 const formatDateTime = (dateTime) => {
     if (!dateTime) return '---';
@@ -26,15 +28,8 @@ const formatDateTime = (dateTime) => {
 };
 
 const getStatusBadge = (status, label) => {
-    const styles = {
-        PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
-        PENDING_APPROVED: 'bg-amber-100 text-amber-800',
-        CONFIRMED: 'bg-emerald-100 text-emerald-800',
-        CANCELLED: 'bg-slate-100 text-slate-700',
-        REJECTED: 'bg-red-100 text-red-700',
-        FAILED: 'bg-rose-100 text-rose-700'
-    };
-    return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status] || 'bg-slate-100 text-slate-700'}">${label || status || '---'}</span>`;
+    const statusUi = getDonationStatusUi(status);
+    return `<span class="${statusUi.className}">${label || statusUi.text || status || '---'}</span>`;
 };
 
 const renderTable = (rows) => {
@@ -45,7 +40,7 @@ const renderTable = (rows) => {
 
     elements.tableBody.innerHTML = rows.map((item) => `
         <tr class="hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-700">#${item.donationCode || `DN-${item.donationId}`}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-700">${item.donationCode || formatDonationCode(item.donationId)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">${item.targetLabel || '---'}</td>
             <td class="px-6 py-4 text-sm">
                 ${item.targetUrl

@@ -1,15 +1,12 @@
 package com.chiaseyeuthuong.model;
 
 import com.chiaseyeuthuong.common.ERole;
+import com.chiaseyeuthuong.common.EUserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,11 +39,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private EUserStatus status;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = EUserStatus.ACTIVE;
+        }
+    }
 }

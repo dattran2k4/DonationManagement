@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "donations")
-public class Donation {
+public class Donation extends AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,14 +63,6 @@ public class Donation {
     @Column(name = "donation_via")
     private EDonationVia donationVia;
 
-    @Column(name = "approval_required")
-    private Boolean approvalRequired;
-
-    // Thay vì dùng ID thuần, dùng quan hệ để dễ dàng lấy thông tin Admin
-    @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
-    private User createdBy;
-
     @ManyToOne
     @JoinColumn(name = "confirmed_by_user_id")
     private User confirmedBy;
@@ -80,16 +70,11 @@ public class Donation {
     @Column(name = "donated_at")
     private LocalDateTime donatedAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
 
     @ManyToOne
     @JoinColumn(name = "event_id")

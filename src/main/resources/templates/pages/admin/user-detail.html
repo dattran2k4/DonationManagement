@@ -1,0 +1,120 @@
+<!doctype html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layouts/admin/admin-layout}"
+>
+<head>
+    <title>Chi tiết thành viên</title>
+</head>
+<body>
+<div layout:fragment="content" id="userDetailPage" th:attr="data-user-id=${userId}" class="space-y-6">
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center gap-3">
+            <a th:href="@{/admin/users}"
+               class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                <span class="material-symbols-outlined text-[18px]">undo</span>
+                Hủy bỏ
+            </a>
+
+            <button type="button" id="saveBtn" sec:authorize="hasRole('ADMIN')"
+                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu
+            </button>
+
+            <button type="button" id="refreshBtn"
+                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-lg font-semibold text-slate-700 hover:bg-slate-200">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Làm mới
+            </button>
+        </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <h1 id="formTitle" class="text-4xl font-black text-slate-900">
+            Thêm thành viên mới
+            <span th:if="${param.saved != null}" class="text-lg font-semibold text-slate-400">- Đã lưu</span>
+        </h1>
+        <div class="flex items-center gap-4">
+            <label for="userStatusToggle" class="text-sm font-semibold text-slate-900">Đang hoạt động</label>
+            <label class="relative inline-flex cursor-pointer items-center">
+                <input id="userStatusToggle" type="checkbox" class="peer sr-only" checked/>
+                <div class="h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-primary after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full"></div>
+            </label>
+        </div>
+    </section>
+
+    <section class="grid gap-5 xl:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="grid grid-cols-12 items-center gap-y-4">
+                <label class="col-span-4 text-sm font-medium text-slate-800">Tên thành viên <span class="text-red-500">*</span></label>
+                <input id="fullNameInput" type="text"
+                       class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-900 focus:border-primary focus:ring-primary"
+                       placeholder="Nhập tên thành viên"/>
+
+                <label class="col-span-4 text-sm font-medium text-slate-800">Mã thành viên</label>
+                <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-800">
+                    <span class="material-symbols-outlined text-[18px] text-slate-500">lock</span>
+                    <span id="memberCodeText">TV-000000</span>
+                </div>
+
+                <label class="col-span-4 text-sm font-medium text-slate-800">Số điện thoại <span class="text-red-500">*</span></label>
+                <input id="phoneInput" type="text"
+                       class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-900 focus:border-primary focus:ring-primary"
+                       placeholder="Nhập số điện thoại"/>
+
+                <label class="col-span-4 text-sm font-medium text-slate-800">Email <span class="text-red-500">*</span></label>
+                <input id="emailInput" type="email"
+                       class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-900 focus:border-primary focus:ring-primary"
+                       placeholder="Nhập email"/>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="grid grid-cols-12 items-center gap-y-4">
+                <label class="col-span-4 text-sm font-medium text-slate-800">Vai trò</label>
+                <div class="col-span-8 relative">
+                    <select id="roleSelect"
+                            class="appearance-none w-full rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 pr-10 text-base text-slate-900 focus:border-primary focus:ring-primary">
+                        <option value="STAFF">Thành viên</option>
+                        <option value="ACCOUNTING">Kế toán</option>
+                        <option value="ADMIN">Chủ nhiệm</option>
+                    </select>
+                    <span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-600">expand_more</span>
+                </div>
+
+                <label class="col-span-4 text-sm font-medium text-slate-800">Tạo lúc</label>
+                <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-700">
+                    <span class="material-symbols-outlined text-[18px] text-slate-500">lock</span>
+                    <span id="createdAtText">---</span>
+                </div>
+
+                <label class="col-span-4 text-sm font-medium text-slate-800">Tạo bởi</label>
+                <div class="col-span-8 flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-700">
+                    <span class="material-symbols-outlined text-[18px] text-slate-500">lock</span>
+                    <span id="createdByText">---</span>
+                </div>
+
+                <label th:if="${userId == null}" id="passwordLabel" class="col-span-4 text-sm font-medium text-slate-800">Mật khẩu</label>
+                <input id="passwordInput" type="password"
+                       th:if="${userId == null}"
+                       class="col-span-8 rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 text-base text-slate-900 focus:border-primary focus:ring-primary"
+                       placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"/>
+            </div>
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        window.__CAN_EDIT_USER__ = false;
+    </script>
+    <script th:inline="javascript" sec:authorize="hasRole('ADMIN')">
+        window.__CAN_EDIT_USER__ = true;
+    </script>
+    <script type="module" th:src="@{/js/pages/admin/userDetail.js}"></script>
+</th:block>
+</body>
+</html>

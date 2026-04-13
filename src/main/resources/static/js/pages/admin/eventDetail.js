@@ -1,6 +1,7 @@
-import {eventApi} from "../../apis/eventApi.js";
-import {auditLogApi} from "../../apis/auditLogApi.js";
-import {renderPagination} from "../../components/pagination.js";
+import { eventApi } from "../../apis/eventApi.js";
+import { auditLogApi } from "../../apis/auditLogApi.js";
+import { renderPagination } from "../../components/pagination.js";
+import { bindSortButtons } from "../../utils/adminTable.js";
 
 const state = {
     eventId: null,
@@ -8,22 +9,30 @@ const state = {
     activities: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "startDate",
+        sortDir: "desc"
     },
     donors: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "name",
+        sortDir: "asc"
     },
     donations: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "donatedAt",
+        sortDir: "desc"
     },
     auditLogs: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "createdAt",
+        sortDir: "desc"
     }
 };
 
@@ -47,11 +56,18 @@ const elements = {
     donorsTableBody: document.getElementById("eventDonorsTableBody"),
     donationsTableBody: document.getElementById("eventDonationsTableBody"),
     auditLogsTableBody: document.getElementById("eventAuditLogsTableBody"),
+    activitiesSortButtons: document.querySelectorAll("[data-event-activity-sort]"),
+    donorsSortButtons: document.querySelectorAll("[data-event-donor-sort]"),
+    donationsSortButtons: document.querySelectorAll("[data-event-donation-sort]"),
+    auditLogsSortButtons: document.querySelectorAll("[data-event-audit-sort]"),
     activitiesPagination: document.getElementById("eventActivitiesPagination"),
     donorsPagination: document.getElementById("eventDonorsPagination"),
     donationsPagination: document.getElementById("eventDonationsPagination"),
-    auditLogsPagination: document.getElementById("eventAuditLogsPagination")
+    auditLogsPagination: document.getElementById("eventAuditLogsPagination"),
+    activitiesCountInline: document.getElementById("eventActivitiesCountInline")
 };
+
+const sortControllers = {};
 
 const badgeStyles = {
     ONGOING: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
@@ -116,6 +132,30 @@ const getDonorTypeLabel = (type) => {
     return "Chưa cập nhật";
 };
 
+const getEventActivitySortDirection = (field) => {
+    if (["startDate", "currentAmount"].includes(field)) return "desc";
+    if (field === "status") return "asc";
+    return "asc";
+};
+
+const getEventDonorSortDirection = (field) => {
+    if (field === "type") return "asc";
+    return "asc";
+};
+
+const getEventDonationSortDirection = (field) => {
+    if (["code", "amount", "donatedAt"].includes(field)) return "desc";
+    if (field === "status") return "asc";
+    return "asc";
+};
+
+const getEventAuditSortDirection = (field) => {
+    if (field === "createdAt") return "desc";
+    return "asc";
+};
+
+const getTabClass = (active, hasGap = false) => `admin-tab-link${hasGap ? " gap-2" : ""}${active ? " is-active" : ""}`;
+
 function setActiveTab(tab) {
     state.activeTab = tab;
 
@@ -131,21 +171,11 @@ function setActiveTab(tab) {
     elements.donationsPanel.classList.toggle("hidden", !isDonations);
     elements.auditLogsPanel.classList.toggle("hidden", !isAuditLogs);
 
-    elements.infoBtn.className = isInfo
-        ? "inline-flex items-center border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.activitiesBtn.className = isActivities
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.donorsBtn.className = isDonors
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.donationsBtn.className = isDonations
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
-    elements.auditLogsBtn.className = isAuditLogs
-        ? "inline-flex items-center gap-2 border-b-2 border-primary px-4 py-2 text-sm font-semibold text-primary"
-        : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white";
+    elements.infoBtn.className = getTabClass(isInfo);
+    elements.activitiesBtn.className = getTabClass(isActivities, true);
+    elements.donorsBtn.className = getTabClass(isDonors, true);
+    elements.donationsBtn.className = getTabClass(isDonations, true);
+    elements.auditLogsBtn.className = getTabClass(isAuditLogs, true);
 
     elements.activitiesCount.className = isActivities
         ? "inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold text-primary"
@@ -328,6 +358,9 @@ async function loadSummary() {
         elements.activitiesCount.textContent = summary.activityCount ?? 0;
         elements.donorsCount.textContent = summary.donorCount ?? 0;
         elements.donationsCount.textContent = summary.donationCount ?? 0;
+        if (elements.activitiesCountInline) {
+            elements.activitiesCountInline.textContent = summary.activityCount ?? 0;
+        }
 
         const auditResponse = await auditLogApi.getAuditLogs({
             page: 1,
@@ -346,9 +379,11 @@ async function loadActivities() {
     try {
         const response = await eventApi.getEventDetailActivities(state.eventId, {
             page: state.activities.page,
-            size: state.activities.size
+            size: state.activities.size,
+            sortBy: state.activities.sortBy,
+            sortDir: state.activities.sortDir
         });
-        const pageData = response?.data || {page: 1, pageSize: state.activities.size, totalPages: 0, totalItems: 0, data: []};
+        const pageData = response?.data || { page: 1, pageSize: state.activities.size, totalPages: 0, totalItems: 0, data: [] };
         renderActivities(pageData?.data || []);
         renderPagination(pageData, elements.activitiesPagination, (newPage) => {
             state.activities.page = newPage;
@@ -371,9 +406,11 @@ async function loadDonors() {
     try {
         const response = await eventApi.getEventDetailDonors(state.eventId, {
             page: state.donors.page,
-            size: state.donors.size
+            size: state.donors.size,
+            sortBy: state.donors.sortBy,
+            sortDir: state.donors.sortDir
         });
-        const pageData = response?.data || {page: 1, pageSize: state.donors.size, totalPages: 0, totalItems: 0, data: []};
+        const pageData = response?.data || { page: 1, pageSize: state.donors.size, totalPages: 0, totalItems: 0, data: [] };
         renderDonors(pageData?.data || []);
         renderPagination(pageData, elements.donorsPagination, (newPage) => {
             state.donors.page = newPage;
@@ -396,9 +433,11 @@ async function loadDonations() {
     try {
         const response = await eventApi.getEventDetailDonations(state.eventId, {
             page: state.donations.page,
-            size: state.donations.size
+            size: state.donations.size,
+            sortBy: state.donations.sortBy,
+            sortDir: state.donations.sortDir
         });
-        const pageData = response?.data || {page: 1, pageSize: state.donations.size, totalPages: 0, totalItems: 0, data: []};
+        const pageData = response?.data || { page: 1, pageSize: state.donations.size, totalPages: 0, totalItems: 0, data: [] };
         renderDonations(pageData?.data || []);
         renderPagination(pageData, elements.donationsPagination, (newPage) => {
             state.donations.page = newPage;
@@ -423,9 +462,11 @@ async function loadAuditLogs() {
             page: state.auditLogs.page,
             size: state.auditLogs.size,
             entityType: "EVENT",
-            entityId: state.eventId
+            entityId: state.eventId,
+            sortBy: state.auditLogs.sortBy,
+            sortDir: state.auditLogs.sortDir
         });
-        const pageData = response?.data || {page: 1, pageSize: state.auditLogs.size, totalPages: 0, totalItems: 0, data: []};
+        const pageData = response?.data || { page: 1, pageSize: state.auditLogs.size, totalPages: 0, totalItems: 0, data: [] };
         renderAuditLogs(pageData?.data || []);
         renderPagination(pageData, elements.auditLogsPagination, (newPage) => {
             state.auditLogs.page = newPage;
@@ -478,6 +519,39 @@ function bindTabEvents() {
     });
 }
 
+function bindSortEvents() {
+    sortControllers.activities = bindSortButtons({
+        state: state.activities,
+        buttons: elements.activitiesSortButtons,
+        datasetKey: "eventActivitySort",
+        getDefaultDirection: getEventActivitySortDirection,
+        onChange: () => loadActivities()
+    });
+    sortControllers.donors = bindSortButtons({
+        state: state.donors,
+        buttons: elements.donorsSortButtons,
+        datasetKey: "eventDonorSort",
+        getDefaultDirection: getEventDonorSortDirection,
+        onChange: () => loadDonors()
+    });
+    sortControllers.donations = bindSortButtons({
+        state: state.donations,
+        buttons: elements.donationsSortButtons,
+        datasetKey: "eventDonationSort",
+        getDefaultDirection: getEventDonationSortDirection,
+        onChange: () => loadDonations()
+    });
+    sortControllers.auditLogs = bindSortButtons({
+        state: state.auditLogs,
+        buttons: elements.auditLogsSortButtons,
+        datasetKey: "eventAuditSort",
+        getDefaultDirection: getEventAuditSortDirection,
+        onChange: () => loadAuditLogs()
+    });
+
+    Object.values(sortControllers).forEach((controller) => controller?.updateIndicators?.());
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
 
@@ -485,6 +559,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!state.eventId) return;
 
     bindTabEvents();
+    bindSortEvents();
     setActiveTab("info");
     await loadSummary();
 });

@@ -4,6 +4,7 @@ import com.chiaseyeuthuong.audit.AuditContext;
 import com.chiaseyeuthuong.audit.AuditContextProvider;
 import com.chiaseyeuthuong.common.EAuditAction;
 import com.chiaseyeuthuong.common.EEntityType;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.response.AuditChangeItemResponse;
 import com.chiaseyeuthuong.dto.response.AuditLogResponse;
 import com.chiaseyeuthuong.dto.response.PageResponse;
@@ -16,8 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,17 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j(topic = "AUDIT-LOG-SERVICE")
 public class AuditLogServiceImpl implements AuditLogService {
+
+    private static final Map<String, String> AUDIT_LOG_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("createdAt", "createdAt"),
+            Map.entry("actorUsername", "actorUsername"),
+            Map.entry("actorRole", "actorRole"),
+            Map.entry("action", "action"),
+            Map.entry("summary", "summary"),
+            Map.entry("entityType", "entityType"),
+            Map.entry("entityId", "entityId")
+    );
 
     private final AuditLogRepository auditLogRepository;
     private final AuditContextProvider auditContextProvider;
@@ -74,21 +84,22 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     public PageResponse<AuditLogResponse> getAuditLogs(int page, int size, EEntityType entityType, Long entityId, EAuditAction action,
-                                                       String actorUsername, String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 20;
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+                                                       String actorUsername, String keyword, LocalDateTime fromDate, LocalDateTime toDate,
+                                                       String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(AUDIT_LOG_SORT_FIELDS, Map.of(),
+                sortBy, sortDir, "createdAt", Sort.Direction.DESC, "id");
 
         Specification<AuditLog> specification = AuditLogSpecification.filter(entityType, entityId, action, actorUsername, keyword, fromDate, toDate);
-        Page<AuditLog> auditLogs = auditLogRepository.findAll(specification, pageable);
+        Page<AuditLog> auditLogs = auditLogRepository.findAll(specification,
+                SortParamUtils.buildPageRequest(page, size, sort, 20));
 
         List<AuditLogResponse> data = auditLogs.getContent().stream()
                 .map(this::toResponse)
                 .toList();
 
         return PageResponse.<AuditLogResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 20))
                 .totalItems(auditLogs.getTotalElements())
                 .totalPages(auditLogs.getTotalPages())
                 .data(data)
