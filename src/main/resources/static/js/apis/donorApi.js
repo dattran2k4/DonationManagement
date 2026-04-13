@@ -1,5 +1,5 @@
-import {apiClient} from "./apiClient.js";
-import {buildQuery} from "../utils/queryUtils.js";
+import { apiClient } from "./apiClient.js";
+import { buildQuery } from "../utils/queryUtils.js";
 
 const BASE_URL = '/api/donors';
 
@@ -17,22 +17,24 @@ export const donorApi = {
     getOrganizationRoleTypes: async () => {
         return await apiClient.get(`${BASE_URL}/relationship-types/organization-roles`);
     },
-    getPersonRelationships: async (id) => {
-        return await apiClient.get(`${BASE_URL}/${id}/relationships/person`);
+    getPersonRelationships: async (id, params = {}) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/relationships/person${queryString ? `?${queryString}` : ''}`);
     },
-    getOrganizationRelationships: async (id) => {
-        return await apiClient.get(`${BASE_URL}/${id}/relationships/organizations`);
+    getOrganizationRelationships: async (id, params = {}) => {
+        const queryString = buildQuery(params);
+        return await apiClient.get(`${BASE_URL}/${id}/relationships/organizations${queryString ? `?${queryString}` : ''}`);
     },
     getDonorDonations: async (id, params) => {
         const queryString = buildQuery(params);
         return await apiClient.get(`${BASE_URL}/${id}/donations?${queryString}`);
     },
     sendLookupCode: async (email) => {
-        return await apiClient.post(`${BASE_URL}/lookup/send-code`, {email});
+        return await apiClient.post(`${BASE_URL}/lookup/send-code`, { email });
     },
     getLookupDonations: async (email, code, params) => {
         const queryString = buildQuery(params);
-        return await apiClient.post(`${BASE_URL}/lookup/donations?${queryString}`, {email, code});
+        return await apiClient.post(`${BASE_URL}/lookup/donations?${queryString}`, { email, code });
     },
     saveIndividual: async (body) => {
         return await apiClient.post(`${BASE_URL}/individuals`, body);

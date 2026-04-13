@@ -1,311 +1,469 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layouts/admin/admin-layout}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/admin/admin-layout}">
+
 <head>
     <title>Chi tiết sự kiện</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="admin-page-stack"
-     th:with="current=${event.currentAmount != null ? event.currentAmount : 0},
+    <div layout:fragment="content" class="admin-page-stack" th:with="current=${event.currentAmount != null ? event.currentAmount : 0},
               targetRaw=${event.targetAmount != null ? event.targetAmount : 0},
               targetSafe=${targetRaw > 0 ? targetRaw : 1},
               percent=${current * 100 / targetSafe}">
 
-    <section class="admin-toolbar">
-        <div class="admin-toolbar-group">
-            <a th:href="@{/admin/events/form}"
-               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-               class="admin-action-btn admin-action-btn--primary">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Tạo mới
-            </a>
-            <a th:href="@{/admin/events}"
-               class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">undo</span>
-                Quay lại
-            </a>
-            <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-               th:if="${event.status == null || event.status.name() != 'COMPLETED'}"
-               th:href="@{/admin/events/{id}/form(id=${event.id})}"
-               class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                Chỉnh sửa
-            </a>
-            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">refresh</span>
-                Làm mới
-            </button>
-        </div>
-        <div class="admin-toolbar-group">
-            <a th:if="${event.slug != null && !#strings.isEmpty(event.slug)}"
-               th:href="@{/events/{slug}(slug=${event.slug})}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
-                Xem website
-            </a>
-        </div>
-    </section>
+        <section class="admin-toolbar">
+            <div class="admin-toolbar-group">
+                <a th:href="@{/admin/events/form}" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="admin-action-btn admin-action-btn--primary">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo mới
+                </a>
+                <a th:href="@{/admin/events}" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">undo</span>
+                    Quay lại
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    th:if="${event.status == null || event.status.name() != 'COMPLETED'}"
+                    th:href="@{/admin/events/{id}/form(id=${event.id})}" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                    Chỉnh sửa
+                </a>
+                <button type="button" onclick="window.location.reload()" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">refresh</span>
+                    Làm mới
+                </button>
+            </div>
+            <div class="admin-toolbar-group">
+                <a th:if="${event.slug != null && !#strings.isEmpty(event.slug)}"
+                    th:href="@{/events/{slug}(slug=${event.slug})}" target="_blank" rel="noopener noreferrer"
+                    class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                    Xem website
+                </a>
+            </div>
+        </section>
 
-    <section class="admin-detail-frame" id="eventDetailTabsSection" th:attr="data-event-id=${event.id}">
-        <div class="admin-detail-header">
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <h1 class="admin-detail-title" th:text="${event.name ?: 'Chi tiết sự kiện'}">Chi tiết sự kiện</h1>
-                    <p class="admin-detail-subtitle">
-                        <span class="font-semibold text-slate-500">Trạng thái:</span>
-                        <span th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">Đang diễn ra</span>
-                    </p>
-                </div>
-                <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
-                     th:classappend="
+        <section class="admin-detail-frame" id="eventDetailTabsSection" th:attr="data-event-id=${event.id}">
+            <div class="admin-detail-header">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h1 class="admin-detail-title" th:text="${event.name ?: 'Chi tiết sự kiện'}">Chi tiết sự kiện
+                        </h1>
+                        <p class="admin-detail-subtitle">
+                            <span class="font-semibold text-slate-500">Trạng thái:</span>
+                            <span th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">Đang diễn
+                                ra</span>
+                        </p>
+                    </div>
+                    <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold" th:classappend="
                         ${event.status != null && event.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700' :
                         (${event.status != null && event.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700' :
                         (${event.status != null && event.status.name() == 'COMPLETED'} ? ' bg-slate-200 text-slate-700' :
                         ' bg-sky-100 text-sky-700'))"
-                     th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">
-                    Đang diễn ra
+                        th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">
+                        Đang diễn ra
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
-            <div class="admin-tab-strip">
-                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin chung</button>
-                <button id="tabActivitiesBtn" data-tab="activities" type="button" class="admin-tab-link gap-2">
-                    Hoạt động
-                    <span id="tabActivitiesCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
-                </button>
-                <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
-                    Nhà hảo tâm
-                    <span id="tabDonorsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
-                </button>
-                <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
-                    Quyên góp
-                    <span id="tabDonationsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
-                </button>
-                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
-                    Lịch sử thao tác
-                    <span id="tabAuditLogsCount" class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
-                </button>
+            <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
+                <div class="admin-tab-strip">
+                    <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin
+                        chung</button>
+                    <button id="tabActivitiesBtn" data-tab="activities" type="button" class="admin-tab-link gap-2">
+                        Hoạt động
+                        <span id="tabActivitiesCount"
+                            class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                    </button>
+                    <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
+                        Nhà hảo tâm
+                        <span id="tabDonorsCount"
+                            class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                    </button>
+                    <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
+                        Quyên góp
+                        <span id="tabDonationsCount"
+                            class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                    </button>
+                    <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
+                        Lịch sử thao tác
+                        <span id="tabAuditLogsCount"
+                            class="inline-flex min-w-6 justify-center rounded-md bg-slate-200 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-700 dark:text-slate-100">0</span>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div id="tabInfoPanel" class="p-8 space-y-6">
-            <div class="grid gap-6 xl:grid-cols-2">
-                <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Thông tin chung</h2>
-                    <div class="admin-field-grid">
-                        <div>
-                            <p class="admin-muted-label">Tên sự kiện</p>
-                            <div class="admin-field-value" th:text="${event.name ?: '---'}">---</div>
+            <div id="tabInfoPanel" class="p-8 space-y-6">
+                <div class="grid gap-6 xl:grid-cols-2">
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin chung</h2>
+                        <div class="admin-field-grid">
+                            <div>
+                                <p class="admin-muted-label">Tên sự kiện</p>
+                                <div class="admin-field-value" th:text="${event.name ?: '---'}">---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Trạng thái</p>
+                                <div class="admin-field-value"
+                                    th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Ngày bắt đầu</p>
+                                <div class="admin-field-value"
+                                    th:text="${event.startDate != null ? #temporals.format(event.startDate, 'dd/MM/yyyy') : '---'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Ngày kết thúc dự tính</p>
+                                <div class="admin-field-value"
+                                    th:text="${event.endDate != null ? #temporals.format(event.endDate, 'dd/MM/yyyy') : '---'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Danh mục</p>
+                                <div class="admin-field-value"
+                                    th:text="${event.category != null && event.category.name != null && !#strings.isEmpty(event.category.name) ? event.category.name : 'Chưa có danh mục'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Địa điểm</p>
+                                <div class="admin-field-value"
+                                    th:text="${event.location != null && !#strings.isEmpty(event.location) ? event.location : 'Chưa cập nhật'}">
+                                    ---</div>
+                            </div>
                         </div>
-                        <div>
-                            <p class="admin-muted-label">Trạng thái</p>
-                            <div class="admin-field-value" th:text="${event.status != null ? event.status.value : 'Chưa cập nhật'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Ngày bắt đầu</p>
-                            <div class="admin-field-value" th:text="${event.startDate != null ? #temporals.format(event.startDate, 'dd/MM/yyyy') : '---'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Ngày kết thúc dự tính</p>
-                            <div class="admin-field-value" th:text="${event.endDate != null ? #temporals.format(event.endDate, 'dd/MM/yyyy') : '---'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Danh mục</p>
-                            <div class="admin-field-value" th:text="${event.category != null && event.category.name != null && !#strings.isEmpty(event.category.name) ? event.category.name : 'Chưa có danh mục'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Địa điểm</p>
-                            <div class="admin-field-value" th:text="${event.location != null && !#strings.isEmpty(event.location) ? event.location : 'Chưa cập nhật'}">---</div>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Truyền thông & quản trị</h2>
-                    <div class="grid gap-5">
-                        <div>
-                            <p class="admin-muted-label">Ảnh đại diện</p>
-                            <div class="mt-2 grid gap-4 md:grid-cols-[120px_minmax(0,1fr)]">
-                                <div class="h-[120px] w-[120px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                                    <img class="h-full w-full object-cover"
-                                         th:src="${event.thumbnailUrl != null && !#strings.isEmpty(event.thumbnailUrl) ? event.thumbnailUrl : '/images/default-event.png'}"
-                                         th:alt="${event.name}">
-                                </div>
-                                <div class="grid gap-4">
-                                    <div>
-                                        <p class="admin-muted-label">Tạo lúc</p>
-                                        <div class="admin-field-value" th:text="${event.createdAt != null ? #temporals.format(event.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">---</div>
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Truyền thông & quản trị</h2>
+                        <div class="grid gap-5">
+                            <div>
+                                <p class="admin-muted-label">Ảnh đại diện</p>
+                                <div class="mt-2 grid gap-4 md:grid-cols-[120px_minmax(0,1fr)]">
+                                    <div
+                                        class="h-[120px] w-[120px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                                        <img class="h-full w-full object-cover"
+                                            th:src="${event.thumbnailUrl != null && !#strings.isEmpty(event.thumbnailUrl) ? event.thumbnailUrl : '/images/default-event.png'}"
+                                            th:alt="${event.name}">
                                     </div>
-                                    <div>
-                                        <p class="admin-muted-label">Tạo bởi</p>
-                                        <div class="admin-field-value" th:text="${event.createdBy != null && event.createdBy.fullName != null ? event.createdBy.fullName : 'Hệ thống'}">---</div>
+                                    <div class="grid gap-4">
+                                        <div>
+                                            <p class="admin-muted-label">Tạo lúc</p>
+                                            <div class="admin-field-value"
+                                                th:text="${event.createdAt != null ? #temporals.format(event.createdAt, 'dd/MM/yyyy HH:mm') : '---'}">
+                                                ---</div>
+                                        </div>
+                                        <div>
+                                            <p class="admin-muted-label">Tạo bởi</p>
+                                            <div class="admin-field-value"
+                                                th:text="${event.createdBy != null && event.createdBy.fullName != null ? event.createdBy.fullName : 'Hệ thống'}">
+                                                ---</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </section>
+                </div>
+
+                <div class="grid gap-6 xl:grid-cols-2">
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin sự kiện</h2>
+                        <div class="grid gap-5">
+                            <div>
+                                <p class="admin-muted-label">Mô tả ngắn</p>
+                                <div class="admin-field-value min-h-[128px] items-start leading-relaxed"
+                                    th:text="${event.shortDescription != null && !#strings.isEmpty(event.shortDescription) ? event.shortDescription : 'Chưa có mô tả ngắn.'}">
+                                    Chưa có mô tả ngắn.
+                                </div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Nội dung chi tiết</p>
+                                <div
+                                    class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                                    <div th:if="${event.content != null && !#strings.isEmpty(event.content)}"
+                                        th:utext="${event.content}"></div>
+                                    <p th:if="${event.content == null || #strings.isEmpty(event.content)}">Chưa có nội
+                                        dung chiến dịch.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin tài chính</h2>
+                        <div class="grid gap-4">
+                            <div>
+                                <p class="admin-muted-label">Mục tiêu gây quỹ</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                    VNĐ</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Đã đạt được</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ
+                                </div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Tiến độ</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%
+                                </div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Số hoạt động trong sự kiện này</p>
+                                <div class="admin-field-value" id="eventActivitiesCountInline">0</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Tổng số nhà hảo tâm tham gia</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatInteger(event.numberOfDonors ?: 0, 0, 'COMMA')}">0</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="tabActivitiesPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách hoạt động thuộc sự
+                            kiện</h2>
                     </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-activity-sort="name"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Hoạt động</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-activity-sort="status"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Trạng thái</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">
+                                        <button type="button" data-event-activity-sort="currentAmount"
+                                            class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Gây quỹ</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-activity-sort="startDate"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Thời gian</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventActivitiesTableBody"
+                                class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ
+                                        liệu hoạt động...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="eventActivitiesPagination"></div>
                 </section>
             </div>
 
-            <div class="grid gap-6 xl:grid-cols-2">
-                <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Thông tin sự kiện</h2>
-                    <div class="grid gap-5">
-                        <div>
-                            <p class="admin-muted-label">Mô tả ngắn</p>
-                            <div class="admin-field-value min-h-[128px] items-start leading-relaxed"
-                                 th:text="${event.shortDescription != null && !#strings.isEmpty(event.shortDescription) ? event.shortDescription : 'Chưa có mô tả ngắn.'}">
-                                Chưa có mô tả ngắn.
-                            </div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Nội dung chi tiết</p>
-                            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                                <div th:if="${event.content != null && !#strings.isEmpty(event.content)}" th:utext="${event.content}"></div>
-                                <p th:if="${event.content == null || #strings.isEmpty(event.content)}">Chưa có nội dung chiến dịch.</p>
-                            </div>
-                        </div>
+            <div id="tabDonorsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm tham
+                            gia sự kiện</h2>
                     </div>
-                </section>
-
-                <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Thông tin tài chính</h2>
-                    <div class="grid gap-4">
-                        <div>
-                            <p class="admin-muted-label">Mục tiêu gây quỹ</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Đã đạt được</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Tiến độ</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Số hoạt động trong sự kiện này</p>
-                            <div class="admin-field-value" id="eventActivitiesCountInline">0</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Tổng số nhà hảo tâm tham gia</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatInteger(event.numberOfDonors ?: 0, 0, 'COMMA')}">0</div>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donor-sort="name"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nhà hảo tâm</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donor-sort="contact"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Liên hệ</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donor-sort="type"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Loại</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ
+                                        liệu nhà hảo tâm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                    <div id="eventDonorsPagination"></div>
                 </section>
             </div>
-        </div>
 
-        <div id="tabActivitiesPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách hoạt động thuộc sự kiện</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Hoạt động</th>
-                            <th class="px-6 py-4 text-left">Trạng thái</th>
-                            <th class="px-6 py-4 text-right">Gây quỹ</th>
-                            <th class="px-6 py-4 text-left">Thời gian</th>
-                        </tr>
-                        </thead>
-                        <tbody id="eventActivitiesTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu hoạt động...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="eventActivitiesPagination"></div>
-            </section>
-        </div>
+            <div id="tabDonationsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp cho sự
+                            kiện</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donation-sort="code"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Mã đơn</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donation-sort="donorName"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nhà hảo tâm</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donation-sort="target"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Mục tiêu</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">
+                                        <button type="button" data-event-donation-sort="amount"
+                                            class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Số tiền</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-donation-sort="status"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Trạng thái</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">
+                                        <button type="button" data-event-donation-sort="donatedAt"
+                                            class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Thời gian</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventDonationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ
+                                        liệu quyên góp...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="eventDonationsPagination"></div>
+                </section>
+            </div>
 
-        <div id="tabDonorsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm tham gia sự kiện</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
-                            <th class="px-6 py-4 text-left">Liên hệ</th>
-                            <th class="px-6 py-4 text-left">Loại</th>
-                            <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
-                        </tr>
-                        </thead>
-                        <tbody id="eventDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="eventDonorsPagination"></div>
-            </section>
-        </div>
+            <div id="tabAuditLogsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-audit-sort="createdAt"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Thời gian</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-audit-sort="actorUsername"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Người thao tác</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-audit-sort="action"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Hành động</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-event-audit-sort="summary"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nội dung</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventAuditLogsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch
+                                        sử thao tác...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="eventAuditLogsPagination"></div>
+                </section>
+            </div>
+        </section>
+    </div>
 
-        <div id="tabDonationsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp cho sự kiện</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Mã đơn</th>
-                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
-                            <th class="px-6 py-4 text-left">Mục tiêu</th>
-                            <th class="px-6 py-4 text-right">Số tiền</th>
-                            <th class="px-6 py-4 text-left">Trạng thái</th>
-                            <th class="px-6 py-4 text-right">Thời gian</th>
-                        </tr>
-                        </thead>
-                        <tbody id="eventDonationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="eventDonationsPagination"></div>
-            </section>
-        </div>
-
-        <div id="tabAuditLogsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Thời gian</th>
-                            <th class="px-6 py-4 text-left">Người thao tác</th>
-                            <th class="px-6 py-4 text-left">Hành động</th>
-                            <th class="px-6 py-4 text-left">Nội dung</th>
-                        </tr>
-                        </thead>
-                        <tbody id="eventAuditLogsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="eventAuditLogsPagination"></div>
-            </section>
-        </div>
-    </section>
-</div>
-
-<th:block layout:fragment="scripts">
-    <script type="module" th:src="@{/js/pages/admin/eventDetail.js}"></script>
-</th:block>
+    <th:block layout:fragment="scripts">
+        <script type="module" th:src="@{/js/pages/admin/eventDetail.js}"></script>
+    </th:block>
 </body>
+
 </html>

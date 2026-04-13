@@ -1,121 +1,163 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layouts/admin/admin-layout}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/admin/admin-layout}">
+
 <head>
     <title>Lịch sử giao dịch</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="admin-page-stack">
-    <section class="admin-page-heading">
-        <div>
-            <h1 class="admin-page-title">Lịch sử giao dịch</h1>
-            <p class="admin-page-subtitle">Theo dõi lịch sử giao dịch và đối soát với các đơn quyên góp trong cùng một phong cách hiển thị.</p>
-        </div>
-        <div class="admin-toolbar-group">
-            <button id="transactionExportBtn"
-                    type="button"
+    <div layout:fragment="content" class="admin-page-stack">
+        <section class="admin-page-heading">
+            <div>
+                <h1 class="admin-page-title">Lịch sử giao dịch</h1>
+                <p class="admin-page-subtitle">Theo dõi lịch sử giao dịch và đối soát với các đơn quyên góp trong cùng
+                    một phong cách hiển thị.</p>
+            </div>
+            <div class="admin-toolbar-group">
+                <button id="transactionExportBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    Xuất Excel
+                </button>
+                <button id="transactionTemplateBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">description</span>
+                    Tải file mẫu
+                </button>
+                <input id="transactionImportInput" type="file" class="hidden" accept=".xlsx,.xls" />
+                <button id="transactionImportBtn" type="button" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
                     class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">file_download</span>
-                Xuất Excel
-            </button>
-            <input id="transactionImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
-            <button id="transactionImportBtn"
-                    type="button"
-                    sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-                    class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">upload_file</span>
-                Nhập Excel
-            </button>
-        </div>
-    </section>
-
-    <section class="admin-stat-grid">
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon">
-                <span class="material-symbols-outlined">account_balance_wallet</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tổng tiền nhận</p>
-                <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">12,500,000,000</p>
-            </div>
-        </article>
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
-                <span class="material-symbols-outlined">warning</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Chưa đối soát</p>
-                <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">24</p>
-            </div>
-        </article>
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
-                <span class="material-symbols-outlined">upload_file</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Nhập sao kê</p>
-                <p class="mt-1 text-base font-bold text-slate-900 dark:text-white">CSV / Excel</p>
-            </div>
-        </article>
-    </section>
-
-    <section class="admin-filter-shell">
-        <div class="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center">
-            <div class="relative w-full lg:w-96">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span class="material-symbols-outlined text-slate-400">search</span>
-                </div>
-                <input id="transactionSearchInput"
-                       class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
-                       placeholder="Tìm mã giao dịch hoặc tên tài khoản..." type="text"/>
-            </div>
-            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                <div class="relative">
-                    <select id="transactionMethodFilter"
-                            class="admin-select-field appearance-none w-full lg:w-60 py-3 pl-4 pr-10 text-sm cursor-pointer">
-                        <option value="">Tất cả phương thức</option>
-                        <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
-                        <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
-                        <option value="CASH">Tiền mặt</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                        <span class="material-symbols-outlined text-sm">expand_more</span>
-                    </div>
-                </div>
-                <button id="transactionResetFilterBtn"
-                        class="admin-action-btn admin-action-btn--ghost px-4"
-                        title="Đặt lại bộ lọc">
-                    <span class="material-symbols-outlined">restart_alt</span>
+                    <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                    Nhập Excel
                 </button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="admin-table-shell">
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                <tr>
-                    <th class="p-4 whitespace-nowrap">Mã giao dịch</th>
-                    <th class="p-4 whitespace-nowrap text-right">Số tiền</th>
-                    <th class="p-4 whitespace-nowrap">Tài khoản gửi</th>
-                    <th class="p-4 whitespace-nowrap">Đơn quyên góp</th>
-                    <th class="p-4 whitespace-nowrap">Phương thức</th>
-                    <th class="p-4 whitespace-nowrap">Thời gian tạo</th>
-                </tr>
-                </thead>
-                <tbody id="transactionTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
-            </table>
-        </div>
-        <div id="paginationContainer"></div>
-    </section>
-</div>
-<th:block layout:fragment="scripts">
-    <script type="module" th:src="@{/js/pages/admin/transactionList.js}"></script>
-</th:block>
+        <section class="admin-stat-grid">
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tổng tiền nhận</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">12,500,000,000</p>
+                </div>
+            </article>
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Chưa đối soát</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">24</p>
+                </div>
+            </article>
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span class="material-symbols-outlined">upload_file</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Nhập sao kê</p>
+                    <p class="mt-1 text-base font-bold text-slate-900 dark:text-white">CSV / Excel</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="admin-filter-shell">
+            <div class="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center">
+                <div class="relative w-full lg:w-96">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-slate-400">search</span>
+                    </div>
+                    <input id="transactionSearchInput"
+                        class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
+                        placeholder="Tìm mã giao dịch hoặc tên tài khoản..." type="text" />
+                </div>
+                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div class="relative">
+                        <select id="transactionMethodFilter"
+                            class="admin-select-field appearance-none w-full lg:w-60 py-3 pl-4 pr-10 text-sm cursor-pointer">
+                            <option value="">Tất cả phương thức</option>
+                            <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
+                            <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
+                            <option value="CASH">Tiền mặt</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </div>
+                    </div>
+                    <button id="transactionResetFilterBtn" class="admin-action-btn admin-action-btn--ghost px-4"
+                        title="Đặt lại bộ lọc">
+                        <span class="material-symbols-outlined">restart_alt</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-table-shell">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-4 whitespace-nowrap">
+                                <button type="button" data-transaction-sort="transactionCode"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Mã giao dịch</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="p-4 whitespace-nowrap text-right">
+                                <button type="button" data-transaction-sort="amount"
+                                    class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Số tiền</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="p-4 whitespace-nowrap">
+                                <button type="button" data-transaction-sort="counterAccountName"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Tài khoản gửi</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="p-4 whitespace-nowrap">
+                                <button type="button" data-transaction-sort="donationCode"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Đơn quyên góp</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="p-4 whitespace-nowrap">
+                                <button type="button" data-transaction-sort="paymentMethod"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Phương thức</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="p-4 whitespace-nowrap">
+                                <button type="button" data-transaction-sort="transactionDateTime"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Thời gian</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                </table>
+            </div>
+            <div id="paginationContainer"></div>
+        </section>
+    </div>
+    <th:block layout:fragment="scripts">
+        <script type="module" th:src="@{/js/pages/admin/transactionList.js}"></script>
+    </th:block>
 </body>
+
 </html>

@@ -26,7 +26,7 @@ describe('Phân quyền và ma trận truy cập', () => {
     cy.get('#transactionImportBtn').should('be.visible');
 
     visitBackofficePage('/admin/settings', 'admin');
-    cy.contains('button', 'Lưu cấu hình').should('be.visible');
+    cy.contains('button', /^Lưu$/).should('be.visible');
   });
 
   it('TC-ADM-ROLE-002 - Vai trò Kế toán (ACCOUNTING) chỉ thấy và dùng được đúng màn hình, thao tác được cấp quyền', () => {
@@ -52,7 +52,7 @@ describe('Phân quyền và ma trận truy cập', () => {
 
     visitBackofficePage('/admin/settings', 'accounting');
     cy.contains('Bạn đang ở chế độ chỉ xem').should('be.visible');
-    cy.contains('button', 'Lưu cấu hình').should('not.exist');
+    cy.contains('button', /^Lưu$/).should('not.exist');
   });
 
   it('TC-ADM-ROLE-003 - Vai trò Nhân viên (STAFF) chỉ thấy và dùng được đúng màn hình, thao tác được cấp quyền', () => {
@@ -71,14 +71,14 @@ describe('Phân quyền và ma trận truy cập', () => {
 
     visitBackofficePage('/admin/activities', 'staff');
     cy.get('#activityImportBtn').should('not.exist');
-    cy.contains('a', 'Thêm hoạt động').should('not.exist');
+    cy.contains('a', 'Thêm Hoạt động mới').should('not.exist');
 
     visitBackofficePage('/admin/transactions', 'staff');
     cy.get('#transactionImportBtn').should('not.exist');
 
     visitBackofficePage('/admin/settings', 'staff');
     cy.contains('Bạn đang ở chế độ chỉ xem').should('be.visible');
-    cy.contains('button', 'Lưu cấu hình').should('not.exist');
+    cy.contains('button', /^Lưu$/).should('not.exist');
   });
 
   it('TC-ADM-ROLE-004 - Đồng bộ giao diện và máy chủ khi kiểm soát quyền', () => {

@@ -1,6 +1,5 @@
 import {
   pagedResponse,
-  stubAlert,
   stubDownloadApis,
   visitAdminPage
 } from './helpers/adminTestUtils.js';
@@ -303,7 +302,6 @@ function stubListResponses(config) {
 describe('Nhập và xuất dữ liệu quản trị', () => {
   modules.forEach((config) => {
     it(config.exportTitle, () => {
-      stubAlert();
       stubListResponses(config);
 
       cy.intercept('GET', config.exportPattern, {
@@ -322,11 +320,10 @@ describe('Nhập và xuất dữ liệu quản trị', () => {
       cy.get(config.exportButton).click();
 
       cy.wait(`@${config.key}Export`);
-      cy.get('@alert').should('have.been.calledWith', config.exportSuccessMessage);
+      cy.contains('.admin-toast__message', config.exportSuccessMessage).should('be.visible');
     });
 
     it(config.importTitle, () => {
-      stubAlert();
       stubListResponses(config);
 
       cy.intercept('POST', config.importPattern, {
@@ -334,7 +331,19 @@ describe('Nhập và xuất dữ liệu quản trị', () => {
         body: {
           status: 200,
           message: config.importSuccessMessage,
-          data: null
+          data: {
+            module: config.label,
+            totalRows: config.importedRows.length,
+            successCount: config.importedRows.length,
+            failureCount: 0,
+            success: true,
+            partialSuccess: false,
+            errors: [],
+            errorDetails: [],
+            errorReportToken: null,
+            errorReportFilename: null,
+            message: config.importSuccessMessage
+          }
         }
       }).as(`${config.key}Import`);
 
@@ -351,7 +360,9 @@ describe('Nhập và xuất dữ liệu quản trị', () => {
       );
 
       cy.wait(`@${config.key}Import`);
-      cy.get('@alert').should('have.been.calledWith', config.importSuccessMessage);
+      cy.contains('.admin-toast__message', config.importSuccessMessage).should('be.visible');
+      cy.contains('.admin-modal-title', `Kết quả nhập Excel ${config.label}`).should('be.visible');
+      cy.contains('.admin-summary-card__value', String(config.importedRows.length)).should('be.visible');
       cy.wait(`@${config.key}List`);
       cy.contains(config.importedAssertion).should('be.visible');
     });

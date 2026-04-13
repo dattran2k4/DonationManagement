@@ -15,11 +15,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface ActivityService {
-    PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft);
+    PageResponse<ActivityResponse> getAllActivities(int page, int size, String sortBy, String sortDir,
+                                                    String search, EActivityStatus status, boolean excludeDraft);
 
     List<ActivityResponse> getAllActivitiesByEventId(Long eventId);
 
-    PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size);
+    PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size, String sortBy, String sortDir);
 
     void saveActivity(ActivityRequest request);
 
@@ -39,7 +40,7 @@ public interface ActivityService {
 
     ActivityDetailTabsSummaryResponse getActivityDetailTabsSummary(Long activityId);
 
-    PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size);
+    PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size, String sortBy, String sortDir);
 
-    PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size);
+    PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size, String sortBy, String sortDir);
 }

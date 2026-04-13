@@ -1,6 +1,7 @@
 package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.*;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.DonationRequest;
 import com.chiaseyeuthuong.dto.response.DonorWallItemResponse;
 import com.chiaseyeuthuong.dto.response.DonorWallResponse;
@@ -47,6 +48,21 @@ import vn.payos.model.webhooks.WebhookData;
 @Slf4j(topic = "DONATION-SERVICE")
 public class DonationServiceImpl implements DonationService {
     private static final String WHOLE_AMOUNT_MESSAGE = "Chỗ này chưa code huhu, vui lòng nhập tiền chẳn";
+    private static final Map<String, String> DONATION_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "id"),
+            Map.entry("donorName", "donor.fullName"),
+            Map.entry("eventName", "event.name"),
+            Map.entry("activityName", "activity.name"),
+            Map.entry("target", "target"),
+            Map.entry("amount", "amount"),
+            Map.entry("paymentMethod", "paymentMethod"),
+            Map.entry("createdAt", "createdAt")
+    );
+    private static final Map<String, String> DONATION_UNSAFE_SORT_FIELDS = Map.ofEntries(
+            Map.entry("status", "case when status = 'PENDING_PAYMENT' then 1 when status = 'PENDING_APPROVED' then 2 when status = 'CONFIRMED' then 3 when status = 'REJECTED' then 4 when status = 'CANCELLED' then 5 when status = 'FAILED' then 6 else 99 end"),
+            Map.entry("donatedAt", "coalesce(donatedAt, createdAt)")
+    );
 
     private final DonationRepository donationRepository;
     private final ActivityRepository activityRepository;
@@ -296,12 +312,14 @@ public class DonationServiceImpl implements DonationService {
     @Override
     public PageResponse<DonationResponse> getAllDonations(String search, EDonationStatus status, EDonationTarget target,
                                                           EDonationType type, EPaymentMethod paymentMethod,
-                                                          BigDecimal minAmount, BigDecimal maxAmount, int page, int size) {
+                                                          BigDecimal minAmount, BigDecimal maxAmount,
+                                                          String sortBy, String sortDir,
+                                                          int page, int size) {
         log.info("Processing get all donations");
 
-        int pageNumber = (page > 0) ? page - 1 : 0;
-
-        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("id").descending());
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
 
         Specification<Donation> specification = DonationSpecification.filterDonation(
                 search, status, target, type, paymentMethod, minAmount, maxAmount
@@ -311,8 +329,8 @@ public class DonationServiceImpl implements DonationService {
 
         List<DonationResponse> data = donationPage.stream().map(this::toResponse).toList();
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)
@@ -355,11 +373,10 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by("id").descending());
+    public PageResponse<DonationResponse> getDonationsByEventId(Long eventId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
         Page<Donation> donationPage = donationRepository.findByEventScopeId(eventId, pageable);
 
         List<DonationResponse> data = donationPage.getContent()
@@ -368,8 +385,8 @@ public class DonationServiceImpl implements DonationService {
                 .toList();
 
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)
@@ -377,11 +394,10 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by("id").descending());
+    public PageResponse<DonationResponse> getDonationsByActivityId(Long activityId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONATION_SORT_FIELDS, DONATION_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        Pageable pageable = SortParamUtils.buildPageRequest(page, size, sort, 10);
         Page<Donation> donationPage = donationRepository.findByActivityId(activityId, pageable);
 
         List<DonationResponse> data = donationPage.getContent()
@@ -390,8 +406,8 @@ public class DonationServiceImpl implements DonationService {
                 .toList();
 
         return PageResponse.<DonationResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalPages(donationPage.getTotalPages())
                 .totalItems(donationPage.getTotalElements())
                 .data(data)

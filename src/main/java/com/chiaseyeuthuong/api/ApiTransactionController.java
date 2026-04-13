@@ -26,11 +26,13 @@ public class ApiTransactionController {
     public ApiResponse getAllTransactions(@RequestParam(required = false, defaultValue = "1") int page,
                                           @RequestParam(required = false, defaultValue = "10") int size,
                                           @RequestParam(required = false) String search,
-                                          @RequestParam(required = false) EPaymentMethod method) {
+                                          @RequestParam(required = false) EPaymentMethod method,
+                                          @RequestParam(required = false) String sortBy,
+                                          @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách giao dịch thành công")
-                .data(transactionService.getTransactions(page, size, search, method))
+                .data(transactionService.getTransactions(page, size, search, method, sortBy, sortDir))
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EActivityStatus;
 import com.chiaseyeuthuong.common.EEntityType;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.ActivityRequest;
 import com.chiaseyeuthuong.dto.response.ActivityDetailTabsSummaryResponse;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
@@ -51,6 +52,23 @@ import static com.chiaseyeuthuong.service.impl.EventServiceImpl.UPLOAD_DIR;
 @Slf4j(topic = "ACTIVITY-SERVICE")
 public class ActivityServiceImpl implements ActivityService {
 
+    private static final Map<String, String> ACTIVITY_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "id"),
+            Map.entry("name", "name"),
+            Map.entry("eventName", "event.name"),
+            Map.entry("location", "location"),
+            Map.entry("startDate", "startDate"),
+            Map.entry("endDate", "endDate"),
+            Map.entry("targetAmount", "targetAmount"),
+            Map.entry("currentAmount", "currentAmount"),
+            Map.entry("createdAt", "createdAt"),
+            Map.entry("updatedAt", "updatedAt")
+    );
+    private static final Map<String, String> ACTIVITY_UNSAFE_SORT_FIELDS = Map.of(
+            "status", "case when status = 'DRAFT' then 1 when status = 'UPCOMING' then 2 when status = 'ONGOING' then 3 when status = 'COMPLETED' then 4 else 99 end"
+    );
+
     private final ActivityRepository activityRepository;
     private final EventRepository eventRepository;
     private final DonationRepository donationRepository;
@@ -59,21 +77,22 @@ public class ActivityServiceImpl implements ActivityService {
     private final AuditLogService auditLogService;
 
     @Override
-    public PageResponse<ActivityResponse> getAllActivities(int page, int size, String search, EActivityStatus status, boolean excludeDraft) {
+    public PageResponse<ActivityResponse> getAllActivities(int page, int size, String sortBy, String sortDir,
+                                                           String search, EActivityStatus status, boolean excludeDraft) {
 
-        int pageNumber = (page > 0) ? page - 1 : 0;
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
+        Sort sort = SortParamUtils.buildSort(ACTIVITY_SORT_FIELDS, ACTIVITY_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "startDate", Sort.Direction.DESC, "id");
 
         Specification<Activity> specification = ActivitySpecification.filterActivity(search, status, excludeDraft);
 
-        Page<Activity> pageActivities = activityRepository.findAll(specification, pageRequest);
+        Page<Activity> pageActivities = activityRepository.findAll(specification,
+                SortParamUtils.buildPageRequest(page, size, sort, 20));
 
         List<ActivityResponse> response = pageActivities.stream().map(this::toResponse).toList();
 
         return PageResponse.<ActivityResponse>builder()
-                .page(page)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 20))
                 .totalItems(pageActivities.getTotalElements())
                 .totalPages(pageActivities.getTotalPages())
                 .data(response)
@@ -89,11 +108,14 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+    public PageResponse<ActivityResponse> getActivitiesByEventId(Long eventId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(ACTIVITY_SORT_FIELDS, ACTIVITY_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "startDate", Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(
+                SortParamUtils.normalizePageNumber(page),
+                SortParamUtils.normalizePageSize(size, 10),
+                sort
+        );
         Page<Activity> activityPage = activityRepository.findByEventId(eventId, pageRequest);
 
         List<ActivityResponse> response = activityPage.getContent()
@@ -102,8 +124,8 @@ public class ActivityServiceImpl implements ActivityService {
                 .toList();
 
         return PageResponse.<ActivityResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(activityPage.getTotalElements())
                 .totalPages(activityPage.getTotalPages())
                 .data(response)
@@ -231,15 +253,15 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size) {
+    public PageResponse<DonorResponse> getActivityDetailDonors(Long activityId, int page, int size, String sortBy, String sortDir) {
         getActivity(activityId);
-        return donorService.getDonorsByActivityId(activityId, page, size);
+        return donorService.getDonorsByActivityId(activityId, page, size, sortBy, sortDir);
     }
 
     @Override
-    public PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size) {
+    public PageResponse<DonationResponse> getActivityDetailDonations(Long activityId, int page, int size, String sortBy, String sortDir) {
         getActivity(activityId);
-        return donationService.getDonationsByActivityId(activityId, page, size);
+        return donationService.getDonationsByActivityId(activityId, page, size, sortBy, sortDir);
     }
 
     private ActivityResponse toResponse(Activity activity) {

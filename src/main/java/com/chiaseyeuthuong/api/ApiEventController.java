@@ -72,11 +72,13 @@ public class ApiEventController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getEventDetailActivities(@PathVariable Long id,
                                                 @RequestParam(required = false, defaultValue = "1") int page,
-                                                @RequestParam(required = false, defaultValue = "10") int size) {
+                                                @RequestParam(required = false, defaultValue = "10") int size,
+                                                @RequestParam(required = false) String sortBy,
+                                                @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách hoạt động theo sự kiện thành công")
-                .data(eventService.getEventDetailActivities(id, page, size))
+                .data(eventService.getEventDetailActivities(id, page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -84,11 +86,13 @@ public class ApiEventController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getEventDetailDonors(@PathVariable Long id,
                                             @RequestParam(required = false, defaultValue = "1") int page,
-                                            @RequestParam(required = false, defaultValue = "10") int size) {
+                                            @RequestParam(required = false, defaultValue = "10") int size,
+                                            @RequestParam(required = false) String sortBy,
+                                            @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách nhà hảo tâm theo sự kiện thành công")
-                .data(eventService.getEventDetailDonors(id, page, size))
+                .data(eventService.getEventDetailDonors(id, page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -96,11 +100,13 @@ public class ApiEventController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getEventDetailDonations(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "1") int page,
-                                               @RequestParam(required = false, defaultValue = "10") int size) {
+                                               @RequestParam(required = false, defaultValue = "10") int size,
+                                               @RequestParam(required = false) String sortBy,
+                                               @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách quyên góp theo sự kiện thành công")
-                .data(eventService.getEventDetailDonations(id, page, size))
+                .data(eventService.getEventDetailDonations(id, page, size, sortBy, sortDir))
                 .build();
     }
 

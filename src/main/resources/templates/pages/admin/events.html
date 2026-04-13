@@ -22,6 +22,12 @@
                 <span class="material-symbols-outlined text-[18px]">file_download</span>
                 Xuất Excel
             </button>
+            <button id="eventTemplateBtn"
+                    type="button"
+                    class="admin-action-btn admin-action-btn--ghost">
+                <span class="material-symbols-outlined text-[18px]">description</span>
+                Tải file mẫu
+            </button>
             <input id="eventImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
             <button id="eventImportBtn"
                     type="button"
@@ -106,17 +112,6 @@
                         <span class="material-symbols-outlined text-[20px]">expand_more</span>
                     </div>
                 </div>
-                <div class="relative min-w-[160px]">
-                    <select id="sortFilter"
-                            class="admin-select-field block w-full pl-4 pr-10 py-3 text-sm appearance-none cursor-pointer">
-                        <option value="id:desc">Mới nhất</option>
-                        <option value="id:asc">Cũ nhất</option>
-                        <option value="currentAmount:desc">Gây quỹ cao nhất</option>
-                    </select>
-                    <div class="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none text-slate-500">
-                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -126,12 +121,47 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                 <tr class="border-b border-slate-200 dark:border-slate-800">
-                    <th class="px-6 py-4 w-24">ID</th>
+                    <th class="px-6 py-4 w-24">
+                        <button type="button"
+                                data-event-sort="code"
+                                class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                            <span>ID</span>
+                            <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                        </button>
+                    </th>
                     <th class="px-6 py-4 w-16">Ảnh</th>
-                    <th class="px-6 py-4 min-w-[220px]">Tên sự kiện</th>
-                    <th class="px-6 py-4 w-48">Trạng thái</th>
-                    <th class="px-6 py-4 min-w-[220px]">Tiến độ gây quỹ</th>
-                    <th class="px-6 py-4 min-w-[210px]">Thời gian</th>
+                    <th class="px-6 py-4 min-w-[220px]">
+                        <button type="button"
+                                data-event-sort="name"
+                                class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                            <span>Tên sự kiện</span>
+                            <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 w-48">
+                        <button type="button"
+                                data-event-sort="status"
+                                class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                            <span>Trạng thái</span>
+                            <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 min-w-[220px]">
+                        <button type="button"
+                                data-event-sort="currentAmount"
+                                class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                            <span>Tiến độ gây quỹ</span>
+                            <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 min-w-[210px]">
+                        <button type="button"
+                                data-event-sort="startDate"
+                                class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                            <span>Thời gian</span>
+                            <span data-sort-icon class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                        </button>
+                    </th>
                     <th id="eventActionHeader" class="px-6 py-4 w-32 text-right">Thao tác</th>
                 </tr>
                 </thead>

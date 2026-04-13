@@ -67,9 +67,6 @@ describe('Quản lý nhà hảo tâm', () => {
     cy.get('#donorTypeFilter').select('ORGANIZATION');
     cy.wait('@listDonors').its('request.query.type').should('eq', 'ORGANIZATION');
     cy.contains('Cong ty Thien Tam').should('be.visible');
-    cy.contains('Hiển thị').should('be.visible');
-    cy.get('button[title="Xem hồ sơ"]').should('exist');
-    cy.get('button[title="Chỉnh sửa"]').should('exist');
   });
 
   it('TC-ADM-DONOR-005 - Tạo nhà hảo tâm cá nhân thành công', () => {
@@ -88,34 +85,18 @@ describe('Quản lý nhà hảo tâm', () => {
       });
     }).as('createDonor');
 
-    cy.intercept('GET', '/api/donors?*', {
-      statusCode: 200,
-      body: pagedResponse([
-        {
-          id: 88,
-          type: 'INDIVIDUAL',
-          fullName: 'Le Van B',
-          phone: '0912345678',
-          email: 'levanb@test.local',
-          createdAt: '2026-03-22T08:00:00',
-          numberOfDonations: 0,
-          totalDonationAmount: 0
-        }
-      ])
-    }).as('reloadDonors');
-
     visitAdminPage('/admin/donors/form');
 
     cy.get('#fullName').type('Le Van B');
     cy.get('#displayName').type('Anh B');
     cy.get('#phone').type('0912345678');
     cy.get('#email').type('levanb@test.local');
-    cy.get('#saveDonorBtn').click();
+    cy.get('#saveBtn').click();
 
     cy.wait('@createDonor');
-    cy.get('@alert').should('have.been.calledWith', 'Lưu nhà hảo tâm thành công');
-    cy.wait('@reloadDonors');
-    cy.location('pathname').should('eq', '/admin/donors');
+    cy.get('@alert').should('have.been.calledWith', 'Tạo mới nhà hảo tâm thành công');
+    cy.location('pathname').should('eq', '/admin/donors/88');
+    cy.location('search').should('include', 'saved=1');
   });
 
   it('TC-ADM-DONOR-006 - Tạo nhà hảo tâm tổ chức thành công', () => {
@@ -135,41 +116,21 @@ describe('Quản lý nhà hảo tâm', () => {
       });
     }).as('createOrganization');
 
-    cy.intercept('GET', '/api/donors?*', {
-      statusCode: 200,
-      body: pagedResponse([
-        {
-          id: 89,
-          type: 'ORGANIZATION',
-          fullName: 'Cong ty An Tam',
-          phone: '0902222333',
-          email: 'org-admin@test.local',
-          createdAt: '2026-03-23T08:00:00',
-          numberOfDonations: 0,
-          totalDonationAmount: 0,
-          organization: {
-            name: 'Cong ty An Tam',
-            representative: 'Tran Thi Org'
-          }
-        }
-      ])
-    }).as('reloadDonors');
-
     visitAdminPage('/admin/donors/form');
 
-    cy.get('#donor_org').check({ force: true });
+    cy.get('#donorTypeOrganizationBtn').click();
     cy.get('#orgName').type('Cong ty An Tam');
     cy.get('#taxCode').type('0107654321');
     cy.get('#representative').type('Tran Thi Org');
     cy.get('#billingAddress').type('1 Nguyen Hue');
     cy.get('#phone').type('0902222333');
     cy.get('#email').type('org-admin@test.local');
-    cy.get('#saveDonorBtn').click();
+    cy.get('#saveBtn').click();
 
     cy.wait('@createOrganization');
-    cy.get('@alert').should('have.been.calledWith', 'Lưu nhà hảo tâm thành công');
-    cy.wait('@reloadDonors');
-    cy.location('pathname').should('eq', '/admin/donors');
+    cy.get('@alert').should('have.been.calledWith', 'Tạo mới nhà hảo tâm thành công');
+    cy.location('pathname').should('eq', '/admin/donors/89');
+    cy.location('search').should('include', 'saved=1');
   });
 
   it('TC-ADM-DONOR-007 - Kiểm tra bắt buộc cho nhà hảo tâm cá nhân', () => {
@@ -180,7 +141,7 @@ describe('Quản lý nhà hảo tâm', () => {
     cy.get('#displayName').type('Bo trong ho ten');
     cy.get('#phone').type('0911111222');
     cy.get('#email').type('required@test.local');
-    cy.get('#saveDonorBtn').click();
+    cy.get('#saveBtn').click();
 
     cy.get('@alert').should('have.been.calledWith', 'Họ và tên không được để trống');
   });
@@ -190,10 +151,10 @@ describe('Quản lý nhà hảo tâm', () => {
 
     visitAdminPage('/admin/donors/form');
 
-    cy.get('#donor_org').check({ force: true });
+    cy.get('#donorTypeOrganizationBtn').click();
     cy.get('#phone').type('0901111111');
     cy.get('#email').type('org@test.local');
-    cy.get('#saveDonorBtn').click();
+    cy.get('#saveBtn').click();
 
     cy.get('@alert').should('have.been.calledWith', 'Tên tổ chức không được để trống');
   });
@@ -211,23 +172,6 @@ describe('Quản lý nhà hảo tâm', () => {
   it('TC-ADM-DONOR-010 + TC-ADM-DONOR-011 - Sửa nhà hảo tâm thành công và khóa loại nhà hảo tâm khi chỉnh sửa', () => {
     stubAlert();
 
-    cy.intercept('GET', '/api/donors/1', {
-      statusCode: 200,
-      body: {
-        status: 200,
-        data: {
-          id: 1,
-          type: 'INDIVIDUAL',
-          fullName: 'Pham Thi Lan',
-          displayName: 'Co Lan',
-          phone: '0907000001',
-          email: 'lan.pham@example.com',
-          referralSource: 'Facebook',
-          note: 'Donor cu'
-        }
-      }
-    }).as('getDonor');
-
     cy.intercept('PUT', '/api/donors/1/individuals', (req) => {
       expect(req.body).to.include({
         fullName: 'Pham Thi Lan Updated',
@@ -241,37 +185,20 @@ describe('Quản lý nhà hảo tâm', () => {
       });
     }).as('updateDonor');
 
-    cy.intercept('GET', '/api/donors?*', {
-      statusCode: 200,
-      body: pagedResponse([
-        {
-          id: 1,
-          type: 'INDIVIDUAL',
-          fullName: 'Pham Thi Lan Updated',
-          phone: '0907000099',
-          email: 'lan.updated@test.local',
-          createdAt: '2026-03-23T08:00:00',
-          numberOfDonations: 3,
-          totalDonationAmount: 1000000
-        }
-      ])
-    }).as('reloadDonors');
-
     visitAdminPage('/admin/donors/1/form');
-    cy.wait('@getDonor');
 
-    cy.get('#donor_personal').should('be.disabled');
-    cy.get('#donor_org').should('be.disabled');
+    cy.get('#donorTypeIndividualBtn').should('not.exist');
+    cy.get('#donorTypeOrganizationBtn').should('not.exist');
 
     cy.get('#fullName').clear().type('Pham Thi Lan Updated');
     cy.get('#displayName').clear().type('Co Lan Moi');
     cy.get('#phone').clear().type('0907000099');
     cy.get('#email').clear().type('lan.updated@test.local');
-    cy.get('#saveDonorBtn').click();
+    cy.get('#saveBtn').click();
 
     cy.wait('@updateDonor');
     cy.get('@alert').should('have.been.calledWith', 'Cập nhật nhà hảo tâm thành công');
-    cy.wait('@reloadDonors');
-    cy.location('pathname').should('eq', '/admin/donors');
+    cy.location('pathname').should('eq', '/admin/donors/1');
+    cy.location('search').should('include', 'saved=1');
   });
 });

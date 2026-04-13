@@ -1,6 +1,6 @@
 export const pages = {
   home: '/',
-  about: '/about-us',
+  about: '/about',
   donation: '/donations',
   event: '/events/gay-quy-mo-tim-be-an',
   activity: '/activities/dot-1-chi-phi-phau-thuat'

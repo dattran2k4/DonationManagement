@@ -1,186 +1,229 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layouts/admin/admin-layout}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/admin/admin-layout}">
+
 <head>
     <title>Quản lý quyên góp</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="admin-page-stack">
-    <section class="admin-page-heading">
-        <div>
-            <h1 class="admin-page-title">Quản lý Quyên góp</h1>
-            <p class="admin-page-subtitle">Theo dõi, lọc và xử lý các khoản quyên góp với bố cục gần với màn sự kiện chi tiết mà bạn muốn.</p>
-        </div>
-        <div class="admin-toolbar-group">
-            <button id="donationExportBtn"
-                    type="button"
+    <div layout:fragment="content" class="admin-page-stack">
+        <section class="admin-page-heading">
+            <div>
+                <h1 class="admin-page-title">Quản lý Quyên góp</h1>
+                <p class="admin-page-subtitle">Theo dõi, lọc và xử lý các khoản quyên góp với bố cục gần với màn sự kiện
+                    chi tiết mà bạn muốn.</p>
+            </div>
+            <div class="admin-toolbar-group">
+                <button id="donationExportBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    Xuất Excel
+                </button>
+                <button id="donationTemplateBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">description</span>
+                    Tải file mẫu
+                </button>
+                <input id="donationImportInput" type="file" class="hidden" accept=".xlsx,.xls" />
+                <button id="donationImportBtn" type="button" sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
                     class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">file_download</span>
-                Xuất Excel
-            </button>
-            <input id="donationImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
-            <button id="donationImportBtn"
-                    type="button"
-                    sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
-                    class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">upload_file</span>
-                Nhập Excel
-            </button>
-            <a th:href="@{/admin/donations/form}"
-               sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
-               class="admin-action-btn admin-action-btn--primary">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Tạo mới quyên góp
-            </a>
-        </div>
-    </section>
+                    <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                    Nhập Excel
+                </button>
+                <a th:href="@{/admin/donations/form}" sec:authorize="hasAnyRole('ADMIN', 'STAFF')"
+                    class="admin-action-btn admin-action-btn--primary">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo mới quyên góp
+                </a>
+            </div>
+        </section>
 
-    <section class="admin-stat-grid">
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon">
-                <span class="material-symbols-outlined">payments</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tổng quyên góp</p>
-                <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">1.250.000.000 đ</p>
-            </div>
-        </article>
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
-                <span class="material-symbols-outlined">hourglass_top</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Cần duyệt gấp</p>
-                <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">15 đơn</p>
-            </div>
-        </article>
-        <article class="admin-stat-card">
-            <div class="admin-stat-icon bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
-                <span class="material-symbols-outlined">calendar_today</span>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Doanh thu hôm nay</p>
-                <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">25.000.000 đ</p>
-            </div>
-        </article>
-    </section>
-
-    <section class="admin-filter-shell">
-        <div class="flex flex-col gap-4">
-            <div class="flex flex-col xl:flex-row gap-4">
-                <div class="relative flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span class="material-symbols-outlined text-slate-400">search</span>
-                    </div>
-                    <input id="donationSearchInput"
-                           class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
-                           placeholder="Tìm theo mã đơn (ORD-...) hoặc tên nhà hảo tâm..." type="text"/>
+        <section class="admin-stat-grid">
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon">
+                    <span class="material-symbols-outlined">payments</span>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    <select id="donationStatusFilter"
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tổng quyên góp</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">1.250.000.000 đ</p>
+                </div>
+            </article>
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+                    <span class="material-symbols-outlined">hourglass_top</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Cần duyệt gấp</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">15 đơn</p>
+                </div>
+            </article>
+            <article class="admin-stat-card">
+                <div class="admin-stat-icon bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Doanh thu hôm nay</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">25.000.000 đ</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="admin-filter-shell">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col xl:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-400">search</span>
+                        </div>
+                        <input id="donationSearchInput"
+                            class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
+                            placeholder="Tìm theo mã đơn (ORD-...) hoặc tên nhà hảo tâm..." type="text" />
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <select id="donationStatusFilter"
                             class="admin-select-field block w-full sm:w-48 pl-4 pr-10 py-3 text-sm cursor-pointer">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="PENDING_APPROVED">Chờ duyệt</option>
-                        <option value="PENDING_PAYMENT">Chờ thanh toán</option>
-                        <option value="CONFIRMED">Đã xác nhận</option>
-                        <option value="REJECTED">Đã từ chối</option>
-                        <option value="FAILED">Thất bại</option>
-                    </select>
-                    <select id="donationTargetFilter"
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="PENDING_APPROVED">Chờ duyệt</option>
+                            <option value="PENDING_PAYMENT">Chờ thanh toán</option>
+                            <option value="CONFIRMED">Đã xác nhận</option>
+                            <option value="REJECTED">Đã từ chối</option>
+                            <option value="FAILED">Thất bại</option>
+                        </select>
+                        <select id="donationTargetFilter"
                             class="admin-select-field block w-full sm:w-48 pl-4 pr-10 py-3 text-sm cursor-pointer">
-                        <option value="">Tất cả mục tiêu</option>
-                        <option value="EVENT">Sự kiện từ thiện</option>
-                        <option value="ACTIVITY">Hoạt động thường niên</option>
-                        <option value="NONE">Không gắn mục tiêu</option>
-                    </select>
-                    <select id="donationPaymentMethodFilter"
+                            <option value="">Tất cả mục tiêu</option>
+                            <option value="EVENT">Sự kiện từ thiện</option>
+                            <option value="ACTIVITY">Hoạt động thường niên</option>
+                            <option value="NONE">Không gắn mục tiêu</option>
+                        </select>
+                        <select id="donationPaymentMethodFilter"
                             class="admin-select-field block w-full sm:w-48 pl-4 pr-10 py-3 text-sm cursor-pointer">
-                        <option value="">Tất cả phương thức</option>
-                        <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
-                        <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
-                        <option value="CASH">Tiền mặt</option>
-                    </select>
-                    <button id="donationAmountRangeToggle"
-                            type="button"
+                            <option value="">Tất cả phương thức</option>
+                            <option value="BANK_TRANSFER_ONLINE">Chuyển khoản online</option>
+                            <option value="BANK_TRANSFER_OFFLINE">Chuyển khoản thủ công</option>
+                            <option value="CASH">Tiền mặt</option>
+                        </select>
+                        <button id="donationAmountRangeToggle" type="button"
                             class="admin-action-btn admin-action-btn--ghost">
-                        <span class="material-symbols-outlined text-[18px]">tune</span>
-                        Lọc số tiền
-                    </button>
-                    <button id="donationResetFilterBtn"
-                            class="admin-action-btn admin-action-btn--ghost px-4"
+                            <span class="material-symbols-outlined text-[18px]">tune</span>
+                            Lọc số tiền
+                        </button>
+                        <button id="donationResetFilterBtn" class="admin-action-btn admin-action-btn--ghost px-4"
                             title="Reset Filters">
-                        <span class="material-symbols-outlined text-[20px]">restart_alt</span>
-                    </button>
+                            <span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div id="donationAmountRangePanel"
-                 class="mt-1 hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-4">
-                <div class="flex flex-col gap-4 md:flex-row md:items-end">
-                    <div class="w-full md:w-56">
-                        <label for="donationMinAmountFilter" class="admin-form-label">Số tiền từ</label>
-                        <input id="donationMinAmountFilter" type="number" min="0" step="1" inputmode="numeric"
-                               placeholder="Ví dụ: 100000"
-                               class="admin-input-field block w-full px-4 py-3 text-sm">
-                    </div>
-                    <div class="w-full md:w-56">
-                        <label for="donationMaxAmountFilter" class="admin-form-label">Đến</label>
-                        <input id="donationMaxAmountFilter" type="number" min="0" step="1" inputmode="numeric"
-                               placeholder="Ví dụ: 1000000"
-                               class="admin-input-field block w-full px-4 py-3 text-sm">
-                    </div>
-                    <div class="flex gap-3">
-                        <button id="donationApplyAmountFilterBtn"
-                                type="button"
+                <div id="donationAmountRangePanel"
+                    class="mt-1 hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-4">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-end">
+                        <div class="w-full md:w-56">
+                            <label for="donationMinAmountFilter" class="admin-form-label">Số tiền từ</label>
+                            <input id="donationMinAmountFilter" type="number" min="0" step="1" inputmode="numeric"
+                                placeholder="Ví dụ: 100000" class="admin-input-field block w-full px-4 py-3 text-sm">
+                        </div>
+                        <div class="w-full md:w-56">
+                            <label for="donationMaxAmountFilter" class="admin-form-label">Đến</label>
+                            <input id="donationMaxAmountFilter" type="number" min="0" step="1" inputmode="numeric"
+                                placeholder="Ví dụ: 1000000" class="admin-input-field block w-full px-4 py-3 text-sm">
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="donationApplyAmountFilterBtn" type="button"
                                 class="admin-action-btn admin-action-btn--primary">
-                            Áp dụng
-                        </button>
-                        <button id="donationClearAmountFilterBtn"
-                                type="button"
+                                Áp dụng
+                            </button>
+                            <button id="donationClearAmountFilterBtn" type="button"
                                 class="admin-action-btn admin-action-btn--ghost">
-                            Xóa khoảng tiền
-                        </button>
+                                Xóa khoảng tiền
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="admin-table-shell">
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                <thead>
-                <tr>
-                    <th class="px-6 py-4 text-left" scope="col">Mã đơn</th>
-                    <th class="px-6 py-4 text-left" scope="col">Nhà hảo tâm</th>
-                    <th class="px-6 py-4 text-right" scope="col">Số tiền</th>
-                    <th class="px-6 py-4 text-left" scope="col">Mục tiêu</th>
-                    <th class="px-6 py-4 text-left hidden xl:table-cell" scope="col">Phương thức</th>
-                    <th class="px-6 py-4 text-left" scope="col">Trạng thái</th>
-                    <th id="donationActionHeader" class="px-6 py-4 text-right" scope="col">Hành động</th>
-                </tr>
-                </thead>
-                <tbody id="donationTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
-            </table>
-        </div>
-        <div id="paginationContainer"></div>
-    </section>
-</div>
-<th:block layout:fragment="scripts">
-    <script th:inline="javascript">
-        window.__CAN_APPROVE_DONATIONS__ = false;
-        window.__CAN_MANAGE_DONATIONS__ = false;
-    </script>
-    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
-        window.__CAN_APPROVE_DONATIONS__ = true;
-    </script>
-    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
-        window.__CAN_MANAGE_DONATIONS__ = true;
-    </script>
-    <script type="module" th:src="@{/js/pages/admin/donationList.js}"></script>
-</th:block>
+        <section class="admin-table-shell">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-4 text-left" scope="col">
+                                <button type="button" data-donation-sort="code"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Mã đơn</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-left" scope="col">
+                                <button type="button" data-donation-sort="donatedAt"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Thời gian</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-left" scope="col">
+                                <button type="button" data-donation-sort="donorName"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Nhà hảo tâm</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-right" scope="col">
+                                <button type="button" data-donation-sort="amount"
+                                    class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Số tiền</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-left" scope="col">
+                                <button type="button" data-donation-sort="target"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Mục tiêu</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-left hidden xl:table-cell" scope="col">
+                                <button type="button" data-donation-sort="paymentMethod"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Phương thức</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 text-left" scope="col">
+                                <button type="button" data-donation-sort="status"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Trạng thái</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th id="donationActionHeader" class="px-6 py-4 text-right" scope="col">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donationTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                </table>
+            </div>
+            <div id="paginationContainer"></div>
+        </section>
+    </div>
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            window.__CAN_APPROVE_DONATIONS__ = false;
+            window.__CAN_MANAGE_DONATIONS__ = false;
+        </script>
+        <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
+            window.__CAN_APPROVE_DONATIONS__ = true;
+        </script>
+        <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+            window.__CAN_MANAGE_DONATIONS__ = true;
+        </script>
+        <script type="module" th:src="@{/js/pages/admin/donationList.js}"></script>
+    </th:block>
 </body>
+
 </html>

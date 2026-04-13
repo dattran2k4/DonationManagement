@@ -4,6 +4,7 @@ import com.chiaseyeuthuong.common.EDonationStatus;
 import com.chiaseyeuthuong.common.EDonationTarget;
 import com.chiaseyeuthuong.common.EDonorType;
 import com.chiaseyeuthuong.common.EEntityType;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.DonorOrganizationRelationshipRequest;
 import com.chiaseyeuthuong.dto.request.DonorPersonRelationshipRequest;
 import com.chiaseyeuthuong.dto.request.IndividualDonorRequest;
@@ -58,6 +59,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j(topic = "DONOR-SERVICE")
 public class DonorServiceImpl implements DonorService {
+
+    private static final Map<String, String> DONOR_RELATION_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("name", "fullName"),
+            Map.entry("contact", "phone"),
+            Map.entry("type", "type"),
+            Map.entry("createdAt", "createdAt")
+    );
+    private static final Map<String, String> DONOR_HISTORY_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("donationCode", "memoCode"),
+            Map.entry("amount", "amount"),
+            Map.entry("paymentMethod", "paymentMethod"),
+            Map.entry("createdAt", "createdAt"),
+            Map.entry("target", "target")
+    );
+    private static final Map<String, String> DONOR_HISTORY_UNSAFE_SORT_FIELDS = Map.ofEntries(
+            Map.entry("donatedAt", "coalesce(donatedAt, createdAt)"),
+            Map.entry("status", "case when status = 'PENDING_PAYMENT' then 1 when status = 'PENDING_APPROVED' then 2 when status = 'CONFIRMED' then 3 when status = 'REJECTED' then 4 when status = 'CANCELLED' then 5 when status = 'FAILED' then 6 else 99 end")
+    );
 
     private final DonorRepository donorRepository;
     private final DonationRepository donationRepository;
@@ -210,7 +231,7 @@ public class DonorServiceImpl implements DonorService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DonorPersonRelationshipResponse> getPersonRelationships(Long donorId) {
+    public List<DonorPersonRelationshipResponse> getPersonRelationships(Long donorId, String sortBy, String sortDir) {
         Donor donor = getExistingDonor(donorId);
         if (donor.getType() != EDonorType.INDIVIDUAL) {
             return List.of();
@@ -219,16 +240,18 @@ public class DonorServiceImpl implements DonorService {
         return donorPersonRelationshipRepository.findByDonorIdAndIsActiveTrueOrderByUpdatedAtDescIdDesc(donorId)
                 .stream()
                 .map(this::toResponse)
+                .sorted(buildPersonRelationshipComparator(sortBy, sortDir))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<DonorOrganizationRelationshipResponse> getOrganizationRelationships(Long donorId) {
+    public List<DonorOrganizationRelationshipResponse> getOrganizationRelationships(Long donorId, String sortBy, String sortDir) {
         getExistingDonor(donorId);
         return donorOrganizationRelationshipRepository.findByDonorIdAndIsActiveTrueOrderByUpdatedAtDescIdDesc(donorId)
                 .stream()
                 .map(this::toResponse)
+                .sorted(buildOrganizationRelationshipComparator(sortBy, sortDir))
                 .toList();
     }
 
@@ -427,12 +450,16 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
-    public PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size) {
+    public PageResponse<DonorDonationHistoryResponse> getDonorDonations(Long donorId, int page, int size, String sortBy, String sortDir) {
         getExistingDonor(donorId);
 
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        Sort sort = SortParamUtils.buildSort(DONOR_HISTORY_SORT_FIELDS, DONOR_HISTORY_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "donatedAt", Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(
+                SortParamUtils.normalizePageNumber(page),
+                SortParamUtils.normalizePageSize(size, 10),
+                sort
+        );
         Page<Donation> donationPage = donationRepository.findByDonorId(donorId, pageRequest);
 
         List<DonorDonationHistoryResponse> data = donationPage.stream()
@@ -440,8 +467,8 @@ public class DonorServiceImpl implements DonorService {
                 .toList();
 
         return PageResponse.<DonorDonationHistoryResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(donationPage.getTotalElements())
                 .totalPages(donationPage.getTotalPages())
                 .data(data)
@@ -478,11 +505,14 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
-    public PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+    public PageResponse<DonorResponse> getDonorsByEventId(Long eventId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONOR_RELATION_SORT_FIELDS, Map.of(),
+                sortBy, sortDir, "createdAt", Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(
+                SortParamUtils.normalizePageNumber(page),
+                SortParamUtils.normalizePageSize(size, 10),
+                sort
+        );
         Page<Donor> donorPage = donorRepository.findDonorsByEventId(eventId, pageRequest);
 
         List<DonorResponse> data = donorPage.getContent()
@@ -491,8 +521,8 @@ public class DonorServiceImpl implements DonorService {
                 .toList();
 
         return PageResponse.<DonorResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(donorPage.getTotalElements())
                 .totalPages(donorPage.getTotalPages())
                 .data(data)
@@ -500,11 +530,14 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
-    public PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-        int safeSize = size > 0 ? size : 10;
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+    public PageResponse<DonorResponse> getDonorsByActivityId(Long activityId, int page, int size, String sortBy, String sortDir) {
+        Sort sort = SortParamUtils.buildSort(DONOR_RELATION_SORT_FIELDS, Map.of(),
+                sortBy, sortDir, "createdAt", Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(
+                SortParamUtils.normalizePageNumber(page),
+                SortParamUtils.normalizePageSize(size, 10),
+                sort
+        );
         Page<Donor> donorPage = donorRepository.findDonorsByActivityId(activityId, pageRequest);
 
         List<DonorResponse> data = donorPage.getContent()
@@ -513,8 +546,8 @@ public class DonorServiceImpl implements DonorService {
                 .toList();
 
         return PageResponse.<DonorResponse>builder()
-                .page(pageNumber + 1)
-                .pageSize(safeSize)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(donorPage.getTotalElements())
                 .totalPages(donorPage.getTotalPages())
                 .data(data)
@@ -809,12 +842,12 @@ public class DonorServiceImpl implements DonorService {
     }
 
     private String normalizeSortBy(String sortBy) {
-        if (!StringUtils.hasText(sortBy)) return "id";
+        if (!StringUtils.hasText(sortBy)) return "createdAt";
 
         return switch (sortBy.trim()) {
             case "name", "type", "contact", "createdAt", "numberOfDonations", "totalDonationAmount", "id" ->
                     sortBy.trim();
-            default -> "id";
+            default -> "createdAt";
         };
     }
 
@@ -836,6 +869,96 @@ public class DonorServiceImpl implements DonorService {
         if (donor == null) return null;
         String phone = donor.getPhone() != null ? donor.getPhone() : "";
         String email = donor.getEmail() != null ? donor.getEmail() : "";
+        String combined = ("%s %s".formatted(phone, email)).trim();
+        return combined.isEmpty() ? null : combined;
+    }
+
+    private Comparator<DonorPersonRelationshipResponse> buildPersonRelationshipComparator(String sortBy, String sortDir) {
+        String normalizedSortBy = normalizePersonRelationshipSortBy(sortBy);
+        boolean descending = "desc".equalsIgnoreCase(sortDir);
+
+        Comparator<String> textComparator = Comparator.nullsLast(getVietnameseCollator());
+        Comparator<DonorPersonRelationshipResponse> baseComparator = switch (normalizedSortBy) {
+            case "name" -> Comparator.comparing(this::getSortablePersonRelationshipName, textComparator);
+            case "contact" -> Comparator.comparing(this::getSortablePersonRelationshipContact, textComparator);
+            case "relationshipType" -> Comparator.comparing(DonorPersonRelationshipResponse::getRelationshipTypeName, textComparator);
+            case "note" -> Comparator.comparing(DonorPersonRelationshipResponse::getNote, textComparator);
+            case "updatedAt" -> Comparator.comparing(DonorPersonRelationshipResponse::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparing(DonorPersonRelationshipResponse::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+        };
+
+        Comparator<Long> idComparator = descending
+                ? Comparator.nullsLast(Comparator.reverseOrder())
+                : Comparator.nullsLast(Comparator.<Long>naturalOrder());
+        Comparator<DonorPersonRelationshipResponse> tieBreaker = Comparator.comparing(DonorPersonRelationshipResponse::getId, idComparator);
+
+        return descending ? baseComparator.reversed().thenComparing(tieBreaker) : baseComparator.thenComparing(tieBreaker);
+    }
+
+    private Comparator<DonorOrganizationRelationshipResponse> buildOrganizationRelationshipComparator(String sortBy, String sortDir) {
+        String normalizedSortBy = normalizeOrganizationRelationshipSortBy(sortBy);
+        boolean descending = "desc".equalsIgnoreCase(sortDir);
+
+        Comparator<String> textComparator = Comparator.nullsLast(getVietnameseCollator());
+        Comparator<DonorOrganizationRelationshipResponse> baseComparator = switch (normalizedSortBy) {
+            case "name" -> Comparator.comparing(this::getSortableOrganizationRelationshipName, textComparator);
+            case "contact" -> Comparator.comparing(this::getSortableOrganizationRelationshipContact, textComparator);
+            case "roleType" -> Comparator.comparing(DonorOrganizationRelationshipResponse::getRoleTypeName, textComparator);
+            case "note" -> Comparator.comparing(DonorOrganizationRelationshipResponse::getNote, textComparator);
+            case "updatedAt" -> Comparator.comparing(DonorOrganizationRelationshipResponse::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparing(DonorOrganizationRelationshipResponse::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+        };
+
+        Comparator<Long> idComparator = descending
+                ? Comparator.nullsLast(Comparator.reverseOrder())
+                : Comparator.nullsLast(Comparator.<Long>naturalOrder());
+        Comparator<DonorOrganizationRelationshipResponse> tieBreaker = Comparator.comparing(DonorOrganizationRelationshipResponse::getId, idComparator);
+
+        return descending ? baseComparator.reversed().thenComparing(tieBreaker) : baseComparator.thenComparing(tieBreaker);
+    }
+
+    private String normalizePersonRelationshipSortBy(String sortBy) {
+        if (!StringUtils.hasText(sortBy)) return "updatedAt";
+
+        return switch (sortBy.trim()) {
+            case "name", "contact", "relationshipType", "note", "updatedAt", "id" -> sortBy.trim();
+            default -> "updatedAt";
+        };
+    }
+
+    private String normalizeOrganizationRelationshipSortBy(String sortBy) {
+        if (!StringUtils.hasText(sortBy)) return "updatedAt";
+
+        return switch (sortBy.trim()) {
+            case "name", "contact", "roleType", "note", "updatedAt", "id" -> sortBy.trim();
+            default -> "updatedAt";
+        };
+    }
+
+    private String getSortablePersonRelationshipName(DonorPersonRelationshipResponse relationship) {
+        if (relationship == null) return null;
+        if (StringUtils.hasText(relationship.getRelatedDonorName())) {
+            return relationship.getRelatedDonorName();
+        }
+        return relationship.getRelatedDonorDisplayName();
+    }
+
+    private String getSortablePersonRelationshipContact(DonorPersonRelationshipResponse relationship) {
+        if (relationship == null) return null;
+        String phone = relationship.getRelatedDonorPhone() != null ? relationship.getRelatedDonorPhone() : "";
+        String email = relationship.getRelatedDonorEmail() != null ? relationship.getRelatedDonorEmail() : "";
+        String combined = ("%s %s".formatted(phone, email)).trim();
+        return combined.isEmpty() ? null : combined;
+    }
+
+    private String getSortableOrganizationRelationshipName(DonorOrganizationRelationshipResponse relationship) {
+        return relationship != null ? relationship.getRelatedDonorName() : null;
+    }
+
+    private String getSortableOrganizationRelationshipContact(DonorOrganizationRelationshipResponse relationship) {
+        if (relationship == null) return null;
+        String phone = relationship.getRelatedDonorPhone() != null ? relationship.getRelatedDonorPhone() : "";
+        String email = relationship.getRelatedDonorEmail() != null ? relationship.getRelatedDonorEmail() : "";
         String combined = ("%s %s".formatted(phone, email)).trim();
         return combined.isEmpty() ? null : combined;
     }

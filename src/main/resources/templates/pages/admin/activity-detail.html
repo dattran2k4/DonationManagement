@@ -1,235 +1,349 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layouts/admin/admin-layout}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/admin/admin-layout}">
+
 <head>
     <title>Chi tiết hoạt động</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="admin-page-stack"
-     th:with="current=${activity.currentAmount != null ? activity.currentAmount : 0},
+    <div layout:fragment="content" class="admin-page-stack" th:with="current=${activity.currentAmount != null ? activity.currentAmount : 0},
               targetRaw=${activity.targetAmount != null ? activity.targetAmount : 0},
               targetSafe=${targetRaw > 0 ? targetRaw : 1},
               percent=${current * 100 / targetSafe}">
 
-    <section class="admin-toolbar">
-        <div class="admin-toolbar-group">
-            <a th:href="@{/admin/activities/form}"
-               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-               class="admin-action-btn admin-action-btn--primary">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Tạo mới
-            </a>
-            <a th:href="@{/admin/activities}"
-               class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">undo</span>
-                Quay lại
-            </a>
-            <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-               th:href="@{/admin/activities/{id}/form(id=${activity.id})}"
-               class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                Chỉnh sửa
-            </a>
-            <button type="button" onclick="window.location.reload()" class="admin-action-btn">
-                <span class="material-symbols-outlined text-[18px]">refresh</span>
-                Làm mới
-            </button>
-        </div>
-    </section>
+        <section class="admin-toolbar">
+            <div class="admin-toolbar-group">
+                <a th:href="@{/admin/activities/form}" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="admin-action-btn admin-action-btn--primary">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo mới
+                </a>
+                <a th:href="@{/admin/activities}" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">undo</span>
+                    Quay lại
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    th:href="@{/admin/activities/{id}/form(id=${activity.id})}" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                    Chỉnh sửa
+                </a>
+                <button type="button" onclick="window.location.reload()" class="admin-action-btn">
+                    <span class="material-symbols-outlined text-[18px]">refresh</span>
+                    Làm mới
+                </button>
+            </div>
+        </section>
 
-    <section class="admin-detail-frame" id="activityDetailTabsSection" th:attr="data-activity-id=${activity.id}">
-        <div class="admin-detail-header">
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <h1 class="admin-detail-title" th:text="${activity.name ?: 'Chi tiết hoạt động'}">Chi tiết hoạt động</h1>
-                    <p class="admin-detail-subtitle">
-                        Thuộc sự kiện:
-                        <span class="font-semibold" th:text="${activity.event != null && activity.event.name != null ? activity.event.name : 'Chưa liên kết'}">---</span>
-                    </p>
-                </div>
-                <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold"
-                     th:classappend="
+        <section class="admin-detail-frame" id="activityDetailTabsSection" th:attr="data-activity-id=${activity.id}">
+            <div class="admin-detail-header">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h1 class="admin-detail-title" th:text="${activity.name ?: 'Chi tiết hoạt động'}">Chi tiết hoạt
+                            động</h1>
+                        <p class="admin-detail-subtitle">
+                            Thuộc sự kiện:
+                            <span class="font-semibold"
+                                th:text="${activity.event != null && activity.event.name != null ? activity.event.name : 'Chưa liên kết'}">---</span>
+                        </p>
+                    </div>
+                    <div class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold" th:classappend="
                         ${activity.status != null && activity.status.name() == 'ONGOING'} ? ' bg-emerald-100 text-emerald-700' :
                         (${activity.status != null && activity.status.name() == 'UPCOMING'} ? ' bg-amber-100 text-amber-700' :
                         (${activity.status != null && activity.status.name() == 'COMPLETED'} ? ' bg-slate-200 text-slate-700' :
                         ' bg-sky-100 text-sky-700'))"
-                     th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">
-                    Đang diễn ra
+                        th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">
+                        Đang diễn ra
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
-            <div class="admin-tab-strip">
-                <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin chung</button>
-                <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
-                    Nhà hảo tâm
-                    <span id="tabDonorsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
-                </button>
-                <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
-                    Quyên góp
-                    <span id="tabDonationsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
-                </button>
-                <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
-                    Lịch sử thao tác
-                    <span id="tabAuditLogsCount" class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
-                </button>
+            <div class="border-b border-slate-200 px-8 pt-5 dark:border-slate-800">
+                <div class="admin-tab-strip">
+                    <button id="tabInfoBtn" data-tab="info" type="button" class="admin-tab-link is-active">Thông tin
+                        chung</button>
+                    <button id="tabDonorsBtn" data-tab="donors" type="button" class="admin-tab-link gap-2">
+                        Nhà hảo tâm
+                        <span id="tabDonorsCount"
+                            class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                    </button>
+                    <button id="tabDonationsBtn" data-tab="donations" type="button" class="admin-tab-link gap-2">
+                        Quyên góp
+                        <span id="tabDonationsCount"
+                            class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                    </button>
+                    <button id="tabAuditLogsBtn" data-tab="auditLogs" type="button" class="admin-tab-link gap-2">
+                        Lịch sử thao tác
+                        <span id="tabAuditLogsCount"
+                            class="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-2 text-xs font-semibold text-slate-700">0</span>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div id="tabInfoPanel" class="p-8 space-y-6">
-            <div class="grid gap-6 xl:grid-cols-2">
+            <div id="tabInfoPanel" class="p-8 space-y-6">
+                <div class="grid gap-6 xl:grid-cols-2">
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin hoạt động</h2>
+                        <div class="admin-field-grid">
+                            <div>
+                                <p class="admin-muted-label">Tên hoạt động</p>
+                                <div class="admin-field-value" th:text="${activity.name ?: '---'}">---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Trạng thái</p>
+                                <div class="admin-field-value"
+                                    th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">---
+                                </div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Ngày bắt đầu</p>
+                                <div class="admin-field-value"
+                                    th:text="${activity.startDate != null ? #temporals.format(activity.startDate, 'dd/MM/yyyy') : '---'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Ngày kết thúc</p>
+                                <div class="admin-field-value"
+                                    th:text="${activity.endDate != null ? #temporals.format(activity.endDate, 'dd/MM/yyyy') : '---'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Địa điểm</p>
+                                <div class="admin-field-value"
+                                    th:text="${activity.location != null && !#strings.isEmpty(activity.location) ? activity.location : 'Chưa cập nhật'}">
+                                    ---</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Sự kiện cha</p>
+                                <div class="admin-field-value"
+                                    th:text="${activity.event != null && activity.event.name != null ? activity.event.name : '---'}">
+                                    ---</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="admin-info-card">
+                        <h2 class="admin-info-card__title">Thông tin tài chính</h2>
+                        <div class="grid gap-4">
+                            <div>
+                                <p class="admin-muted-label">Mục tiêu gây quỹ</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                    VNĐ</div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Đã đạt được</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ
+                                </div>
+                            </div>
+                            <div>
+                                <p class="admin-muted-label">Tiến độ</p>
+                                <div class="admin-field-value"
+                                    th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
                 <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Thông tin hoạt động</h2>
-                    <div class="admin-field-grid">
+                    <h2 class="admin-info-card__title">Nội dung hoạt động</h2>
+                    <div class="grid gap-5">
                         <div>
-                            <p class="admin-muted-label">Tên hoạt động</p>
-                            <div class="admin-field-value" th:text="${activity.name ?: '---'}">---</div>
+                            <p class="admin-muted-label">Mô tả ngắn</p>
+                            <div class="admin-field-value min-h-[120px] items-start leading-relaxed"
+                                th:text="${activity.shortDescription != null && !#strings.isEmpty(activity.shortDescription) ? activity.shortDescription : 'Chưa có mô tả ngắn.'}">
+                                Chưa có mô tả ngắn.
+                            </div>
                         </div>
                         <div>
-                            <p class="admin-muted-label">Trạng thái</p>
-                            <div class="admin-field-value" th:text="${activity.status != null ? activity.status.value : 'Chưa cập nhật'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Ngày bắt đầu</p>
-                            <div class="admin-field-value" th:text="${activity.startDate != null ? #temporals.format(activity.startDate, 'dd/MM/yyyy') : '---'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Ngày kết thúc</p>
-                            <div class="admin-field-value" th:text="${activity.endDate != null ? #temporals.format(activity.endDate, 'dd/MM/yyyy') : '---'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Địa điểm</p>
-                            <div class="admin-field-value" th:text="${activity.location != null && !#strings.isEmpty(activity.location) ? activity.location : 'Chưa cập nhật'}">---</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Sự kiện cha</p>
-                            <div class="admin-field-value" th:text="${activity.event != null && activity.event.name != null ? activity.event.name : '---'}">---</div>
+                            <p class="admin-muted-label">Nội dung chi tiết</p>
+                            <div
+                                class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                                <div th:if="${activity.content != null && !#strings.isEmpty(activity.content)}"
+                                    th:utext="${activity.content}"></div>
+                                <p th:if="${activity.content == null || #strings.isEmpty(activity.content)}">Chưa có nội
+                                    dung hoạt động.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
+            </div>
 
-                <section class="admin-info-card">
-                    <h2 class="admin-info-card__title">Thông tin tài chính</h2>
-                    <div class="grid gap-4">
-                        <div>
-                            <p class="admin-muted-label">Mục tiêu gây quỹ</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(targetRaw, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Đã đạt được</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(current, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</div>
-                        </div>
-                        <div>
-                            <p class="admin-muted-label">Tiến độ</p>
-                            <div class="admin-field-value" th:text="${#numbers.formatDecimal(percent > 100 ? 100 : percent, 0, 0)} + '%'">0%</div>
-                        </div>
+            <div id="tabDonorsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm</h2>
                     </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donor-sort="name"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nhà hảo tâm</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donor-sort="contact"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Liên hệ</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donor-sort="type"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Loại</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ
+                                        liệu nhà hảo tâm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="activityDonorsPagination"></div>
                 </section>
             </div>
 
-            <section class="admin-info-card">
-                <h2 class="admin-info-card__title">Nội dung hoạt động</h2>
-                <div class="grid gap-5">
-                    <div>
-                        <p class="admin-muted-label">Mô tả ngắn</p>
-                        <div class="admin-field-value min-h-[120px] items-start leading-relaxed"
-                             th:text="${activity.shortDescription != null && !#strings.isEmpty(activity.shortDescription) ? activity.shortDescription : 'Chưa có mô tả ngắn.'}">
-                            Chưa có mô tả ngắn.
-                        </div>
+            <div id="tabDonationsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp</h2>
                     </div>
-                    <div>
-                        <p class="admin-muted-label">Nội dung chi tiết</p>
-                        <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                            <div th:if="${activity.content != null && !#strings.isEmpty(activity.content)}" th:utext="${activity.content}"></div>
-                            <p th:if="${activity.content == null || #strings.isEmpty(activity.content)}">Chưa có nội dung hoạt động.</p>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donation-sort="code"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Mã đơn</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donation-sort="donorName"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nhà hảo tâm</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">
+                                        <button type="button" data-activity-donation-sort="amount"
+                                            class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Số tiền</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-donation-sort="status"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Trạng thái</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-right">
+                                        <button type="button" data-activity-donation-sort="donatedAt"
+                                            class="inline-flex items-center justify-end gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Thời gian</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityDonationsTableBody"
+                                class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ
+                                        liệu quyên góp...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            </section>
-        </div>
+                    <div id="activityDonationsPagination"></div>
+                </section>
+            </div>
 
-        <div id="tabDonorsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách nhà hảo tâm</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
-                            <th class="px-6 py-4 text-left">Liên hệ</th>
-                            <th class="px-6 py-4 text-left">Loại</th>
-                            <th class="px-6 py-4 text-right">Tổng đã xác nhận</th>
-                        </tr>
-                        </thead>
-                        <tbody id="activityDonorsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu nhà hảo tâm...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="activityDonorsPagination"></div>
-            </section>
-        </div>
+            <div id="tabAuditLogsPanel" class="hidden p-8">
+                <section class="admin-table-shell">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-audit-sort="createdAt"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Thời gian</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-audit-sort="actorUsername"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Người thao tác</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-audit-sort="action"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Hành động</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-4 text-left">
+                                        <button type="button" data-activity-audit-sort="summary"
+                                            class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                            <span>Nội dung</span>
+                                            <span data-sort-icon
+                                                class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityAuditLogsTableBody"
+                                class="divide-y divide-slate-200 dark:divide-slate-800">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch
+                                        sử thao tác...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="activityAuditLogsPagination"></div>
+                </section>
+            </div>
+        </section>
+    </div>
 
-        <div id="tabDonationsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Danh sách quyên góp</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Mã đơn</th>
-                            <th class="px-6 py-4 text-left">Nhà hảo tâm</th>
-                            <th class="px-6 py-4 text-right">Số tiền</th>
-                            <th class="px-6 py-4 text-left">Trạng thái</th>
-                            <th class="px-6 py-4 text-right">Thời gian</th>
-                        </tr>
-                        </thead>
-                        <tbody id="activityDonationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải dữ liệu quyên góp...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="activityDonationsPagination"></div>
-            </section>
-        </div>
-
-        <div id="tabAuditLogsPanel" class="hidden p-8">
-            <section class="admin-table-shell">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Lịch sử thao tác</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Thời gian</th>
-                            <th class="px-6 py-4 text-left">Người thao tác</th>
-                            <th class="px-6 py-4 text-left">Hành động</th>
-                            <th class="px-6 py-4 text-left">Nội dung</th>
-                        </tr>
-                        </thead>
-                        <tbody id="activityAuditLogsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-sm text-slate-500">Đang tải lịch sử thao tác...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="activityAuditLogsPagination"></div>
-            </section>
-        </div>
-    </section>
-</div>
-
-<th:block layout:fragment="scripts">
-    <script type="module" th:src="@{/js/pages/admin/activityDetail.js}"></script>
-</th:block>
+    <th:block layout:fragment="scripts">
+        <script type="module" th:src="@{/js/pages/admin/activityDetail.js}"></script>
+    </th:block>
 </body>
+
 </html>

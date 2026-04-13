@@ -38,12 +38,15 @@ public class ApiDonationController {
                                        @RequestParam(required = false) EPaymentMethod paymentMethod,
                                        @RequestParam(required = false) BigDecimal minAmount,
                                        @RequestParam(required = false) BigDecimal maxAmount,
+                                       @RequestParam(required = false) String sortBy,
+                                       @RequestParam(required = false) String sortDir,
                                        @RequestParam(required = false, defaultValue = "1") int page,
                                        @RequestParam(required = false, defaultValue = "10") int size) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách quyên góp thành công")
-                .data(donationService.getAllDonations(search, status, target, type, paymentMethod, minAmount, maxAmount, page, size))
+                .data(donationService.getAllDonations(search, status, target, type, paymentMethod, minAmount, maxAmount,
+                        sortBy, sortDir, page, size))
                 .build();
     }
 

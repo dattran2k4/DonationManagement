@@ -63,7 +63,7 @@ describe('Quản lý Hoạt động', () => {
 
     cy.intercept('POST', '/api/activities/save', (req) => {
       expect(req.body).to.include({
-        eventId: '1',
+        eventId: 1,
         name: 'Hoat dong Cypress Moi',
         status: 'UPCOMING',
         location: 'Da Nang'
@@ -76,7 +76,8 @@ describe('Quản lý Hoạt động', () => {
 
     visitAdminPage('/admin/activities/form');
 
-    cy.get('#activityEvent').select('1');
+    cy.get('#activityEventSearch').click();
+    cy.contains('.activity-event-option', 'Gây quỹ mổ tim cho bé An').click();
     cy.get('#activityName').type('Hoat dong Cypress Moi');
     cy.get('#activityLocation').type('Da Nang');
     cy.get('#activityStatus').select('UPCOMING');
@@ -93,15 +94,19 @@ describe('Quản lý Hoạt động', () => {
     visitAdminPage('/admin/activities/form');
     cy.get('#saveBtn').click();
 
-    cy.get('@alert').should('have.been.calledWith', 'Vui lòng chọn sự kiện cha!');
+    cy.get('@alert').should((alertStub) => {
+      expect(alertStub).to.have.been.calledOnce;
+      expect(String(alertStub.getCall(0).args[0])).to.contain('sự kiện cha');
+    });
   });
 
   it('TC-ADM-ACT-005 - Tự đồng bộ ngày bắt đầu từ sự kiện cha', () => {
     visitAdminPage('/admin/activities/form');
 
     cy.get('#activityStartDate').should('have.value', '');
-    cy.get('#activityEvent').find('option[value="1"]').invoke('attr', 'data-start-date').then((startDate) => {
-      cy.get('#activityEvent').select('1');
+    cy.get('#activityEventSearch').click();
+    cy.get('.activity-event-option[data-id="1"]').invoke('attr', 'data-start-date').then((startDate) => {
+      cy.get('.activity-event-option[data-id="1"]').click();
       cy.get('#activityStartDate').should('have.value', startDate);
     });
   });
@@ -110,7 +115,7 @@ describe('Quản lý Hoạt động', () => {
     stubAlert();
 
     cy.intercept('POST', '/api/activities/save', (req) => {
-      expect(req.body.id).to.eq('1');
+      expect(req.body.id).to.eq(1);
       expect(req.body.name).to.eq('Dot 1 cap nhat');
       req.reply({
         statusCode: 200,

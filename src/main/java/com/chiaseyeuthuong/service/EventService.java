@@ -39,9 +39,9 @@ public interface EventService {
 
     EventDetailTabsSummaryResponse getEventDetailTabsSummary(Long eventId);
 
-    PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size);
+    PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size, String sortBy, String sortDir);
 
-    PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size);
+    PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size, String sortBy, String sortDir);
 
-    PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size);
+    PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size, String sortBy, String sortDir);
 }

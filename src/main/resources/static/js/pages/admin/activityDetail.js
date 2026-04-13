@@ -1,13 +1,14 @@
-import {activityApi} from "../../apis/activityApi.js";
-import {auditLogApi} from "../../apis/auditLogApi.js";
-import {renderPagination} from "../../components/pagination.js";
+import { activityApi } from "../../apis/activityApi.js";
+import { auditLogApi } from "../../apis/auditLogApi.js";
+import { renderPagination } from "../../components/pagination.js";
+import { bindSortButtons } from "../../utils/adminTable.js";
 
 const state = {
     activityId: null,
     activeTab: "info",
-    donors: {page: 1, size: 10, loaded: false},
-    donations: {page: 1, size: 10, loaded: false},
-    auditLogs: {page: 1, size: 10, loaded: false}
+    donors: { page: 1, size: 10, loaded: false, sortBy: "name", sortDir: "asc" },
+    donations: { page: 1, size: 10, loaded: false, sortBy: "donatedAt", sortDir: "desc" },
+    auditLogs: { page: 1, size: 10, loaded: false, sortBy: "createdAt", sortDir: "desc" }
 };
 
 const elements = {
@@ -26,10 +27,15 @@ const elements = {
     donorsTableBody: document.getElementById("activityDonorsTableBody"),
     donationsTableBody: document.getElementById("activityDonationsTableBody"),
     auditLogsTableBody: document.getElementById("activityAuditLogsTableBody"),
+    donorsSortButtons: document.querySelectorAll("[data-activity-donor-sort]"),
+    donationsSortButtons: document.querySelectorAll("[data-activity-donation-sort]"),
+    auditLogsSortButtons: document.querySelectorAll("[data-activity-audit-sort]"),
     donorsPagination: document.getElementById("activityDonorsPagination"),
     donationsPagination: document.getElementById("activityDonationsPagination"),
     auditLogsPagination: document.getElementById("activityAuditLogsPagination")
 };
+
+const sortControllers = {};
 
 const donationStatusLabels = {
     PENDING_PAYMENT: "Chờ thanh toán",
@@ -61,6 +67,22 @@ const getDonorTypeLabel = (type) => {
     if (type === "ORGANIZATION") return "Tổ chức";
     if (type === "INDIVIDUAL") return "Cá nhân";
     return "Chưa cập nhật";
+};
+
+const getActivityDonorSortDirection = (field) => {
+    if (field === "type") return "asc";
+    return "asc";
+};
+
+const getActivityDonationSortDirection = (field) => {
+    if (["code", "amount", "donatedAt"].includes(field)) return "desc";
+    if (field === "status") return "asc";
+    return "asc";
+};
+
+const getActivityAuditSortDirection = (field) => {
+    if (field === "createdAt") return "desc";
+    return "asc";
 };
 
 const getTabClass = (active, hasGap = false) => `admin-tab-link${hasGap ? " gap-2" : ""}${active ? " is-active" : ""}`;
@@ -198,9 +220,10 @@ async function loadSummary() {
 
 async function loadDonors() {
     const response = await activityApi.getActivityDetailDonors(state.activityId, {
-        page: state.donors.page, size: state.donors.size
+        page: state.donors.page, size: state.donors.size,
+        sortBy: state.donors.sortBy, sortDir: state.donors.sortDir
     });
-    const pageData = response?.data || {page: 1, pageSize: state.donors.size, totalPages: 0, totalItems: 0, data: []};
+    const pageData = response?.data || { page: 1, pageSize: state.donors.size, totalPages: 0, totalItems: 0, data: [] };
     renderDonors(pageData.data || []);
     renderPagination(pageData, elements.donorsPagination, (newPage) => {
         state.donors.page = newPage;
@@ -211,9 +234,10 @@ async function loadDonors() {
 
 async function loadDonations() {
     const response = await activityApi.getActivityDetailDonations(state.activityId, {
-        page: state.donations.page, size: state.donations.size
+        page: state.donations.page, size: state.donations.size,
+        sortBy: state.donations.sortBy, sortDir: state.donations.sortDir
     });
-    const pageData = response?.data || {page: 1, pageSize: state.donations.size, totalPages: 0, totalItems: 0, data: []};
+    const pageData = response?.data || { page: 1, pageSize: state.donations.size, totalPages: 0, totalItems: 0, data: [] };
     renderDonations(pageData.data || []);
     renderPagination(pageData, elements.donationsPagination, (newPage) => {
         state.donations.page = newPage;
@@ -227,9 +251,11 @@ async function loadAuditLogs() {
         page: state.auditLogs.page,
         size: state.auditLogs.size,
         entityType: "ACTIVITY",
-        entityId: state.activityId
+        entityId: state.activityId,
+        sortBy: state.auditLogs.sortBy,
+        sortDir: state.auditLogs.sortDir
     });
-    const pageData = response?.data || {page: 1, pageSize: state.auditLogs.size, totalPages: 0, totalItems: 0, data: []};
+    const pageData = response?.data || { page: 1, pageSize: state.auditLogs.size, totalPages: 0, totalItems: 0, data: [] };
     renderAuditLogs(pageData.data || []);
     renderPagination(pageData, elements.auditLogsPagination, (newPage) => {
         state.auditLogs.page = newPage;
@@ -254,12 +280,39 @@ function bindTabEvents() {
     });
 }
 
+function bindSortEvents() {
+    sortControllers.donors = bindSortButtons({
+        state: state.donors,
+        buttons: elements.donorsSortButtons,
+        datasetKey: "activityDonorSort",
+        getDefaultDirection: getActivityDonorSortDirection,
+        onChange: () => loadDonors()
+    });
+    sortControllers.donations = bindSortButtons({
+        state: state.donations,
+        buttons: elements.donationsSortButtons,
+        datasetKey: "activityDonationSort",
+        getDefaultDirection: getActivityDonationSortDirection,
+        onChange: () => loadDonations()
+    });
+    sortControllers.auditLogs = bindSortButtons({
+        state: state.auditLogs,
+        buttons: elements.auditLogsSortButtons,
+        datasetKey: "activityAuditSort",
+        getDefaultDirection: getActivityAuditSortDirection,
+        onChange: () => loadAuditLogs()
+    });
+
+    Object.values(sortControllers).forEach((controller) => controller?.updateIndicators?.());
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     if (!elements.section) return;
     state.activityId = Number(elements.section.dataset.activityId || 0);
     if (!state.activityId) return;
 
     bindTabEvents();
+    bindSortEvents();
     setActiveTab("info");
     try {
         await loadSummary();

@@ -1,8 +1,9 @@
-import {donorApi} from "../../apis/donorApi.js";
-import {auditLogApi} from "../../apis/auditLogApi.js";
-import {renderPagination} from "../../components/pagination.js";
-import {createDonor} from "../../modules/donor-submit.js";
-import {formatVnd} from "../../utils/currency.js";
+import { donorApi } from "../../apis/donorApi.js";
+import { auditLogApi } from "../../apis/auditLogApi.js";
+import { renderPagination } from "../../components/pagination.js";
+import { createDonor } from "../../modules/donor-submit.js";
+import { formatVnd } from "../../utils/currency.js";
+import { bindSortButtons } from "../../utils/adminTable.js";
 
 const donorId = window.__DONOR_ID__;
 const donorTypeFromServer = window.__DONOR_TYPE__ || "INDIVIDUAL";
@@ -16,19 +17,31 @@ const state = {
     history: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "donatedAt",
+        sortDir: "desc"
     },
     relationships: {
         loaded: false,
         personItems: [],
         organizationItems: [],
         personTypes: [],
-        organizationRoleTypes: []
+        organizationRoleTypes: [],
+        personSort: {
+            sortBy: "updatedAt",
+            sortDir: "desc"
+        },
+        organizationSort: {
+            sortBy: "updatedAt",
+            sortDir: "desc"
+        }
     },
     audit: {
         page: 1,
         size: 10,
-        loaded: false
+        loaded: false,
+        sortBy: "createdAt",
+        sortDir: "desc"
     },
     selectedDonationIds: new Set(),
     currentHistoryRows: []
@@ -54,6 +67,10 @@ const elements = {
     auditTableBody: document.getElementById("donorAuditTableBody"),
     auditPaginationContainer: document.getElementById("donorAuditPagination"),
     auditCount: document.getElementById("tabAuditCount"),
+    historySortButtons: document.querySelectorAll("[data-donor-history-sort]"),
+    auditSortButtons: document.querySelectorAll("[data-donor-audit-sort]"),
+    personSortButtons: document.querySelectorAll("[data-person-relationship-sort]"),
+    organizationSortButtons: document.querySelectorAll("[data-organization-relationship-sort]"),
     personTableBody: document.getElementById("personRelationshipTableBody"),
     organizationTableBody: document.getElementById("organizationRelationshipTableBody"),
     addPersonBtn: document.getElementById("addPersonRelationshipBtn"),
@@ -91,6 +108,8 @@ const elements = {
     donorIndividualSection: document.getElementById("donorIndividualSection"),
     donorOrganizationSection: document.getElementById("donorOrganizationSection")
 };
+
+const sortControllers = {};
 
 const DEFAULT_PERSON_META = "Chưa chọn nhà hảo tâm liên quan.";
 const DEFAULT_ORGANIZATION_META = donorType === "ORGANIZATION"
@@ -163,6 +182,27 @@ const getTabButtonClass = (active, hasGap = false) => `admin-tab-link${hasGap ? 
 const getPersonDisplayName = (item) => item?.relatedDonorName || item?.relatedDonorDisplayName || "Không rõ tên";
 
 const getRelatedDonorDisplayName = (item) => item?.relatedDonorName || "Không rõ liên kết";
+
+const getDonorHistorySortDirection = (field) => {
+    if (["donationCode", "amount", "donatedAt"].includes(field)) return "desc";
+    if (field === "status") return "asc";
+    return "asc";
+};
+
+const getDonorAuditSortDirection = (field) => {
+    if (field === "createdAt") return "desc";
+    return "asc";
+};
+
+const getPersonRelationshipSortDirection = (field) => {
+    if (field === "updatedAt") return "desc";
+    return "asc";
+};
+
+const getOrganizationRelationshipSortDirection = (field) => {
+    if (field === "updatedAt") return "desc";
+    return "asc";
+};
 
 function setActiveTab(tab) {
     state.activeTab = tab;
@@ -255,9 +295,9 @@ function renderTable(rows) {
             <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${item.targetLabel || "---"}</td>
             <td class="px-4 py-4 text-sm">
                 ${item.targetUrl
-            ? `<a href="${item.targetUrl}" target="_blank" class="font-medium text-primary underline underline-offset-2 hover:opacity-80">${item.targetTitle || "---"}</a>`
-            : `<span class="text-slate-700">${item.targetTitle || "---"}</span>`
-        }
+                ? `<a href="${item.targetUrl}" target="_blank" class="font-medium text-primary underline underline-offset-2 hover:opacity-80">${item.targetTitle || "---"}</a>`
+                : `<span class="text-slate-700">${item.targetTitle || "---"}</span>`
+            }
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-sm text-slate-700">${formatDate(item.donatedAt)}</td>
             <td class="px-4 py-4 whitespace-nowrap text-sm text-right font-semibold text-slate-900">${formatCurrency(item.amount)}</td>
@@ -471,7 +511,7 @@ function openPersonForm(item = null) {
     }
 
     elements.personFormCard.classList.remove("hidden");
-    elements.personFormCard.scrollIntoView({behavior: "smooth", block: "nearest"});
+    elements.personFormCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function openOrganizationForm(item = null) {
@@ -493,7 +533,7 @@ function openOrganizationForm(item = null) {
     }
 
     elements.organizationFormCard.classList.remove("hidden");
-    elements.organizationFormCard.scrollIntoView({behavior: "smooth", block: "nearest"});
+    elements.organizationFormCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function renderPersonLookupDropdown(donors) {
@@ -631,7 +671,9 @@ async function loadAuditSummary() {
             page: 1,
             size: 1,
             entityType: "DONOR",
-            entityId: donorId
+            entityId: donorId,
+            sortBy: state.audit.sortBy,
+            sortDir: state.audit.sortDir
         });
         const pageData = response?.data || {};
         elements.auditCount.textContent = pageData.totalItems || 0;
@@ -647,7 +689,9 @@ async function loadAuditHistory() {
             page: state.audit.page,
             size: state.audit.size,
             entityType: "DONOR",
-            entityId: donorId
+            entityId: donorId,
+            sortBy: state.audit.sortBy,
+            sortDir: state.audit.sortDir
         });
         const pageData = response?.data || {};
         renderAuditTable(pageData.data || []);
@@ -693,9 +737,9 @@ async function loadRelationships() {
 
     try {
         await loadRelationshipMetadata();
-        const requests = [donorApi.getOrganizationRelationships(donorId)];
+        const requests = [donorApi.getOrganizationRelationships(donorId, state.relationships.organizationSort)];
         if (supportsPersonalRelationships) {
-            requests.unshift(donorApi.getPersonRelationships(donorId));
+            requests.unshift(donorApi.getPersonRelationships(donorId, state.relationships.personSort));
         }
 
         const responses = await Promise.all(requests);
@@ -745,7 +789,7 @@ async function handlePersonRelationshipSubmit(event) {
     }
 
     try {
-        const payload = {relationshipTypeId, relatedDonorId, note};
+        const payload = { relationshipTypeId, relatedDonorId, note };
         const response = relationshipId
             ? await donorApi.updatePersonRelationship(donorId, relationshipId, payload)
             : await donorApi.createPersonRelationship(donorId, payload);
@@ -777,7 +821,7 @@ async function handleOrganizationRelationshipSubmit(event) {
     }
 
     try {
-        const payload = {roleTypeId, organizationDonorId: relatedDonorId, note};
+        const payload = { roleTypeId, organizationDonorId: relatedDonorId, note };
         const response = relationshipId
             ? await donorApi.updateOrganizationRelationship(donorId, relationshipId, payload)
             : await donorApi.createOrganizationRelationship(donorId, payload);
@@ -900,6 +944,39 @@ function bindRelationshipEvents() {
     bindLookupEvents();
 }
 
+function bindSortEvents() {
+    sortControllers.history = bindSortButtons({
+        state: state.history,
+        buttons: elements.historySortButtons,
+        datasetKey: "donorHistorySort",
+        getDefaultDirection: getDonorHistorySortDirection,
+        onChange: () => loadHistory()
+    });
+    sortControllers.audit = bindSortButtons({
+        state: state.audit,
+        buttons: elements.auditSortButtons,
+        datasetKey: "donorAuditSort",
+        getDefaultDirection: getDonorAuditSortDirection,
+        onChange: () => loadAuditHistory()
+    });
+    sortControllers.personRelationships = bindSortButtons({
+        state: state.relationships.personSort,
+        buttons: elements.personSortButtons,
+        datasetKey: "personRelationshipSort",
+        getDefaultDirection: getPersonRelationshipSortDirection,
+        onChange: () => loadRelationships()
+    });
+    sortControllers.organizationRelationships = bindSortButtons({
+        state: state.relationships.organizationSort,
+        buttons: elements.organizationSortButtons,
+        datasetKey: "organizationRelationshipSort",
+        getDefaultDirection: getOrganizationRelationshipSortDirection,
+        onChange: () => loadRelationships()
+    });
+
+    Object.values(sortControllers).forEach((controller) => controller?.updateIndicators?.());
+}
+
 function setCreateDonorType(type) {
     const isIndividual = type === "INDIVIDUAL";
     elements.donorIndividualSection?.classList.toggle("hidden", !isIndividual);
@@ -968,7 +1045,7 @@ async function handleUpdateDonor() {
     const donorType = getCurrentDonorType();
     const rawData = collectDonorData();
     try {
-        await createDonor(donorType, rawData, {donorId});
+        await createDonor(donorType, rawData, { donorId });
         alert("Cập nhật nhà hảo tâm thành công");
         window.location.href = `/admin/donors/${donorId}?saved=1`;
     } catch (error) {
@@ -1073,6 +1150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     bindRelationshipEvents();
+    bindSortEvents();
 
     if (isCreateMode) {
         setCreateDonorType("INDIVIDUAL");

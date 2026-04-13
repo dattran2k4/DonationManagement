@@ -1,104 +1,152 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layouts/admin/admin-layout}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/admin/admin-layout}">
+
 <head>
     <title>Quản lý hoạt động</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="admin-page-stack">
-    <section class="admin-page-heading">
-        <div>
-            <h1 class="admin-page-title">Quản lý Hoạt động</h1>
-            <p class="admin-page-subtitle">Theo dõi tiến độ từng hoạt động trực thuộc sự kiện, cùng một nhịp thị giác với màn quản lý sự kiện.</p>
-        </div>
-        <div class="admin-toolbar-group">
-            <button id="activityExportBtn"
-                    type="button"
-                    class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">file_download</span>
-                Xuất Excel
-            </button>
-            <input id="activityImportInput" type="file" class="hidden" accept=".xlsx,.xls"/>
-            <button id="activityImportBtn"
-                    type="button"
-                    sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-                    class="admin-action-btn admin-action-btn--ghost">
-                <span class="material-symbols-outlined text-[18px]">upload_file</span>
-                Nhập Excel
-            </button>
-            <a th:href="@{/admin/activities/form}"
-               sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
-               class="admin-action-btn admin-action-btn--primary">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Thêm Hoạt động mới
-            </a>
-        </div>
-    </section>
-
-    <section class="admin-filter-shell">
-        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_240px_180px] gap-4">
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
-                </div>
-                <input id="activitySearchInput"
-                       class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
-                       placeholder="Tìm theo tên hoạt động, địa điểm..." type="text"/>
+    <div layout:fragment="content" class="admin-page-stack">
+        <section class="admin-page-heading">
+            <div>
+                <h1 class="admin-page-title">Quản lý Hoạt động</h1>
+                <p class="admin-page-subtitle">Theo dõi tiến độ từng hoạt động trực thuộc sự kiện, cùng một nhịp thị
+                    giác với màn quản lý sự kiện.</p>
             </div>
-            <div class="relative">
-                <select id="activityStatusFilter"
+            <div class="admin-toolbar-group">
+                <button id="activityExportBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    Xuất Excel
+                </button>
+                <button id="activityTemplateBtn" type="button" class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">description</span>
+                    Tải file mẫu
+                </button>
+                <input id="activityImportInput" type="file" class="hidden" accept=".xlsx,.xls" />
+                <button id="activityImportBtn" type="button" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="admin-action-btn admin-action-btn--ghost">
+                    <span class="material-symbols-outlined text-[18px]">upload_file</span>
+                    Nhập Excel
+                </button>
+                <a th:href="@{/admin/activities/form}" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')"
+                    class="admin-action-btn admin-action-btn--primary">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Thêm Hoạt động mới
+                </a>
+            </div>
+        </section>
+
+        <section class="admin-filter-shell">
+            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_240px_180px] gap-4">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+                    </div>
+                    <input id="activitySearchInput"
+                        class="admin-search-input block w-full pl-12 pr-4 py-3.5 text-sm placeholder:text-slate-400"
+                        placeholder="Tìm theo tên hoạt động, địa điểm..." type="text" />
+                </div>
+                <div class="relative">
+                    <select id="activityStatusFilter"
                         class="admin-select-field block w-full pl-4 pr-10 py-3 text-sm appearance-none cursor-pointer">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="DRAFT">Bản nháp</option>
-                    <option value="UPCOMING">Sắp diễn ra</option>
-                    <option value="ONGOING">Đang diễn ra</option>
-                    <option value="COMPLETED">Hoàn thành</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                    <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="DRAFT">Bản nháp</option>
+                        <option value="UPCOMING">Sắp diễn ra</option>
+                        <option value="ONGOING">Đang diễn ra</option>
+                        <option value="COMPLETED">Hoàn thành</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                        <span class="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
+                    </div>
                 </div>
+                <button id="activityResetFilterBtn" class="admin-action-btn admin-action-btn--ghost justify-center">
+                    <span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
+                    <span>Đặt lại</span>
+                </button>
             </div>
-            <button id="activityResetFilterBtn"
-                    class="admin-action-btn admin-action-btn--ghost justify-center">
-                <span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
-                <span>Đặt lại</span>
-            </button>
-        </div>
-    </section>
+        </section>
 
-    <section class="admin-table-shell">
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                <thead>
-                <tr class="border-b border-slate-200 dark:border-slate-800">
-                    <th class="px-6 py-4 w-[90px]" scope="col">ID</th>
-                    <th class="px-6 py-4 w-[240px] whitespace-nowrap" scope="col">Tên hoạt động</th>
-                    <th class="px-6 py-4" scope="col">Thuộc sự kiện</th>
-                    <th class="px-6 py-4" scope="col">Thời gian</th>
-                    <th class="px-6 py-4" scope="col">Địa điểm</th>
-                    <th class="px-6 py-4 min-w-[220px]" scope="col">Số tiền hiện tại / Mục tiêu</th>
-                    <th class="px-6 py-4" scope="col">Trạng thái</th>
-                    <th id="activityActionHeader" class="px-6 py-4 text-center min-w-[120px]" scope="col">Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
-            </table>
-        </div>
-        <div id="paginationContainer"></div>
-    </section>
-</div>
-<th:block layout:fragment="scripts">
-    <script th:inline="javascript">
-        window.__CAN_MANAGE_ACTIVITIES__ = false;
-    </script>
-    <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
-        window.__CAN_MANAGE_ACTIVITIES__ = true;
-    </script>
-    <script type="module" th:src="@{/js/pages/admin/activityList.js}"></script>
-</th:block>
+        <section class="admin-table-shell">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-800">
+                            <th class="px-6 py-4 w-[90px]" scope="col">
+                                <button type="button" data-activity-sort="code"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>ID</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 w-[240px] whitespace-nowrap" scope="col">
+                                <button type="button" data-activity-sort="name"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Tên hoạt động</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4" scope="col">
+                                <button type="button" data-activity-sort="eventName"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Thuộc sự kiện</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4" scope="col">
+                                <button type="button" data-activity-sort="startDate"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Thời gian</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4" scope="col">
+                                <button type="button" data-activity-sort="location"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Địa điểm</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4 min-w-[220px]" scope="col">
+                                <button type="button" data-activity-sort="currentAmount"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Số tiền hiện tại / Mục tiêu</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th class="px-6 py-4" scope="col">
+                                <button type="button" data-activity-sort="status"
+                                    class="inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                                    <span>Trạng thái</span>
+                                    <span data-sort-icon
+                                        class="material-symbols-outlined text-[16px] leading-none">unfold_more</span>
+                                </button>
+                            </th>
+                            <th id="activityActionHeader" class="px-6 py-4 text-center min-w-[120px]" scope="col">Thao
+                                tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                </table>
+            </div>
+            <div id="paginationContainer"></div>
+        </section>
+    </div>
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            window.__CAN_MANAGE_ACTIVITIES__ = false;
+        </script>
+        <script th:inline="javascript" sec:authorize="hasAnyRole('ADMIN', 'ACCOUNTING')">
+            window.__CAN_MANAGE_ACTIVITIES__ = true;
+        </script>
+        <script type="module" th:src="@{/js/pages/admin/activityList.js}"></script>
+    </th:block>
 </body>
+
 </html>

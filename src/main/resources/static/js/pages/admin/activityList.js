@@ -1,22 +1,35 @@
-import {activityApi} from '../../apis/activityApi.js';
-import {renderPagination} from '../../components/pagination.js';
-import {bindExcelActions} from '../../utils/excelTransfer.js';
-import {formatVnd} from '../../utils/currency.js';
+import { activityApi } from '../../apis/activityApi.js';
+import { renderPagination } from '../../components/pagination.js';
+import { bindExcelActions } from '../../utils/excelTransfer.js';
+import { formatVnd } from '../../utils/currency.js';
+import { bindSortButtons, debounce, readStateFromUrl, syncStateToUrl } from '../../utils/adminTable.js';
 
-const state = {page: 1, size: 50, search: '', status: ''};
+const DEFAULT_STATE = {
+    page: 1,
+    size: 50,
+    search: '',
+    status: '',
+    sortBy: 'startDate',
+    sortDir: 'desc'
+};
+
+const state = readStateFromUrl(DEFAULT_STATE);
 let latestRequestId = 0;
+let sortController;
+
 const elements = {
     tableBody: document.getElementById('activityTableBody'),
     paginationContainer: document.getElementById('paginationContainer'),
     searchInput: document.getElementById('activitySearchInput'),
     statusFilter: document.getElementById('activityStatusFilter'),
     resetFilterBtn: document.getElementById('activityResetFilterBtn'),
+    sortButtons: document.querySelectorAll('[data-activity-sort]'),
     exportBtn: document.getElementById('activityExportBtn'),
+    templateBtn: document.getElementById('activityTemplateBtn'),
     importBtn: document.getElementById('activityImportBtn'),
     importInput: document.getElementById('activityImportInput')
 };
 
-// 1. Hàm định dạng tiền tệ (VD: 1.000.000đ)
 const formatCurrency = (amount) => {
     return formatVnd(amount);
 };
@@ -26,7 +39,6 @@ const formatActivityCode = (id) => {
     return `ACT-${String(id).padStart(8, '0')}`;
 };
 
-// 2. Hàm định dạng ngày tháng (VD: 12/05 - 15/05)
 const formatDateRange = (start, end) => {
     if (!start) return '---';
     const s = new Date(start);
@@ -39,7 +51,7 @@ const formatDateRange = (start, end) => {
     return `${startStr} - ${endStr}`;
 };
 
-const getColumnCount = () => 7;
+const getColumnCount = () => 8;
 
 const setTableMessage = (message) => {
     elements.tableBody.innerHTML = `
@@ -49,22 +61,33 @@ const setTableMessage = (message) => {
     `;
 };
 
-const syncStateFromFilters = () => {
-    state.search = elements.searchInput?.value?.trim() || '';
-    state.status = elements.statusFilter?.value || '';
+const syncFilterControls = () => {
+    if (elements.searchInput) elements.searchInput.value = state.search;
+    if (elements.statusFilter) elements.statusFilter.value = state.status;
 };
 
-// 3. Hàm xử lý Badge Trạng thái
+const getDefaultSortDirection = (field) => {
+    if (['code', 'startDate', 'currentAmount'].includes(field)) {
+        return 'desc';
+    }
+
+    if (field === 'status') {
+        return 'asc';
+    }
+
+    return 'asc';
+};
+
 const getStatusBadge = (status) => {
     const config = {
-        'DRAFT': {text: 'Bản nháp', color: 'slate', dot: 'bg-slate-400'},
-        'UPCOMING': {text: 'Sắp diễn ra', color: 'amber', dot: 'bg-amber-500'},
-        'ONGOING': {text: 'Đang diễn ra', color: 'emerald', dot: 'bg-primary animate-pulse'},
-        'COMPLETED': {text: 'Hoàn thành', color: 'slate', dot: 'bg-slate-400'},
-        'CANCELLED': {text: 'Đã hủy', color: 'red', dot: 'bg-red-500'}
+        'DRAFT': { text: 'Bản nháp', color: 'slate', dot: 'bg-slate-400' },
+        'UPCOMING': { text: 'Sắp diễn ra', color: 'amber', dot: 'bg-amber-500' },
+        'ONGOING': { text: 'Đang diễn ra', color: 'emerald', dot: 'bg-primary animate-pulse' },
+        'COMPLETED': { text: 'Hoàn thành', color: 'slate', dot: 'bg-slate-400' },
+        'CANCELLED': { text: 'Đã hủy', color: 'red', dot: 'bg-red-500' }
     };
 
-    const s = config[status] || config['UPCOMING'];
+    const s = config[status] || config.UPCOMING;
 
     return `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-${s.color}-100 text-${s.color}-800 dark:bg-${s.color}-900/30 dark:text-${s.color}-300 border border-${s.color}-200 dark:border-${s.color}-800">
@@ -74,13 +97,12 @@ const getStatusBadge = (status) => {
     `;
 };
 
-// 4. Render Row
 const renderActivityRow = (activity) => {
-    // Tính phần trăm mục tiêu
     const target = activity.targetAmount || 0;
     const current = activity.currentAmount || 0;
     const percent = target > 0 ? Math.round((current / target) * 100) : 0;
-    const progressWidth = Math.min(percent, 100); // Không vượt quá 100% thanh bar
+    const progressWidth = Math.min(percent, 100);
+    const year = activity.startDate ? new Date(activity.startDate).getFullYear() : '---';
 
     return `
     <tr class="hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors group">
@@ -96,7 +118,7 @@ const renderActivityRow = (activity) => {
                 <span class="text-sm text-text-main dark:text-gray-300 font-medium">
                     ${formatDateRange(activity.startDate, activity.endDate)}
                 </span>
-                <span class="text-xs text-text-secondary">Năm ${new Date(activity.startDate).getFullYear()}</span>
+                <span class="text-xs text-text-secondary">Năm ${year}</span>
             </div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
@@ -121,16 +143,21 @@ const renderActivityRow = (activity) => {
         <td class="px-6 py-4 whitespace-nowrap">
             ${getStatusBadge(activity.status)}
         </td>
+        <td class="px-6 py-4 whitespace-nowrap text-right">
+            <a href="/admin/activities/${activity.id}" class="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-primary hover:text-primary">
+                Chi tiết
+            </a>
+        </td>
     </tr>`;
 };
 
-// 5. Hàm tải dữ liệu
 const loadActivities = async () => {
     const requestId = ++latestRequestId;
 
     try {
         setTableMessage('Đang tải dữ liệu...');
         elements.paginationContainer.innerHTML = '';
+        syncStateToUrl(state, DEFAULT_STATE);
 
         const response = await activityApi.getAllActivities(state);
         if (requestId !== latestRequestId) return;
@@ -144,26 +171,19 @@ const loadActivities = async () => {
             return;
         }
 
-        elements.tableBody.innerHTML = activities.map(a => renderActivityRow(a)).join('');
+        elements.tableBody.innerHTML = activities.map((activity) => renderActivityRow(activity)).join('');
 
         renderPagination(pageData, elements.paginationContainer, (newPage) => {
             state.page = newPage;
+            sortController?.updateIndicators();
             loadActivities();
         });
     } catch (error) {
         if (requestId !== latestRequestId) return;
         setTableMessage('Không thể tải danh sách hoạt động');
         elements.paginationContainer.innerHTML = '';
-        console.error("Lỗi khi tải Activities:", error);
+        console.error('Lỗi khi tải Activities:', error);
     }
-};
-
-const debounce = (fn, delay = 350) => {
-    let timeoutId;
-    return (...args) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => fn(...args), delay);
-    };
 };
 
 const bindFilters = () => {
@@ -195,24 +215,39 @@ const bindFilters = () => {
             loadActivities();
         });
     }
+
+    sortController = bindSortButtons({
+        state,
+        buttons: elements.sortButtons,
+        datasetKey: 'activitySort',
+        getDefaultDirection: getDefaultSortDirection,
+        onChange: () => loadActivities()
+    });
 };
 
-// Khởi chạy
 document.addEventListener('DOMContentLoaded', () => {
+    syncFilterControls();
     bindFilters();
-    syncStateFromFilters();
+    sortController?.updateIndicators();
     bindExcelActions({
         exportButton: elements.exportBtn,
+        templateButton: elements.templateBtn,
         importButton: elements.importBtn,
         importInput: elements.importInput,
         exportUrl: '/api/admin/excel/activities/export',
+        templateUrl: '/api/admin/excel/activities/template',
         importUrl: '/api/admin/excel/activities/import',
         getExportParams: () => ({
             search: state.search,
-            status: state.status
+            status: state.status,
+            sortBy: state.sortBy,
+            sortDir: state.sortDir
         }),
         fallbackFilename: 'hoat-dong.xlsx',
+        templateFallbackFilename: 'mau-import-hoat-dong.xlsx',
         successExportMessage: 'Xuất Excel hoạt động thành công.',
+        successTemplateMessage: 'Đã bắt đầu tải file mẫu hoạt động.',
+        moduleLabel: 'hoạt động',
         onImportSuccess: () => {
             state.page = 1;
             loadActivities();
@@ -227,7 +262,7 @@ window.addEventListener('pageshow', (event) => {
 
     if (!isBackForwardNavigation) return;
 
-    syncStateFromFilters();
-    state.page = 1;
+    syncFilterControls();
+    sortController?.updateIndicators();
     loadActivities();
 });

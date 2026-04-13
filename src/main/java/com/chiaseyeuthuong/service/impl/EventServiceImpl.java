@@ -2,6 +2,7 @@ package com.chiaseyeuthuong.service.impl;
 
 import com.chiaseyeuthuong.common.EEntityType;
 import com.chiaseyeuthuong.common.EEventStatus;
+import com.chiaseyeuthuong.common.sort.SortParamUtils;
 import com.chiaseyeuthuong.dto.request.EventRequest;
 import com.chiaseyeuthuong.dto.response.ActivityResponse;
 import com.chiaseyeuthuong.dto.response.CategoryResponse;
@@ -30,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -80,29 +80,41 @@ public class EventServiceImpl implements EventService {
     private final DonationService donationService;
     private final AuditLogService auditLogService;
 
+    private static final Map<String, String> EVENT_SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "id"),
+            Map.entry("code", "id"),
+            Map.entry("name", "name"),
+            Map.entry("categoryName", "category.name"),
+            Map.entry("location", "location"),
+            Map.entry("startDate", "startDate"),
+            Map.entry("endDate", "endDate"),
+            Map.entry("targetAmount", "targetAmount"),
+            Map.entry("currentAmount", "currentAmount"),
+            Map.entry("createdAt", "createdAt"),
+            Map.entry("updatedAt", "updatedAt")
+    );
+    private static final Map<String, String> EVENT_UNSAFE_SORT_FIELDS = Map.of(
+            "status", "case when status = 'DRAFT' then 1 when status = 'UPCOMING' then 2 when status = 'ONGOING' then 3 when status = 'COMPLETED' then 4 else 99 end"
+    );
+
     public static final String UPLOAD_DIR = "uploads/thumbnails/";
 
     @Override
     public PageResponse<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir, String search, EEventStatus status, boolean excludeDraft, String... categoryIds) {
-        int pageNumber = (page > 0) ? page - 1 : 0;
-
-        Sort.Direction sortDirection = ("asc".equals(sortDir)) ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        String sortField = StringUtils.hasLength(sortBy) ? sortBy : "id";
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, size, Sort.by(sortDirection, sortField));
+        Sort sort = SortParamUtils.buildSort(EVENT_SORT_FIELDS, EVENT_UNSAFE_SORT_FIELDS,
+                sortBy, sortDir, "startDate", Sort.Direction.DESC, "id");
 
         Specification<Event> specification = EventSpecification.filterEvent(search, status, excludeDraft, categoryIds);
 
-        Page<Event> eventPage = eventRepository.findAll(specification, pageRequest);
+        Page<Event> eventPage = eventRepository.findAll(specification, SortParamUtils.buildPageRequest(page, size, sort, 10));
 
         List<EventResponse> eventResponses = eventPage.getContent().stream()
                 .map(event -> toResponse(event, false))
                 .toList();
 
         return PageResponse.<EventResponse>builder()
-                .page(page)
-                .pageSize(size)
+                .page(SortParamUtils.normalizePageNumber(page) + 1)
+                .pageSize(SortParamUtils.normalizePageSize(size, 10))
                 .totalItems(eventPage.getTotalElements())
                 .totalPages(eventPage.getTotalPages())
                 .data(eventResponses)
@@ -332,21 +344,21 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size) {
+    public PageResponse<ActivityResponse> getEventDetailActivities(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return activityService.getActivitiesByEventId(eventId, page, size);
+        return activityService.getActivitiesByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     @Override
-    public PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size) {
+    public PageResponse<DonorResponse> getEventDetailDonors(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return donorService.getDonorsByEventId(eventId, page, size);
+        return donorService.getDonorsByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     @Override
-    public PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size) {
+    public PageResponse<DonationResponse> getEventDetailDonations(Long eventId, int page, int size, String sortBy, String sortDir) {
         findEventById(eventId);
-        return donationService.getDonationsByEventId(eventId, page, size);
+        return donationService.getDonationsByEventId(eventId, page, size, sortBy, sortDir);
     }
 
     private EventResponse toResponse(Event event) {

@@ -17,5 +17,6 @@ public interface AuditLogService {
     void logStatusChange(EEntityType entityType, Long entityId, String summary, String oldStatus, String newStatus);
 
     PageResponse<AuditLogResponse> getAuditLogs(int page, int size, EEntityType entityType, Long entityId, EAuditAction action,
-                                                String actorUsername, String keyword, LocalDateTime fromDate, LocalDateTime toDate);
+                                                String actorUsername, String keyword, LocalDateTime fromDate, LocalDateTime toDate,
+                                                String sortBy, String sortDir);
 }

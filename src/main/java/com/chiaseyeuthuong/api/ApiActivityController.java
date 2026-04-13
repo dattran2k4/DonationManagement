@@ -24,13 +24,15 @@ public class ApiActivityController {
     @GetMapping
     public ApiResponse getAllActivities(@RequestParam(required = false, defaultValue = "0") int page,
                                         @RequestParam(required = false, defaultValue = "20") int size,
+                                        @RequestParam(required = false) String sortBy,
+                                        @RequestParam(required = false) String sortDir,
                                         @RequestParam(required = false) String search,
                                         @RequestParam(required = false) EActivityStatus status,
                                         @RequestParam(required = false, defaultValue = "false") boolean excludeDraft) {
         return ApiResponse.builder()
                 .status(200)
                 .message("OK")
-                .data(activityService.getAllActivities(page, size, search, status, excludeDraft))
+                .data(activityService.getAllActivities(page, size, sortBy, sortDir, search, status, excludeDraft))
                 .build();
     }
 
@@ -66,11 +68,13 @@ public class ApiActivityController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getActivityDetailDonors(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "1") int page,
-                                               @RequestParam(required = false, defaultValue = "10") int size) {
+                                               @RequestParam(required = false, defaultValue = "10") int size,
+                                               @RequestParam(required = false) String sortBy,
+                                               @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách nhà hảo tâm theo hoạt động thành công")
-                .data(activityService.getActivityDetailDonors(id, page, size))
+                .data(activityService.getActivityDetailDonors(id, page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -78,11 +82,13 @@ public class ApiActivityController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTING', 'STAFF')")
     public ApiResponse getActivityDetailDonations(@PathVariable Long id,
                                                   @RequestParam(required = false, defaultValue = "1") int page,
-                                                  @RequestParam(required = false, defaultValue = "10") int size) {
+                                                  @RequestParam(required = false, defaultValue = "10") int size,
+                                                  @RequestParam(required = false) String sortBy,
+                                                  @RequestParam(required = false) String sortDir) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Lấy danh sách quyên góp theo hoạt động thành công")
-                .data(activityService.getActivityDetailDonations(id, page, size))
+                .data(activityService.getActivityDetailDonations(id, page, size, sortBy, sortDir))
                 .build();
     }
 
